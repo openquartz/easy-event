@@ -1,7 +1,7 @@
 # easy-event
 
 #### Description
-分布式的，可靠的，进实时的，可扩展的 基于本地消息实现的EventBus事件总线
+{**When you're done, you can delete the content in this README and update the file with details for others getting started with your repository**}
 
 #### Software Architecture
 Software architecture description
