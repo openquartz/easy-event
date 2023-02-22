@@ -39,6 +39,7 @@
     <hutool.version>5.4.7</hutool.version>
 
     <rocketmq.version>4.9.3</rocketmq.version>
+    <kafka.version>0.11.0.0</kafka.version>
     <slf4j.version>1.7.30</slf4j.version>
 
     <mybatis-plus.version>3.5.0</mybatis-plus.version>
@@ -163,6 +164,12 @@
         <groupId>org.apache.rocketmq</groupId>
         <artifactId>rocketmq-client</artifactId>
         <version>${rocketmq.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>${kafka.version}</version>
       </dependency>
 
       <dependency>

@@ -23,6 +23,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.svnee</groupId>
             <artifactId>easyevent-transfer-api</artifactId>
         </dependency>
