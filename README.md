@@ -5,7 +5,8 @@ Make Distributed Event Driven Easier!
 ### 介绍
 
 #### 什么是EasyEvent
-EasyEvent是一款基于Google Guava 的EventBus为蓝本的分布式的,可扩展的,最终一致性的实时的EventBus解决方案
+EasyEvent是一款基于Google Guava 的EventBus为蓝本的分布式的,可扩展的,最终一致性的实时的EventBus解决方案。\
+主要是解决Google EventBus的不支持持久化和分布式机器调度等的问题
 
 #### 功能特性
 支持同步事件、异步事件、顺序事件/并行事件触发执行。\
