@@ -1,4 +1,4 @@
-package org.svnee.easyevent.transfer.api.rocket.property;
+package org.svnee.easyevent.transfer.rocket.property;
 
 import lombok.Data;
 

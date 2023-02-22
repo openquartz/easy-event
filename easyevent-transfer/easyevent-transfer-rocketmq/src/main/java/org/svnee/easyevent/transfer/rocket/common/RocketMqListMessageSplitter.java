@@ -1,4 +1,4 @@
-package org.svnee.easyevent.transfer.api.rocket.common;
+package org.svnee.easyevent.transfer.rocket.common;
 
 import java.util.Iterator;
 import java.util.List;
@@ -10,13 +10,13 @@ import org.apache.rocketmq.common.message.Message;
  *
  * @author svnee
  */
-public class RocketMQListMessageSplitter implements Iterator<List<Message>> {
+public class RocketMqListMessageSplitter implements Iterator<List<Message>> {
 
-    private int sizeLimit = 1000 * 1000;
+    private final int sizeLimit;
     private final List<Message> messages;
     private int currIndex;
 
-    public RocketMQListMessageSplitter(List<Message> messages, int sizeLimit) {
+    public RocketMqListMessageSplitter(List<Message> messages, int sizeLimit) {
         this.messages = messages;
         this.sizeLimit = sizeLimit;
     }

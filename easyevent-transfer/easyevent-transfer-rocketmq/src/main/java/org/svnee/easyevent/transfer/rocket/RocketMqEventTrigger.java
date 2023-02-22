@@ -1,4 +1,4 @@
-package org.svnee.easyevent.transfer.api.rocket;
+package org.svnee.easyevent.transfer.rocket;
 
 import static org.svnee.easyevent.common.utils.ParamUtils.checkNotNull;
 
@@ -27,9 +27,10 @@ import org.svnee.easyevent.transfer.api.EventTrigger;
 import org.svnee.easyevent.transfer.api.limiting.EventTransferTriggerLimitingControl;
 import org.svnee.easyevent.transfer.api.limiting.LimitingBlockedException;
 import org.svnee.easyevent.transfer.api.message.EventMessage;
-import org.svnee.easyevent.transfer.api.rocket.property.RocketMqCommonProperty;
-import org.svnee.easyevent.transfer.api.rocket.property.RocketMqConsumerProperty;
-import org.svnee.easyevent.transfer.api.rocket.property.RocketMqTriggerProperty;
+import org.svnee.easyevent.transfer.rocket.property.RocketMqCommonProperty;
+import org.svnee.easyevent.transfer.rocket.property.RocketMqConsumerProperty;
+import org.svnee.easyevent.transfer.rocket.property.RocketMqTriggerProperty;
+
 
 /**
  * rocketMQ event-trigger

@@ -1,4 +1,4 @@
-package org.svnee.easyevent.transfer.api.rocket.property;
+package org.svnee.easyevent.transfer.rocket.property;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

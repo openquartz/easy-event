@@ -1,4 +1,4 @@
-package org.svnee.easyevent.transfer.api.rocket.common;
+package org.svnee.easyevent.transfer.rocket.common;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +23,8 @@ import org.svnee.easyevent.storage.identify.EventId;
 import org.svnee.easyevent.transfer.api.exception.TransferErrorCode;
 import org.svnee.easyevent.transfer.api.message.EventMessage;
 import org.svnee.easyevent.transfer.api.message.EventMessageBuilder;
-import org.svnee.easyevent.transfer.api.rocket.property.RocketMqCommonProperty;
 import org.svnee.easyevent.transfer.api.route.EventRouteStrategy;
+import org.svnee.easyevent.transfer.rocket.property.RocketMqCommonProperty;
 
 /**
  * RocketMQ 发送者
@@ -135,7 +135,7 @@ public class RocketMqProducer implements LifecycleBean {
                 }).collect(Collectors.toList());
 
             // split rocket message
-            RocketMQListMessageSplitter splitter = new RocketMQListMessageSplitter(messageList,
+            RocketMqListMessageSplitter splitter = new RocketMqListMessageSplitter(messageList,
                 rocketMqCommonProperty.getProduceMessageSize());
 
             int startIndex = 0;

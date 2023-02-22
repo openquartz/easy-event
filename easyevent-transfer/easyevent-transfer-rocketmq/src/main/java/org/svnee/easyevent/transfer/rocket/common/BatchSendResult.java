@@ -1,4 +1,4 @@
-package org.svnee.easyevent.transfer.api.rocket.common;
+package org.svnee.easyevent.transfer.rocket.common;
 
 import java.util.ArrayList;
 import java.util.List;
