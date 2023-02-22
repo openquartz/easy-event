@@ -1,39 +1,43 @@
-# easy-event
+# EasyEvent
 
-#### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+Make Distributed Event Driven Easier!
 
-#### 软件架构
-软件架构说明
+### 介绍
 
+#### 什么是EasyEvent
+EasyEvent是一款基于Google Guava 的EventBus为蓝本的分布式的,可扩展的,最终一致性的实时的EventBus解决方案
 
-#### 安装教程
+#### 功能特性
+支持同步事件、异步事件、顺序事件/并行事件触发执行。\
+支持事件异常补偿、预警等功能
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+#### 解决问题
+1、解决使用事件驱动中的数据一致性问题\
 
-#### 使用说明
+2、解决事件集中触发出现时,服务不稳定性问题
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+3、解决分布式事件追踪性问题
 
-#### 参与贡献
+4、解决针对事件执行异常监控预警问题
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+### 软件架构
 
+- `easyevent-common`: 公共模块服务
+  
+- `easyevent-core`: 核心eventbus逻辑
 
-#### 特技
+- `easyevent-storage`: 存储服务
+    - `easyevent-storage-api`: 存储服务API
+    - `easyfile-storage-jdbc`: 基于jdbc的存储实现 
+  
+- `easyevent-transfer`: 事件传输服务
+    - `easyevent-transfer-api`: 事件传输协议
+    - `easyevent-transfer-disruptor`: disruptor 作为事件传输的实现
+    - `easyevent-transfer-rocketmq`: rocketmq 作为事件传输的实现
+    - `easyevent-transfer-kafka`: kafka 作为事件传输的实现
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+- `easyevent-spring-boot-starter`: easyevent starter 包
+
+- `easyfile-example`: 样例工程
+    - `easyevent-example-disruptor`: 使用disruptor 作为传输调度层
+    - `easyevent-example-rocketmq`: 使用rocketmq 作为传输调度层

@@ -17,7 +17,6 @@
     <modules>
         <module>easyevent-transfer-api</module>
         <module>easyevent-transfer-rocketmq</module>
-        <module>easyevent-transfer-rabbitmq</module>
         <module>easyevent-transfer-disruptor</module>
         <module>easyevent-transfer-kafka</module>
     </modules>
