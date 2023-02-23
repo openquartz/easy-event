@@ -31,8 +31,8 @@ import org.svnee.easyevent.transfer.rocket.RocketMqEventSender;
 import org.svnee.easyevent.transfer.rocket.RocketMqEventTrigger;
 import org.svnee.easyevent.transfer.rocket.common.RocketMqProducer;
 import org.svnee.easyevent.transfer.rocket.property.RocketMqCommonProperty;
-import org.svnee.easyevent.transfer.rocket.property.RocketMqConsumerProperty;
 import org.svnee.easyevent.transfer.rocket.property.RocketMqTriggerProperty;
+import org.svnee.easyevent.transfer.rocket.property.RocketMqTriggerProperty.RocketMqConsumerProperty;
 
 /**
  * RocketMQ Transfer AutoConfiguration

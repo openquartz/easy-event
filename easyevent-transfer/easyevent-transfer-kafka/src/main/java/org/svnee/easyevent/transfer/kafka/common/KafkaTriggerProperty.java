@@ -1,4 +1,4 @@
-package org.svnee.easyevent.transfer.rocket.property;
+package org.svnee.easyevent.transfer.kafka.common;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -8,22 +8,22 @@ import org.svnee.easyevent.common.constant.CommonConstants;
 import org.svnee.easyevent.common.utils.StringUtils;
 
 /**
- * RocketMQ Trigger 配置
+ * kafka Trigger 配置
  *
  * @author svnee
  **/
 @Data
-public class RocketMqTriggerProperty {
+public class KafkaTriggerProperty {
 
     /**
      * rocketmq-consumer-property
      */
-    private Map<String, RocketMqConsumerProperty> consumerPropertyMap;
+    private Map<String, KafkaConsumerProperty> consumerPropertyMap;
 
     /**
-     * single rocketmq consumer property
+     * single kafka consumer property
      */
-    public static class RocketMqConsumerProperty {
+    public static class KafkaConsumerProperty {
 
         /**
          * 消费者组
@@ -36,10 +36,9 @@ public class RocketMqTriggerProperty {
         private String topic = "";
 
         /**
-         * tags
-         * 例如：tag1,tag2,tag3
+         * partition
          */
-        private String tags = "*";
+        private String partition = "*";
 
         /**
          * 最大消费者数
@@ -71,20 +70,6 @@ public class RocketMqTriggerProperty {
          */
         private Integer consumeLimingRetryDelayTimeBaseSeconds = 5;
 
-        /**
-         * 获取消费者tag子表达式
-         *
-         * @return 订阅者表达式
-         */
-        public String getConsumerTagSubExpression() {
-            if (StringUtils.isBlank(tags) || CommonConstants.ALL_EXPRESSION.equals(tags)) {
-                return CommonConstants.ALL_EXPRESSION;
-            }
-            return Stream.of(tags.trim().split(CommonConstants.COMMA))
-                .map(String::trim)
-                .collect(Collectors.joining(CommonConstants.ROCKETMQ_SUB_EXPRESSION_SPLITTER));
-        }
-
         public String getConsumerGroup() {
             return consumerGroup;
         }
@@ -101,12 +86,12 @@ public class RocketMqTriggerProperty {
             this.topic = topic;
         }
 
-        public String getTags() {
-            return tags;
+        public String getPartition() {
+            return partition;
         }
 
-        public void setTags(String tags) {
-            this.tags = tags;
+        public void setPartition(String partition) {
+            this.partition = partition;
         }
 
         public Integer getConsumerMaxThread() {

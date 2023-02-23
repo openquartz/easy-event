@@ -1,7 +1,6 @@
 package org.svnee.easyevent.transfer.api.route;
 
 import org.svnee.easyevent.common.model.Pair;
-import org.svnee.easyevent.transfer.api.constant.TransferConstants;
 
 /**
  * 默认事件路由策略
@@ -21,6 +20,6 @@ public class DefaultEventRouteStrategy implements EventRouteStrategy {
 
     @Override
     public Pair<String, String> route(Object event) {
-        return Pair.of(defaultRouteTopic, TransferConstants.DEFAULT_TAG);
+        return Pair.of(defaultRouteTopic, null);
     }
 }

@@ -13,7 +13,7 @@ public interface EventRouteStrategy {
      * 事件路由topic
      *
      * @param event event
-     * @return 路由topic
+     * @return 路由topic。key: topic,value: 和具体实现相关
      */
     Pair<String, String> route(Object event);
 

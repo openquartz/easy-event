@@ -28,9 +28,8 @@ import org.svnee.easyevent.transfer.api.limiting.EventTransferTriggerLimitingCon
 import org.svnee.easyevent.transfer.api.limiting.LimitingBlockedException;
 import org.svnee.easyevent.transfer.api.message.EventMessage;
 import org.svnee.easyevent.transfer.rocket.property.RocketMqCommonProperty;
-import org.svnee.easyevent.transfer.rocket.property.RocketMqConsumerProperty;
 import org.svnee.easyevent.transfer.rocket.property.RocketMqTriggerProperty;
-
+import org.svnee.easyevent.transfer.rocket.property.RocketMqTriggerProperty.RocketMqConsumerProperty;
 
 /**
  * rocketMQ event-trigger

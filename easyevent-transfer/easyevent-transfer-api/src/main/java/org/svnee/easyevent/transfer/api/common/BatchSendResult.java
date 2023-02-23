@@ -1,4 +1,4 @@
-package org.svnee.easyevent.transfer.rocket.common;
+package org.svnee.easyevent.transfer.api.common;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +40,10 @@ public class BatchSendResult {
 
     public void addCompletedIndex(Integer completedEventIndex) {
         sendCompletedIndexList.add(completedEventIndex);
+    }
+
+    public void addFailedIndex(Integer failedEventIndex) {
+        sendCompletedIndexList.add(failedEventIndex);
     }
 
     public List<Integer> getSendCompletedIndexList() {

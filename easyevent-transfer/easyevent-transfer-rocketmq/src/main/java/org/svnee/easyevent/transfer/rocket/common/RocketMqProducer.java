@@ -20,6 +20,9 @@ import org.svnee.easyevent.common.utils.ExceptionUtils;
 import org.svnee.easyevent.common.utils.JSONUtil;
 import org.svnee.easyevent.common.utils.StringUtils;
 import org.svnee.easyevent.storage.identify.EventId;
+import org.svnee.easyevent.transfer.api.adapter.TransferProducer;
+import org.svnee.easyevent.transfer.api.common.BatchSendResult;
+import org.svnee.easyevent.transfer.api.constant.TransferConstants;
 import org.svnee.easyevent.transfer.api.exception.TransferErrorCode;
 import org.svnee.easyevent.transfer.api.message.EventMessage;
 import org.svnee.easyevent.transfer.api.message.EventMessageBuilder;
@@ -32,7 +35,7 @@ import org.svnee.easyevent.transfer.rocket.property.RocketMqCommonProperty;
  * @author svnee
  **/
 @Slf4j
-public class RocketMqProducer implements LifecycleBean {
+public class RocketMqProducer implements TransferProducer, LifecycleBean {
 
     private final MQProducer producer;
     private final Serializer serializer;
@@ -64,6 +67,7 @@ public class RocketMqProducer implements LifecycleBean {
         producer.shutdown();
     }
 
+    @Override
     public <T> void sendMessage(T event, EventId eventId) {
 
         EventMessage eventMessage = EventMessageBuilder.builder()
@@ -75,7 +79,7 @@ public class RocketMqProducer implements LifecycleBean {
 
         Message message = new Message();
         message.setBody(JSONUtil.toJsonAsBytes(eventMessage));
-        message.setTags(routeTopic.getRight());
+        message.setTags(Objects.nonNull(routeTopic.getRight()) ? routeTopic.getRight() : TransferConstants.DEFAULT_TAG);
         message.setTopic(routeTopic.getLeft());
         message.setKeys(String.valueOf(eventId.getId()));
         SendResult result = null;
@@ -102,6 +106,7 @@ public class RocketMqProducer implements LifecycleBean {
         }
     }
 
+    @Override
     public <T> BatchSendResult sendMessageList(List<T> eventList, List<EventId> eventIdList) {
         if (CollectionUtils.isEmpty(eventList)) {
             return new BatchSendResult();
@@ -129,7 +134,9 @@ public class RocketMqProducer implements LifecycleBean {
                     Message message = new Message();
                     message.setBody(JSONUtil.toJsonAsBytes(eventMessage));
                     message.setTopic(routeInfo2Event.getKey().getKey());
-                    message.setTags(routeInfo2Event.getKey().getValue());
+                    message.setTags(
+                        Objects.nonNull(routeInfo2Event.getKey().getValue()) ? routeInfo2Event.getKey().getValue()
+                            : TransferConstants.DEFAULT_TAG);
                     message.setKeys(String.valueOf(eventIdList.get(e.getKey())));
                     return message;
                 }).collect(Collectors.toList());
