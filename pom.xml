@@ -132,6 +132,12 @@
 
       <dependency>
         <groupId>org.svnee</groupId>
+        <artifactId>easyevent-transfer-kafka</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.svnee</groupId>
         <artifactId>easyevent-storage-api</artifactId>
         <version>${revision}</version>
       </dependency>

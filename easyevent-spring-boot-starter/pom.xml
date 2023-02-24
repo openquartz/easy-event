@@ -62,6 +62,11 @@
             <artifactId>easyevent-transfer-disruptor</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.svnee</groupId>
+            <artifactId>easyevent-transfer-kafka</artifactId>
+            <optional>true</optional>
+        </dependency>
 
     </dependencies>
 
