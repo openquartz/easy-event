@@ -10,7 +10,7 @@ import org.svnee.easyevent.storage.api.EventStorageService;
 import org.svnee.easyevent.transfer.api.adapter.AbstractSenderAdapter;
 import org.svnee.easyevent.transfer.api.adapter.TransferProducer;
 import org.svnee.easyevent.transfer.api.limiting.EventTransferSenderLimitingControl;
-import org.svnee.easyevent.transfer.kafka.common.KafkaProducer;
+import org.svnee.easyevent.transfer.kafka.common.KafkaTransferProducer;
 
 /**
  * Kafka Sender
@@ -20,25 +20,25 @@ import org.svnee.easyevent.transfer.kafka.common.KafkaProducer;
 @Slf4j
 public class KafkaEventSender extends AbstractSenderAdapter {
 
-    private final KafkaProducer kafkaProducer;
+    private final KafkaTransferProducer kafkaTransferProducer;
     private final EventStorageService eventStorageService;
     private final ExecutorService asyncSendExecutor;
     private final TransactionSupport transactionSupport;
     private final EventTransferSenderLimitingControl eventTransferSenderLimitingControl;
 
-    public KafkaEventSender(KafkaProducer kafkaProducer,
+    public KafkaEventSender(KafkaTransferProducer kafkaTransferProducer,
         EventStorageService eventStorageService,
         ExecutorService asyncSendExecutor,
         TransactionSupport transactionSupport,
         EventTransferSenderLimitingControl eventTransferSenderLimitingControl) {
 
-        checkNotNull(kafkaProducer);
+        checkNotNull(kafkaTransferProducer);
         checkNotNull(eventStorageService);
         checkNotNull(asyncSendExecutor);
         checkNotNull(transactionSupport);
         checkNotNull(eventTransferSenderLimitingControl);
 
-        this.kafkaProducer = kafkaProducer;
+        this.kafkaTransferProducer = kafkaTransferProducer;
         this.eventStorageService = eventStorageService;
         this.asyncSendExecutor = asyncSendExecutor;
         this.transactionSupport = transactionSupport;
@@ -47,17 +47,17 @@ public class KafkaEventSender extends AbstractSenderAdapter {
 
     @Override
     public void init() {
-        kafkaProducer.init();
+        kafkaTransferProducer.init();
     }
 
     @Override
     public void destroy() {
-        kafkaProducer.destroy();
+        kafkaTransferProducer.destroy();
     }
 
     @Override
     public TransferProducer getTransferProducer() {
-        return kafkaProducer;
+        return kafkaTransferProducer;
     }
 
     @Override

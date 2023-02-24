@@ -1,11 +1,7 @@
 package org.svnee.easyevent.transfer.kafka.common;
 
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.Data;
-import org.svnee.easyevent.common.constant.CommonConstants;
-import org.svnee.easyevent.common.utils.StringUtils;
 
 /**
  * kafka Trigger 配置
@@ -31,6 +27,11 @@ public class KafkaTriggerProperty {
         private String consumerGroup;
 
         /**
+         * clientId
+         */
+        private String clientId;
+
+        /**
          * topic
          */
         private String topic = "";
@@ -41,19 +42,9 @@ public class KafkaTriggerProperty {
         private String partition = "*";
 
         /**
-         * 最大消费者数
+         * 并发数
          */
-        private Integer consumerMaxThread = 3;
-
-        /**
-         * 最小消费者数
-         */
-        private Integer consumerMinThread = 1;
-
-        /**
-         * 最大消费并发最大span
-         */
-        private Integer consumeConcurrentlyMaxSpan = 10;
+        private Integer currency = 4;
 
         /**
          * 消费消息最大重试次数
@@ -64,11 +55,6 @@ public class KafkaTriggerProperty {
          * 消费重试最大时间间隔 单位：秒
          */
         private Integer consumeRetryDelayTimeIntervalSeconds = 5;
-
-        /**
-         * 消费重试限流时间，单位：s
-         */
-        private Integer consumeLimingRetryDelayTimeBaseSeconds = 5;
 
         public String getConsumerGroup() {
             return consumerGroup;
@@ -94,28 +80,12 @@ public class KafkaTriggerProperty {
             this.partition = partition;
         }
 
-        public Integer getConsumerMaxThread() {
-            return consumerMaxThread;
+        public Integer getCurrency() {
+            return currency;
         }
 
-        public void setConsumerMaxThread(Integer consumerMaxThread) {
-            this.consumerMaxThread = consumerMaxThread;
-        }
-
-        public Integer getConsumerMinThread() {
-            return consumerMinThread;
-        }
-
-        public void setConsumerMinThread(Integer consumerMinThread) {
-            this.consumerMinThread = consumerMinThread;
-        }
-
-        public Integer getConsumeConcurrentlyMaxSpan() {
-            return consumeConcurrentlyMaxSpan;
-        }
-
-        public void setConsumeConcurrentlyMaxSpan(Integer consumeConcurrentlyMaxSpan) {
-            this.consumeConcurrentlyMaxSpan = consumeConcurrentlyMaxSpan;
+        public void setCurrency(Integer currency) {
+            this.currency = currency;
         }
 
         public Integer getConsumeMaxRetry() {
@@ -134,12 +104,12 @@ public class KafkaTriggerProperty {
             this.consumeRetryDelayTimeIntervalSeconds = consumeRetryDelayTimeIntervalSeconds;
         }
 
-        public Integer getConsumeLimingRetryDelayTimeBaseSeconds() {
-            return consumeLimingRetryDelayTimeBaseSeconds;
+        public String getClientId() {
+            return clientId;
         }
 
-        public void setConsumeLimingRetryDelayTimeBaseSeconds(Integer consumeLimingRetryDelayTimeBaseSeconds) {
-            this.consumeLimingRetryDelayTimeBaseSeconds = consumeLimingRetryDelayTimeBaseSeconds;
+        public void setClientId(String clientId) {
+            this.clientId = clientId;
         }
     }
 

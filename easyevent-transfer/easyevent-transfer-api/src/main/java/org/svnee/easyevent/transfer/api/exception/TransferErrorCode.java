@@ -12,6 +12,7 @@ import org.svnee.easyevent.common.exception.EasyEventErrorCode;
 public enum TransferErrorCode implements EasyEventErrorCode {
 
     SENDER_FAILED("01", "消息发送失败!msgId:{0},topic:{1},tag:{2}", true),
+    CONSUMER_PARTITION_CONFIG_ILLEGAL("02", "消费者Partition配置不符合规则"),
 
     ;
 

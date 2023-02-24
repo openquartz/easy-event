@@ -130,7 +130,7 @@ public abstract class AbstractSenderAdapter implements EventSender {
 
         if (getEventStorageService().isMoreThanMustTrigger(eventEntity) || eventEntity.isProcessComplete()) {
             log.warn("[RocketMqEventSender#retrySend] event-retry more than max-trigger!eventId:{}", eventId);
-            return false;
+            return true;
         }
 
         getAsyncSendExecutor()
@@ -148,7 +148,7 @@ public abstract class AbstractSenderAdapter implements EventSender {
                     return true;
                 });
             }));
-        return false;
+        return true;
     }
 
 }

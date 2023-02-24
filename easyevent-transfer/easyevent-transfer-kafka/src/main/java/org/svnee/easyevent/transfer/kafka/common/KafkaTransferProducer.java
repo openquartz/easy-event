@@ -32,17 +32,19 @@ import org.svnee.easyevent.transfer.kafka.exception.KafkaTransferErrorCode;
 import org.svnee.easyevent.transfer.kafka.property.KafkaCommonProperty;
 
 /**
+ * Kafka Transfer Producer
+ *
  * @author svnee
  **/
 @Slf4j
-public class KafkaProducer implements TransferProducer, LifecycleBean {
+public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
 
     private final org.apache.kafka.clients.producer.KafkaProducer<String, String> producer;
     private final Serializer serializer;
     private final EventRouteStrategy eventRouteStrategy;
     private final KafkaCommonProperty kafkaCommonProperty;
 
-    public KafkaProducer(Serializer serializer,
+    public KafkaTransferProducer(Serializer serializer,
         EventRouteStrategy eventRouteStrategy,
         KafkaCommonProperty kafkaCommonProperty) {
 

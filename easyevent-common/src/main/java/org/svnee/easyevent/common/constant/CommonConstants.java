@@ -12,7 +12,7 @@ public final class CommonConstants {
 
     public static final String BASE_PACKAGE_PATH = "org.svnee.easyevent";
 
-    public static final String ALL_EXPRESSION = "*";
+    public static final String ALL_MATCH_EXPRESSION = "*";
 
     public static final String EMPTY_STRING = "";
 

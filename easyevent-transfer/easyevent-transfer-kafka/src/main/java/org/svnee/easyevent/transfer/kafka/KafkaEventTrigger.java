@@ -2,8 +2,15 @@ package org.svnee.easyevent.transfer.kafka;
 
 import static org.svnee.easyevent.common.utils.ParamUtils.checkNotNull;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -15,12 +22,17 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.svnee.easyevent.common.concurrent.lock.LockBizType;
 import org.svnee.easyevent.common.concurrent.lock.LockSupport;
+import org.svnee.easyevent.common.constant.CommonConstants;
 import org.svnee.easyevent.common.model.Pair;
 import org.svnee.easyevent.common.property.EasyEventProperties;
+import org.svnee.easyevent.common.utils.Asserts;
+import org.svnee.easyevent.common.utils.CollectionUtils;
 import org.svnee.easyevent.common.utils.JSONUtil;
 import org.svnee.easyevent.transfer.api.EventTrigger;
+import org.svnee.easyevent.transfer.api.exception.TransferErrorCode;
 import org.svnee.easyevent.transfer.api.limiting.EventTransferTriggerLimitingControl;
 import org.svnee.easyevent.transfer.api.message.EventMessage;
+import org.svnee.easyevent.transfer.kafka.common.KafkaTransferConsumer;
 import org.svnee.easyevent.transfer.kafka.common.KafkaTriggerProperty;
 import org.svnee.easyevent.transfer.kafka.common.KafkaTriggerProperty.KafkaConsumerProperty;
 import org.svnee.easyevent.transfer.kafka.property.KafkaCommonProperty;
@@ -36,22 +48,23 @@ public class KafkaEventTrigger implements EventTrigger {
     private final KafkaTriggerProperty kafkaTriggerProperty;
     private final KafkaCommonProperty kafkaCommonProperty;
     private final Consumer<EventMessage> eventHandler;
-    private final EasyEventProperties easyEventProperties;
     private final LockSupport lockSupport;
     private final EventTransferTriggerLimitingControl eventTransferTriggerLimitingControl;
+
+    private final List<KafkaTransferConsumer> kafkaConsumerList = new ArrayList<>();
+    private final CountDownLatch countDownLatch;
 
     public KafkaEventTrigger(
         KafkaTriggerProperty kafkaTriggerProperty,
         KafkaCommonProperty kafkaCommonProperty,
         Consumer<EventMessage> eventHandler,
-        EasyEventProperties easyEventProperties,
         LockSupport lockSupport,
         EventTransferTriggerLimitingControl eventTransferTriggerLimitingControl) {
 
         this.kafkaTriggerProperty = kafkaTriggerProperty;
+        this.countDownLatch = new CountDownLatch(kafkaTriggerProperty.getConsumerPropertyMap().size());
         this.kafkaCommonProperty = kafkaCommonProperty;
         this.eventHandler = eventHandler;
-        this.easyEventProperties = easyEventProperties;
         this.lockSupport = lockSupport;
         this.eventTransferTriggerLimitingControl = eventTransferTriggerLimitingControl;
     }
@@ -59,47 +72,106 @@ public class KafkaEventTrigger implements EventTrigger {
     @Override
     public void init() {
         synchronized (this) {
-            kafkaTriggerProperty.getConsumerPropertyMap().forEach((k, v) -> {
-                // TODO: 2023/2/24 to create consumer
-            });
+            Map<String, List<KafkaConsumerProperty>> consumerGroup2KafkaConsumerMap = kafkaTriggerProperty
+                .getConsumerPropertyMap()
+                .values()
+                .stream()
+                .collect(Collectors.groupingBy(KafkaConsumerProperty::getConsumerGroup, Collectors.toList()));
+            consumerGroup2KafkaConsumerMap.values().forEach(k -> create(kafkaCommonProperty, k, countDownLatch));
         }
     }
 
     @Override
     public void destroy() {
+        synchronized (this) {
+            for (KafkaTransferConsumer consumer : kafkaConsumerList) {
+                consumer.shutdown();
+            }
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException exception) {
+                log.error("[KafkaEventTrigger#destroy] interrupted!", exception);
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     public void create(KafkaCommonProperty commonProperty,
-        String identifyConsumer,
-        List<KafkaConsumerProperty> consumerPropertyList) {
-        KafkaConsumer<String, String> consumer;
-        log.info("[RocketMqEventTrigger#create],properties:{},consumer-property:{}", commonProperty,
-            consumerPropertyList);
+        List<KafkaConsumerProperty> consumerPropertyList,
+        CountDownLatch latch) {
 
-        Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaCommonProperty.getHost());
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerPropertyList.get(0).getConsumerGroup());
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-            "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-            "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
-        consumer = new KafkaConsumer<>(props);
-        List<TopicPartition> partitionList = consumerPropertyList.stream()
-            .map(e -> new TopicPartition(e.getTopic(), Integer.parseInt(e.getPartition())))
-            .collect(Collectors.toList());
-        try {
-            consumer.assign(partitionList);
+        // topic 2 partition
+        Map<String, List<KafkaConsumerProperty>> map = consumerPropertyList
+            .stream()
+            .collect(Collectors.groupingBy(KafkaConsumerProperty::getTopic, Collectors.toList()));
+        // topic
+        for (Entry<String, List<KafkaConsumerProperty>> entry : map.entrySet()) {
 
-            while (!Thread.currentThread().isInterrupted()) {
-                ConsumerRecords<String, String> records = consumer.poll(Long.MAX_VALUE);
-                for (ConsumerRecord<String, String> consumerRecord : records) {
+            Map<String, List<KafkaConsumerProperty>> partition2KafkaConsumerPropertyMap = entry.getValue().stream()
+                .collect(Collectors.groupingBy(e -> e.getPartition().trim(), Collectors.toList()));
+            if (partition2KafkaConsumerPropertyMap.containsKey(CommonConstants.ALL_MATCH_EXPRESSION)) {
+                Asserts.isTrueIfLog(partition2KafkaConsumerPropertyMap.keySet().size() == 1,
+                    () -> log.error(
+                        "[KafkaEventTrigger#create] same topic has all match expression,meantime has spec partition expression! partition:{}",
+                        partition2KafkaConsumerPropertyMap.keySet()),
+                    TransferErrorCode.CONSUMER_PARTITION_CONFIG_ILLEGAL);
+            } else {
+                partition2KafkaConsumerPropertyMap.values().forEach(k -> Asserts.isTrueIfLog(k.size() == 1,
+                    () -> log.error(
+                        "[KafkaEventTrigger#create] same topic has all match expression,meantime has spec partition expression! partition:{}",
+                        k),
+                    TransferErrorCode.CONSUMER_PARTITION_CONFIG_ILLEGAL));
+            }
+            // create consumer
+            for (KafkaConsumerProperty property : entry.getValue()) {
+                kafkaConsumerList.addAll(createConsumer(commonProperty.getHost(), property, latch));
+            }
+        }
+    }
+
+    private List<KafkaTransferConsumer> createConsumer(final String host,
+        KafkaConsumerProperty kafkaConsumerProperty,
+        CountDownLatch latch) {
+
+        List<KafkaTransferConsumer> consumerList = new ArrayList<>();
+        for (int i = 0; i < kafkaConsumerProperty.getCurrency(); i++) {
+            Properties props = new Properties();
+            props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, host);
+            props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConsumerProperty.getConsumerGroup());
+            props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                "org.apache.kafka.common.serialization.StringDeserializer");
+            props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                "org.apache.kafka.common.serialization.StringDeserializer");
+            props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+            props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+            props.put(ConsumerConfig.RETRY_BACKOFF_MS_CONFIG,
+                kafkaConsumerProperty.getConsumeRetryDelayTimeIntervalSeconds() * 1000);
+
+            if (kafkaConsumerProperty.getCurrency() == 1) {
+                props.put(ConsumerConfig.CLIENT_ID_CONFIG, kafkaConsumerProperty.getClientId());
+            } else {
+                props.put(ConsumerConfig.CLIENT_ID_CONFIG, kafkaConsumerProperty.getClientId() + "-" + i);
+            }
+            KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+
+            // 通配
+            if (Objects.equals(CommonConstants.ALL_MATCH_EXPRESSION, kafkaConsumerProperty.getPartition())) {
+                consumer.subscribe(CollectionUtils.newArrayList(kafkaConsumerProperty.getTopic()));
+            } else {
+                consumer.assign(CollectionUtils.newArrayList(new TopicPartition(kafkaConsumerProperty.getTopic(),
+                    Integer.parseInt(kafkaConsumerProperty.getPartition()))));
+            }
+
+            KafkaTransferConsumer transferConsumer = new KafkaTransferConsumer(kafkaConsumerProperty.getTopic(),
+                kafkaConsumerProperty.getConsumerGroup(),
+                consumer,
+                latch,
+                consumerRecord -> {
                     EventMessage eventMessage = null;
                     try {
                         eventMessage = JSONUtil.parseObject(consumerRecord.value(), EventMessage.class);
                     } catch (Exception e) {
-                        log.error(e.getMessage(), e);
+                        log.error("[KafkaEventTrigger#consume] parse data error!data:{}", consumerRecord.value(), e);
                     }
                     checkNotNull(eventMessage);
                     // consume if lock
@@ -107,13 +179,9 @@ public class KafkaEventTrigger implements EventTrigger {
                         msg -> lockSupport.consumeIfLock(
                             Pair.of(String.valueOf(msg.getEventId().getId()), LockBizType.EVENT_HANDLE),
                             () -> eventHandler.accept(msg)));
-                }
-                consumer.commitSync();
-            }
-        } catch (WakeupException e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            consumer.close();
+                });
+            consumerList.add(transferConsumer);
         }
+        return consumerList;
     }
 }

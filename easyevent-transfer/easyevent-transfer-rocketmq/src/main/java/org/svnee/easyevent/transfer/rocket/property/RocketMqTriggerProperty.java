@@ -77,8 +77,8 @@ public class RocketMqTriggerProperty {
          * @return 订阅者表达式
          */
         public String getConsumerTagSubExpression() {
-            if (StringUtils.isBlank(tags) || CommonConstants.ALL_EXPRESSION.equals(tags)) {
-                return CommonConstants.ALL_EXPRESSION;
+            if (StringUtils.isBlank(tags) || CommonConstants.ALL_MATCH_EXPRESSION.equals(tags)) {
+                return CommonConstants.ALL_MATCH_EXPRESSION;
             }
             return Stream.of(tags.trim().split(CommonConstants.COMMA))
                 .map(String::trim)
