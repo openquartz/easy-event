@@ -216,7 +216,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         checkNotNull(transferFailed);
 
         String sql = MessageFormat
-            .format(REFRESH_PROCESS_STATE_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
+            .format(REFRESH_SEND_FAILED_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
 
         String processFailedReason = Objects.nonNull(ex) ? ex.getMessage() : StringUtils.EMPTY;
         int actual = jdbcTemplate.update(sql, transferFailed.getCode(), processFailedReason, eventId.getId());
