@@ -10,7 +10,7 @@
     <version>${revision}</version>
   </parent>
 
-  <artifactId>easyevent-example-rocketmq</artifactId>
+  <artifactId>easyevent-example-kafka</artifactId>
   <packaging>jar</packaging>
 
   <name>${project.artifactId}</name>
@@ -49,7 +49,7 @@
 
     <dependency>
       <groupId>org.svnee</groupId>
-      <artifactId>easyevent-transfer-rocketmq</artifactId>
+      <artifactId>easyevent-transfer-kafka</artifactId>
     </dependency>
 
     <dependency>

@@ -17,6 +17,7 @@
   <modules>
     <module>easyevent-example-disruptor</module>
     <module>easyevent-example-rocketmq</module>
+    <module>easyevent-example-kafka</module>
   </modules>
 
   <dependencies>
