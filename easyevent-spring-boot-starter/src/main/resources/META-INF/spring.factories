@@ -6,4 +6,5 @@ org.svnee.easyevent.starter.spring.boot.autoconfig.EasyEventCreatorAutoConfigura
 org.svnee.easyevent.starter.spring.boot.autoconfig.EasyEventTransferAutoConfiguration,\
 org.svnee.easyevent.starter.spring.boot.autoconfig.DisruptorTransferAutoConfiguration,\
 org.svnee.easyevent.starter.spring.boot.autoconfig.RocketMqTransferAutoConfiguration,\
+org.svnee.easyevent.starter.spring.boot.autoconfig.KafkaTransferAutoConfiguration,\
 org.svnee.easyevent.starter.spring.boot.autoconfig.EasyEventAfterAutoConfiguration
