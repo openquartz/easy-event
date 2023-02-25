@@ -68,7 +68,6 @@ public class KafkaTransferAutoConfiguration {
         kafkaCommonProperty.setHost(kafkaTransferProperties.getHost());
         kafkaCommonProperty.setProduceTimeout(kafkaTransferProperties.getProduceTimeout());
         kafkaCommonProperty.setProduceTryTimes(kafkaTransferProperties.getProduceTryTimes());
-        kafkaCommonProperty.setProduceMessageSize(kafkaTransferProperties.getProduceMessageSize());
         kafkaCommonProperty.setProduceTopicPartitions(kafkaTransferProperties.getProduceTopicPartitions());
         return kafkaCommonProperty;
     }

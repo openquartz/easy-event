@@ -21,7 +21,7 @@ public class DefaultTransferProperties {
     /**
      * 默认路由-topic
      */
-    private String defaultTopic = "default";
+    private String defaultTopic = "easyevent";
 
 
 }

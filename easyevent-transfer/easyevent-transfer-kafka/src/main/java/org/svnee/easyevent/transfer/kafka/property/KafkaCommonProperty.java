@@ -29,9 +29,4 @@ public class KafkaCommonProperty {
      * 重试次数
      */
     private int produceTryTimes = 5;
-
-    /**
-     * 发送消息大小限制 单位：byte
-     */
-    private int produceMessageSize = 1000 * 1000;
 }

@@ -43,11 +43,6 @@ public class KafkaTransferProperties {
     private int produceTopicPartitions = 4;
 
     /**
-     * produce message size
-     */
-    private int produceMessageSize = 1000 * 1000;
-
-    /**
      * consumers
      */
     private final Map<String, KafkaTransferConsumerProperties> consumers = new TreeMap<>(
@@ -91,14 +86,6 @@ public class KafkaTransferProperties {
 
     public void setProduceTopicPartitions(int produceTopicPartitions) {
         this.produceTopicPartitions = produceTopicPartitions;
-    }
-
-    public int getProduceMessageSize() {
-        return produceMessageSize;
-    }
-
-    public void setProduceMessageSize(int produceMessageSize) {
-        this.produceMessageSize = produceMessageSize;
     }
 
     public Map<String, KafkaTransferConsumerProperties> getConsumers() {

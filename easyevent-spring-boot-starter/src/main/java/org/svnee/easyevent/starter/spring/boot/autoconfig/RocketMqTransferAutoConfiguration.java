@@ -113,6 +113,11 @@ public class RocketMqTransferAutoConfiguration {
                 rocketMqConsumerProperty.setConsumerMinThread(e.getValue().getConsumerMinThread());
                 rocketMqConsumerProperty.setTags(e.getValue().getTags());
                 rocketMqConsumerProperty.setTopic(e.getValue().getTopic());
+                rocketMqConsumerProperty.setConsumeMaxRetry(e.getValue().getConsumeMaxRetry());
+                rocketMqConsumerProperty.setConsumeLimingRetryDelayTimeBaseSeconds(e.getValue()
+                    .getConsumeLimingRetryDelayTimeBaseSeconds());
+                rocketMqConsumerProperty
+                    .setConsumeRetryDelayTimeIntervalSeconds(e.getValue().getConsumeRetryDelayTimeIntervalSeconds());
                 return rocketMqConsumerProperty;
             }));
         RocketMqTriggerProperty rocketMqTriggerProperty = new RocketMqTriggerProperty();

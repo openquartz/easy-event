@@ -198,7 +198,52 @@ public class EasyEventKafkaExampleStarter {
 
 ##### rocketmq 配置
 
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.transfer.trigger.rocketmq.host  | rocketmq连接地址 | 127.0.0.1:9876 |多个时使用 逗号分隔 |
+| easyevent.transfer.trigger.rocketmq.produce-group | 生产者组 | EasyEvent | |
+| easyevent.transfer.trigger.rocketmq.produce-latency-fault-enable | 是否开启故障转移 | true | |
+| easyevent.transfer.trigger.rocketmq.produce-message-size | 发送消息大小 | 1000000 | 单位：byte |
+| easyevent.transfer.trigger.rocketmq.produce-timeout  |  发送超时时间 | 1000 | 单位：s |
+| easyevent.transfer.trigger.rocketmq.produce-try-times | 发送尝试最大次数 | 5 | |
+
+**消费者配置**\
+格式：`easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.x`
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consumer-group  | 消费者组 |  | |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.topic | 消费topic | EasyEvent | |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.tags | 消费tag | * | 多个tag以逗号分隔 |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consumer-min-thread |  消费者最小线程数 | 1 | |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consumer-max-thread | 消费者最大线程数 | 3 | |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-concurrently-max-span | 消费者最大并发span | 10 | |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-max-retry | 消费最大重试次数 | 5 | |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-retry-delay-time-interval-seconds | 消费重试间隔 | 5 | 单位：秒 |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-liming-retry-delay-time-base-seconds | 消费限流基础重试间隔 | 5 | 单位：秒 |
+
 ##### kafka 配置
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.transfer.trigger.kafka.host  | kafka集群地址 | 127.0.0.1:9876 | 多个地址以逗号分隔 |
+| easyevent.transfer.trigger.kafka.produce-group | 生产者组 | EasyEvent | |
+| easyevent.transfer.trigger.kafka.produce-topic-partitions | topic对应的分区数 | 4 | |
+| easyevent.transfer.trigger.kafka.produce-timeout  |  发送超时时间 | 1000 | 单位：s |
+| easyevent.transfer.trigger.kafka.produce-try-times | 发送尝试最大次数 | 5 | |
+
+**消费者配置**\
+格式：`easyevent.transfer.trigger.kafka.consumers.<consumer alias>.x`
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consumer-group  | 消费者组 |  | |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.topic | 消费topic | EasyEvent | |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.partition | 分区 | * |  |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.currency |  消费并发数 | 4 | |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.client-id | 消费者ClientId |  | |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-max-retry | 消费者最大重试次数 | 5 | |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-retry-delay-time-interval-seconds | 消费重试时间间隔 | 5 | 单位：s|
 
 ### 四、编写代码
 

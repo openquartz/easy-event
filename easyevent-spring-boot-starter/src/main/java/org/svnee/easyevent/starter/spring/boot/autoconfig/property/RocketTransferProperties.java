@@ -147,6 +147,21 @@ public class RocketTransferProperties {
          */
         private Integer consumeConcurrentlyMaxSpan = 10;
 
+        /**
+         * 消费消息最大重试次数
+         */
+        private Integer consumeMaxRetry = 5;
+
+        /**
+         * 消费重试最大时间间隔 单位：秒
+         */
+        private Integer consumeRetryDelayTimeIntervalSeconds = 5;
+
+        /**
+         * 消费重试限流时间，单位：s
+         */
+        private Integer consumeLimingRetryDelayTimeBaseSeconds = 5;
+
         public String getConsumerGroup() {
             return consumerGroup;
         }
@@ -193,6 +208,30 @@ public class RocketTransferProperties {
 
         public void setConsumeConcurrentlyMaxSpan(Integer consumeConcurrentlyMaxSpan) {
             this.consumeConcurrentlyMaxSpan = consumeConcurrentlyMaxSpan;
+        }
+
+        public Integer getConsumeMaxRetry() {
+            return consumeMaxRetry;
+        }
+
+        public void setConsumeMaxRetry(Integer consumeMaxRetry) {
+            this.consumeMaxRetry = consumeMaxRetry;
+        }
+
+        public Integer getConsumeRetryDelayTimeIntervalSeconds() {
+            return consumeRetryDelayTimeIntervalSeconds;
+        }
+
+        public void setConsumeRetryDelayTimeIntervalSeconds(Integer consumeRetryDelayTimeIntervalSeconds) {
+            this.consumeRetryDelayTimeIntervalSeconds = consumeRetryDelayTimeIntervalSeconds;
+        }
+
+        public Integer getConsumeLimingRetryDelayTimeBaseSeconds() {
+            return consumeLimingRetryDelayTimeBaseSeconds;
+        }
+
+        public void setConsumeLimingRetryDelayTimeBaseSeconds(Integer consumeLimingRetryDelayTimeBaseSeconds) {
+            this.consumeLimingRetryDelayTimeBaseSeconds = consumeLimingRetryDelayTimeBaseSeconds;
         }
     }
 
