@@ -1,0 +1,201 @@
+## 使用教程
+
+### 一、引入依赖
+
+#### 1、引入starter依赖
+
+```xml
+
+<dependency>
+    <groupId>org.svnee</groupId>
+    <artifactId>easyevent-spring-boot-starter</artifactId>
+    <version>${lastVersion}</version>
+</dependency>
+```
+
+#### 2、引入EventStorage依赖
+
+需要引入EventStorage的实现.目前只支持jdbc实现的各种数据库。推荐使用mysql。
+
+```xml
+
+<dependency>
+    <groupId>org.svnee</groupId>
+    <artifactId>easyevent-storage</artifactId>
+    <version>${lastVersion}</version>
+</dependency>
+```
+
+##### 执行SQL
+
+```sql
+CREATE TABLE bus_event_entity
+(
+    entity_id                 BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'eventId',
+    app_id                    VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'appId',
+    source_id                 BIGINT (20) NOT NULL DEFAULT 0 COMMENT 'sourceId',
+    class_name                VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'Event-Class',
+    error_count               TINYINT (3) NOT NULL DEFAULT 0 COMMENT '执行错误次数',
+    processing_state          VARCHAR(50)  NOT NULL DEFAULT '' COMMENT '执行状态',
+    successful_subscriber     VARCHAR(512) NOT NULL DEFAULT '' COMMENT '执行成功的订阅者',
+    trace_id                  VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'traceId',
+    event_data                TEXT         NOT NULL COMMENT 'EventData',
+    creating_owner            VARCHAR(50)  NOT NULL DEFAULT '' COMMENT '创建者机器',
+    processing_owner          VARCHAR(50)  NOT NULL DEFAULT '' COMMENT '生产者机器',
+    processing_available_date TIMESTAMP             DEFAULT NULL COMMENT '执行有效时间',
+    processing_failed_reason  VARCHAR(128) NOT NULL DEFAULT '' COMMENT '已经执行失败的原因',
+    created_time              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (entity_id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT 'ee_bus_event_entity';
+```
+
+#### 3、引入EventTransfer依赖
+
+需要引入`EventTransfer`的实现.目前支持`Disruptor`、`RocketMQ`、`Kafka`。
+> 推荐使用`RocketMQ`作为 `EventTransfer`的分布式调度。针对`RocketMQ` 的实现做了很多的优化。例如：批量消息发送,消息拆分,消费失败自定义重试,发送失败自定义重试次数等
+
+可以选择其中一个作为transfer实现。\
+使用`disruptor`实现
+
+```xml
+
+<dependency>
+    <groupId>org.svnee</groupId>
+    <artifactId>easyevent-transfer-disruptor</artifactId>
+    <version>${lastVersion}</version>
+</dependency>
+```
+
+使用`rocketmq`实现
+
+```xml
+
+<dependency>
+    <groupId>org.svnee</groupId>
+    <artifactId>easyevent-transfer-rocketmq</artifactId>
+    <version>${lastVersion}</version>
+</dependency>
+```
+
+使用`kafka` 实现
+
+```xml
+
+<dependency>
+    <groupId>org.svnee</groupId>
+    <artifactId>easyevent-transfer-kafka</artifactId>
+    <version>${lastVersion}</version>
+</dependency>
+```
+
+### 二、启动自动配置
+
+在启动类上加上注解`org.svnee.easyevent.starter.annotation.EnableEasyEventAutoConfiguration`
+例如：
+
+```java
+/**
+ * @author svnee
+ **/
+@SpringBootApplication
+@EnableEasyEventAutoConfiguration
+public class EasyEventKafkaExampleStarter {
+
+    public static void main(String[] args) {
+        SpringApplication.run(EasyEventKafkaExampleStarter.class);
+    }
+}
+```
+
+### 三、配置
+
+#### 1、common配置
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.common.app-id  | 应用ID | |可以与spring.application.name一致 |
+| easyevent.common.max-retry-count  | 最大重试次数 | 5 | |
+
+##### 补偿配置
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.common.compensate.thread-pool.thread-prefix  | 执行补偿线程池线程前缀 | EventCompensateThread | |
+| easyevent.common.compensate.thread-pool.core-pool-size | 执行补偿线程池核心线程数 | 10 | |
+| easyevent.common.compensate.thread-pool.maximum-pool-size  | 执行补偿线程池最大线程数 | 20 | |
+| easyevent.common.compensate.thread-pool.keep-alive-time  | 执行补偿线程池线程空闲时间 | 30 |单位：s |
+| easyevent.common.compensate.thread-pool.max-blocking-queue-size | 执行补偿线程池最大等待队列长度 | 2048 | |
+
+###### 补偿当前机器配置
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.common.compensate.self.enabled | 是否开启调度补偿 | true | |
+| easyevent.common.compensate.self.offset  | 每次调度重试条数 | 100 | |
+| easyevent.common.compensate.self.compensate-state|调度补偿的状态|AVAILABLE,TRANSFER_FAILED,PROCESS_FAILED||
+| easyevent.common.compensate.self.before-start-seconds|调度补偿的时间范围-开始时间|10||
+| easyevent.common.compensate.self.before-end-seconds |调度补偿的时间范围-结束时间|60||
+| easyevent.common.compensate.self.schedule-period |执行周期|10||
+| easyevent.common.compensate.self.thread-pool-core-size |执行调度线程数|1||
+| easyevent.common.compensate.self.thread-pool-thread-prefix|执行调度的线程名前缀|EventCompensate||
+
+###### 全局当前机器配置
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.common.compensate.global.enabled | 是否开启调度补偿 | true | |
+| easyevent.common.compensate.global.offset  | 每次调度重试条数 | 100 | |
+| easyevent.common.compensate.global.compensate-state|调度补偿的状态|AVAILABLE,TRANSFER_FAILED,PROCESS_FAILED||
+| easyevent.common.compensate.global.before-start-seconds|调度补偿的时间范围-开始时间|60||
+| easyevent.common.compensate.global.before-end-seconds |调度补偿的时间范围-结束时间|3600||
+| easyevent.common.compensate.global.schedule-period |执行周期|10||
+| easyevent.common.compensate.global.thread-pool-core-size |执行调度线程数|1||
+| easyevent.common.compensate.global.thread-pool-thread-prefix|执行调度的线程名前缀|EventCompensate||
+
+#### 2、bus配置
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.bus.thread-pool.thread-prefix | eventbus处理线程池线程前缀 | DefaultEventBusThreadPool | |
+| easyevent.bus.thread-pool.core-pool-size  | eventbus处理核心线程池 | 10 | |
+| easyevent.bus.thread-pool.maximum-pool-size  |  eventbus处理核心线程池最大线程数 | 20 | |
+| easyevent.bus.thread-pool.keep-alive-time | eventbus处理线程池最大空闲时间 | 30 | |
+| easyevent.bus.thread-pool.max-blocking-queue-size | eventbus处理线程池最大队列长度 | 2048 | |
+
+#### 3、storage配置
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.storage.jdbc.datasource.type  |  存储jdbc连接池数据源类型|  | |
+| easyevent.storage.jdbc.datasource.driver-class-name | 存储jdbc连接池驱动类 | | |
+| easyevent.storage.jdbc.datasource.url | 存储jdbc连接池url | | |
+| easyevent.storage.jdbc.datasource.username  | 存储jdbc连接用户名 |  | |
+| easyevent.storage.jdbc.datasource.password  | 存储jdbc连接密码 | | |
+| easyevent.storage.jdbc.table.prefix | 存储jdbc表前缀 | ee | |
+
+#### 4、transfer配置
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.transfer.common.default-topic  | 默认topic | default | |
+| easyevent.transfer.sender.thread-pool.thread-prefix | Transfer处理线程池线程前缀 | DefaultTransferThreadPool | |
+| easyevent.transfer.sender.thread-pool.core-pool-size  | Transfer处理核心线程池 | 10 | |
+| easyevent.transfer.sender.thread-pool.maximum-pool-size  | Transfer处理核心线程池最大线程数 | 20 | |
+| easyevent.transfer.sender.thread-pool.keep-alive-time | Transfer处理线程池最大空闲时间 | 30 | |
+| easyevent.transfer.sender.thread-pool.max-blocking-queue-size | Transfers处理线程池最大队列长度 | 2048 | |
+
+##### disruptor配置
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+| easyevent.transfer.trigger.disruptor.consumer.buffer-size  |  buffer size|  | |
+| easyevent.transfer.trigger.disruptor.consumer.maximum-pool-size |  | | |
+| easyevent.transfer.trigger.disruptor.consumer.core-pool-size |  | | |
+| easyevent.transfer.trigger.disruptor.consumer.thread-prefix |  | | |
+| easyevent.transfer.trigger.disruptor.sender.thread-group  |  发送线程池组 |  easyevent-disruptor| |
+| easyevent.transfer.trigger.disruptor.sender.thread-prefix| 发送线程前缀 | disruptor-thread- | |
+
+##### rocketmq 配置
+
+##### kafka 配置

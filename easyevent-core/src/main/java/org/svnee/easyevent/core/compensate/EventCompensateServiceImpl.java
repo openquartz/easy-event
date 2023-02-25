@@ -108,6 +108,8 @@ public class EventCompensateServiceImpl implements EventCompensateService {
                                 event = serializer
                                     .deserialize(Class.forName(entity.getClassName()), entity.getEventData());
                             } catch (Exception e) {
+                                log.error("[EventCompensateService#compensate]deserialize error!eventId:{}",
+                                    entity.getEventId(), e);
                                 ExceptionUtils.rethrow(e);
                             }
                             eventSender.retrySend(entity.getEventId(), event);
