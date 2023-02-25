@@ -80,7 +80,7 @@ public abstract class EventPublisherAdapter implements EventPublisher {
     }
 
     @Override
-    public boolean asyncPublishList(List<Object> eventList) {
+    public <T> boolean asyncPublishList(List<T> eventList) {
 
         PublisherInterceptorContext publishContext = new PublisherInterceptorContext();
 

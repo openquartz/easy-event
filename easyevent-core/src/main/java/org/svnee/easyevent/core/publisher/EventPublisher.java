@@ -31,6 +31,6 @@ public interface EventPublisher {
      * @param eventList 发布事件
      * @return 是否发布成功
      */
-    boolean asyncPublishList(List<Object> eventList);
+    <T> boolean asyncPublishList(List<T> eventList);
 
 }
