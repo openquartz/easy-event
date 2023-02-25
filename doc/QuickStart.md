@@ -129,9 +129,9 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.common.compensate.self.enabled | 是否开启调度补偿 | true | |
 | easyevent.common.compensate.self.offset  | 每次调度重试条数 | 100 | |
 | easyevent.common.compensate.self.compensate-state|调度补偿的状态|AVAILABLE,TRANSFER_FAILED,PROCESS_FAILED||
-| easyevent.common.compensate.self.before-start-seconds|调度补偿的时间范围-开始时间|10||
-| easyevent.common.compensate.self.before-end-seconds |调度补偿的时间范围-结束时间|60||
-| easyevent.common.compensate.self.schedule-period |执行周期|10||
+| easyevent.common.compensate.self.before-start-seconds|调度补偿的时间范围-开始时间|10| 单位:秒|
+| easyevent.common.compensate.self.before-end-seconds |调度补偿的时间范围-结束时间|60| 单位:秒 |
+| easyevent.common.compensate.self.schedule-period |执行周期|10| 单位:秒 |
 | easyevent.common.compensate.self.thread-pool-core-size |执行调度线程数|1||
 | easyevent.common.compensate.self.thread-pool-thread-prefix|执行调度的线程名前缀|EventCompensate||
 
@@ -144,7 +144,7 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.common.compensate.global.compensate-state|调度补偿的状态|AVAILABLE,TRANSFER_FAILED,PROCESS_FAILED||
 | easyevent.common.compensate.global.before-start-seconds|调度补偿的时间范围-开始时间|60| 单位 : 秒|
 | easyevent.common.compensate.global.before-end-seconds |调度补偿的时间范围-结束时间|3600| 单位 : 秒|
-| easyevent.common.compensate.global.schedule-period |执行周期|10||
+| easyevent.common.compensate.global.schedule-period |执行周期|10| 单位:秒 |
 | easyevent.common.compensate.global.thread-pool-core-size |执行调度线程数|1||
 | easyevent.common.compensate.global.thread-pool-thread-prefix|执行调度的线程名前缀|EventCompensate||
 
@@ -177,7 +177,7 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.transfer.sender.thread-pool.thread-prefix | Transfer处理线程池线程前缀 | DefaultTransferThreadPool | |
 | easyevent.transfer.sender.thread-pool.core-pool-size  | Transfer处理核心线程池 | 10 | |
 | easyevent.transfer.sender.thread-pool.maximum-pool-size  | Transfer处理核心线程池最大线程数 | 20 | |
-| easyevent.transfer.sender.thread-pool.keep-alive-time | Transfer处理线程池最大空闲时间 | 30 | |
+| easyevent.transfer.sender.thread-pool.keep-alive-time | Transfer处理线程池最大空闲时间 | 30 | 单位:秒 |
 | easyevent.transfer.sender.thread-pool.max-blocking-queue-size | Transfers处理线程池最大队列长度 | 2048 | |
 
 ##### disruptor配置
@@ -224,7 +224,7 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.transfer.trigger.kafka.host  | kafka集群地址 | 127.0.0.1:9876 | 多个地址以逗号分隔 |
 | easyevent.transfer.trigger.kafka.produce-group | 生产者组 | EasyEvent | |
 | easyevent.transfer.trigger.kafka.produce-topic-partitions | topic对应的分区数 | 4 | |
-| easyevent.transfer.trigger.kafka.produce-timeout  |  发送超时时间 | 1000 | 单位：s |
+| easyevent.transfer.trigger.kafka.produce-timeout  |  发送超时时间 | 1000 | 单位：秒 |
 | easyevent.transfer.trigger.kafka.produce-try-times | 发送尝试最大次数 | 5 | |
 
 **消费者配置**\
@@ -234,7 +234,7 @@ public class EasyEventKafkaExampleStarter {
 |  ----  | ----  | --- | --- |
 | easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consumer-group  | 消费者组 |  | |
 | easyevent.transfer.trigger.kafka.consumers.<consumer alias>.topic | 消费topic | EasyEvent | |
-| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.partition | 分区 | * |  |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.partition | 分区 | * | 默认是所有分区 |
 | easyevent.transfer.trigger.kafka.consumers.<consumer alias>.currency |  消费并发数 | 4 | |
 | easyevent.transfer.trigger.kafka.consumers.<consumer alias>.client-id | 消费者ClientId |  | |
 | easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-max-retry | 消费者最大重试次数 | 5 | |
