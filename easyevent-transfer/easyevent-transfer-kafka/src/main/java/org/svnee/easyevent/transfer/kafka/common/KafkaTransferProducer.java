@@ -27,7 +27,7 @@ import org.svnee.easyevent.transfer.api.adapter.TransferProducer;
 import org.svnee.easyevent.transfer.api.common.BatchSendResult;
 import org.svnee.easyevent.transfer.api.message.EventMessage;
 import org.svnee.easyevent.transfer.api.message.EventMessageBuilder;
-import org.svnee.easyevent.transfer.api.route.EventRouteStrategy;
+import org.svnee.easyevent.transfer.api.route.EventRouter;
 import org.svnee.easyevent.transfer.kafka.exception.KafkaTransferErrorCode;
 import org.svnee.easyevent.transfer.kafka.property.KafkaCommonProperty;
 
@@ -41,19 +41,19 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
 
     private final org.apache.kafka.clients.producer.KafkaProducer<String, String> producer;
     private final Serializer serializer;
-    private final EventRouteStrategy eventRouteStrategy;
+    private final EventRouter eventRouter;
     private final KafkaCommonProperty kafkaCommonProperty;
 
     public KafkaTransferProducer(Serializer serializer,
-        EventRouteStrategy eventRouteStrategy,
+        EventRouter eventRouter,
         KafkaCommonProperty kafkaCommonProperty) {
 
         checkNotNull(serializer);
-        checkNotNull(eventRouteStrategy);
+        checkNotNull(eventRouter);
         checkNotNull(kafkaCommonProperty);
 
         this.serializer = serializer;
-        this.eventRouteStrategy = eventRouteStrategy;
+        this.eventRouter = eventRouter;
         this.kafkaCommonProperty = kafkaCommonProperty;
 
         Properties props = new Properties();
@@ -85,7 +85,7 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
             .event(event)
             .serializer(serializer)
             .build();
-        Pair<String, String> routeTopic = eventRouteStrategy.route(event);
+        Pair<String, String> routeTopic = eventRouter.route(event);
 
         int partition = parseRoutePartition(routeTopic);
 
@@ -140,7 +140,7 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
         }
         // mapping routeInfo 2 index
         Map<Pair<String, String>, List<Pair<Integer, Object>>> routeInfo2EventMap = index2EventList.stream()
-            .map(e -> Pair.of(eventRouteStrategy.route(e.getValue()), e))
+            .map(e -> Pair.of(eventRouter.route(e.getValue()), e))
             .collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
 
         BatchSendResult batchSendResult = new BatchSendResult();

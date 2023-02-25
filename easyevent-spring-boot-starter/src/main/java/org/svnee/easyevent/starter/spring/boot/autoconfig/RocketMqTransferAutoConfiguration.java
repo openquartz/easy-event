@@ -26,7 +26,7 @@ import org.svnee.easyevent.transfer.api.EventTrigger;
 import org.svnee.easyevent.transfer.api.constant.TransferConstants;
 import org.svnee.easyevent.transfer.api.limiting.EventTransferSenderLimitingControl;
 import org.svnee.easyevent.transfer.api.limiting.EventTransferTriggerLimitingControl;
-import org.svnee.easyevent.transfer.api.route.EventRouteStrategy;
+import org.svnee.easyevent.transfer.api.route.EventRouter;
 import org.svnee.easyevent.transfer.rocket.RocketMqEventSender;
 import org.svnee.easyevent.transfer.rocket.RocketMqEventTrigger;
 import org.svnee.easyevent.transfer.rocket.common.RocketMqProducer;
@@ -61,10 +61,10 @@ public class RocketMqTransferAutoConfiguration {
     @ConditionalOnMissingBean
     public RocketMqProducer rocketMqProducer(MQProducer easyEventTriggerMqProducer,
         Serializer serializer,
-        EventRouteStrategy eventRouteStrategy,
+        EventRouter eventRouter,
         RocketMqCommonProperty rocketMqCommonProperty) {
 
-        return new RocketMqProducer(easyEventTriggerMqProducer, serializer, eventRouteStrategy, rocketMqCommonProperty);
+        return new RocketMqProducer(easyEventTriggerMqProducer, serializer, eventRouter, rocketMqCommonProperty);
     }
 
     @Bean

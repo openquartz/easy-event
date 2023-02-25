@@ -26,7 +26,7 @@ import org.svnee.easyevent.transfer.api.constant.TransferConstants;
 import org.svnee.easyevent.transfer.api.exception.TransferErrorCode;
 import org.svnee.easyevent.transfer.api.message.EventMessage;
 import org.svnee.easyevent.transfer.api.message.EventMessageBuilder;
-import org.svnee.easyevent.transfer.api.route.EventRouteStrategy;
+import org.svnee.easyevent.transfer.api.route.EventRouter;
 import org.svnee.easyevent.transfer.rocket.property.RocketMqCommonProperty;
 
 /**
@@ -39,16 +39,16 @@ public class RocketMqProducer implements TransferProducer, LifecycleBean {
 
     private final MQProducer producer;
     private final Serializer serializer;
-    private final EventRouteStrategy eventRouteStrategy;
+    private final EventRouter eventRouter;
     private final RocketMqCommonProperty rocketMqCommonProperty;
 
     public RocketMqProducer(MQProducer producer,
         Serializer serializer,
-        EventRouteStrategy eventRouteStrategy,
+        EventRouter eventRouter,
         RocketMqCommonProperty rocketMqCommonProperty) {
         this.producer = producer;
         this.serializer = serializer;
-        this.eventRouteStrategy = eventRouteStrategy;
+        this.eventRouter = eventRouter;
         this.rocketMqCommonProperty = rocketMqCommonProperty;
     }
 
@@ -75,7 +75,7 @@ public class RocketMqProducer implements TransferProducer, LifecycleBean {
             .event(event)
             .serializer(serializer)
             .build();
-        Pair<String, String> routeTopic = eventRouteStrategy.route(event);
+        Pair<String, String> routeTopic = eventRouter.route(event);
 
         Message message = new Message();
         message.setBody(JSONUtil.toJsonAsBytes(eventMessage));
@@ -117,7 +117,7 @@ public class RocketMqProducer implements TransferProducer, LifecycleBean {
         }
         // mapping routeInfo 2 index
         Map<Pair<String, String>, List<Pair<Integer, Object>>> routeInfo2EventMap = index2EventList.stream()
-            .map(e -> Pair.of(eventRouteStrategy.route(e.getValue()), e))
+            .map(e -> Pair.of(eventRouter.route(e.getValue()), e))
             .collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
 
         BatchSendResult batchSendResult = new BatchSendResult();

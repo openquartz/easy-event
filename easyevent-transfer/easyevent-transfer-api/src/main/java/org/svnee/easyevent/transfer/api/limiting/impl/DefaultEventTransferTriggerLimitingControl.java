@@ -5,7 +5,7 @@ import org.svnee.easyevent.transfer.api.limiting.EventTransferTriggerLimitingCon
 import org.svnee.easyevent.transfer.api.message.EventMessage;
 
 /**
- * Default impl
+ * Default EventTransferTriggerLimitingControl
  *
  * @author svnee
  **/

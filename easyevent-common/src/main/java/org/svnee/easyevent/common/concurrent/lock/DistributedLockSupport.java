@@ -1,7 +1,6 @@
 package org.svnee.easyevent.common.concurrent.lock;
 
 import java.util.concurrent.locks.Lock;
-import org.svnee.easyevent.common.concurrent.lock.LockBizType;
 import org.svnee.easyevent.common.model.Pair;
 
 /**

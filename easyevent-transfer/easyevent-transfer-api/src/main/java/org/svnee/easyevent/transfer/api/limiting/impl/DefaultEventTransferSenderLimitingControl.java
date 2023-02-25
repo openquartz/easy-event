@@ -7,7 +7,7 @@ import org.svnee.easyevent.storage.identify.EventId;
 import org.svnee.easyevent.transfer.api.limiting.EventTransferSenderLimitingControl;
 
 /**
- * Default impl
+ * Default EventTransferSenderLimitingControl
  *
  * @author svnee
  **/

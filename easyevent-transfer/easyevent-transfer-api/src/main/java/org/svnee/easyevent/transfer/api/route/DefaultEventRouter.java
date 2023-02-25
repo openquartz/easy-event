@@ -7,14 +7,14 @@ import org.svnee.easyevent.common.model.Pair;
  *
  * @author svnee
  **/
-public class DefaultEventRouteStrategy implements EventRouteStrategy {
+public class DefaultEventRouter implements EventRouter {
 
     /**
      * 默认路由topic
      */
     private final String defaultRouteTopic;
 
-    public DefaultEventRouteStrategy(String defaultRouteTopic) {
+    public DefaultEventRouter(String defaultRouteTopic) {
         this.defaultRouteTopic = defaultRouteTopic;
     }
 

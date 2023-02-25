@@ -59,3 +59,7 @@
 ### 快速开始
 
 [快速开始](doc/QuickStart.md)
+
+### 扩展性
+
+[扩展](doc/Extend.md)

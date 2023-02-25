@@ -15,8 +15,8 @@ import org.svnee.easyevent.transfer.api.limiting.EventTransferSenderLimitingCont
 import org.svnee.easyevent.transfer.api.limiting.EventTransferTriggerLimitingControl;
 import org.svnee.easyevent.transfer.api.limiting.impl.DefaultEventTransferSenderLimitingControl;
 import org.svnee.easyevent.transfer.api.limiting.impl.DefaultEventTransferTriggerLimitingControl;
-import org.svnee.easyevent.transfer.api.route.DefaultEventRouteStrategy;
-import org.svnee.easyevent.transfer.api.route.EventRouteStrategy;
+import org.svnee.easyevent.transfer.api.route.DefaultEventRouter;
+import org.svnee.easyevent.transfer.api.route.EventRouter;
 
 /**
  * EasyEvent Transfer  AutoConfiguration
@@ -43,8 +43,8 @@ public class EasyEventTransferAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public EventRouteStrategy eventRouteStrategy(DefaultTransferProperties properties) {
-        return new DefaultEventRouteStrategy(properties.getDefaultTopic());
+    public EventRouter eventRouteStrategy(DefaultTransferProperties properties) {
+        return new DefaultEventRouter(properties.getDefaultTopic());
     }
 
     @Bean

@@ -20,7 +20,7 @@ import org.svnee.easyevent.transfer.api.EventSender;
 import org.svnee.easyevent.transfer.api.EventTrigger;
 import org.svnee.easyevent.transfer.api.limiting.EventTransferSenderLimitingControl;
 import org.svnee.easyevent.transfer.api.limiting.EventTransferTriggerLimitingControl;
-import org.svnee.easyevent.transfer.api.route.EventRouteStrategy;
+import org.svnee.easyevent.transfer.api.route.EventRouter;
 import org.svnee.easyevent.transfer.kafka.KafkaEventSender;
 import org.svnee.easyevent.transfer.kafka.KafkaEventTrigger;
 import org.svnee.easyevent.transfer.kafka.common.KafkaTransferProducer;
@@ -55,10 +55,10 @@ public class KafkaTransferAutoConfiguration {
     @ConditionalOnMissingBean
     public KafkaTransferProducer kafkaTransferProducer(
         Serializer serializer,
-        EventRouteStrategy eventRouteStrategy,
+        EventRouter eventRouter,
         KafkaCommonProperty kafkaCommonProperty) {
 
-        return new KafkaTransferProducer(serializer, eventRouteStrategy, kafkaCommonProperty);
+        return new KafkaTransferProducer(serializer, eventRouter, kafkaCommonProperty);
     }
 
     @Bean

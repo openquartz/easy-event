@@ -7,13 +7,13 @@ import org.svnee.easyevent.common.model.Pair;
  *
  * @author svnee
  */
-public interface EventRouteStrategy {
+public interface EventRouter {
 
     /**
      * 事件路由topic
      *
      * @param event event
-     * @return 路由topic。key: topic,value: 和具体实现相关
+     * @return 路由topic。key: topic,value: 和具体实现相关。如果是 rocketmq指向tag,kafka指向partition.可为null
      */
     Pair<String, String> route(Object event);
 
