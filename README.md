@@ -33,6 +33,8 @@
 异步事件处理调度如下图所示：
 ![EasyEvent异步事件处理流程示意图](./doc/image/EasyEvent.png)
 
+#### 代码结构
+
 - `easyevent-common`: 公共模块服务
 
 - `easyevent-core`: 核心eventbus逻辑
