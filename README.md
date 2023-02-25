@@ -36,6 +36,8 @@
 `EasyEvent` 为了实现上述问题。抽象出几个核心的角色。通过`EventStorage` 进行存储,可以通过SPI的形式进行扩展实现。\
 通过`EventTransfer`进行事件的分布式调度处理。也可通过自定义SPI实现。\
 异步事件处理调度如下图所示：
+
+
 ![EasyEvent异步事件处理流程示意图](./doc/image/EasyEvent.png)
 
 #### 代码结构
