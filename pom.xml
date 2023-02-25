@@ -38,7 +38,7 @@
     <disruptor.version>3.4.2</disruptor.version>
 
     <rocketmq.version>4.9.3</rocketmq.version>
-    <kafka.version>0.11.0.0</kafka.version>
+    <kafka.version>0.11.0.2</kafka.version>
     <slf4j.version>1.7.30</slf4j.version>
 
     <mybatis-plus.version>3.5.0</mybatis-plus.version>
