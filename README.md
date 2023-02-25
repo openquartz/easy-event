@@ -4,8 +4,8 @@
 
 ### 开源不易,欢迎Star!!!
 
-[主页](https://svnlab.github.io/) \
-**[Github](https://github.com/svnlab/easy-event)** **[Gitee](https://gitee.com/svnee/easy-event)**
+**[主页](https://svnlab.github.io/)** \
+**[Github](https://github.com/svnlab/easy-event) [Gitee](https://gitee.com/svnee/easy-event)**
 
 ### 介绍
 
