@@ -5,7 +5,6 @@
 #### 1、引入starter依赖
 
 ```xml
-
 <dependency>
     <groupId>org.svnee</groupId>
     <artifactId>easyevent-spring-boot-starter</artifactId>
@@ -18,7 +17,6 @@
 需要引入EventStorage的实现.目前只支持jdbc实现的各种数据库。推荐使用mysql。
 
 ```xml
-
 <dependency>
     <groupId>org.svnee</groupId>
     <artifactId>easyevent-storage</artifactId>
@@ -59,7 +57,6 @@ CREATE TABLE bus_event_entity
 使用`disruptor`实现
 
 ```xml
-
 <dependency>
     <groupId>org.svnee</groupId>
     <artifactId>easyevent-transfer-disruptor</artifactId>
@@ -70,7 +67,6 @@ CREATE TABLE bus_event_entity
 使用`rocketmq`实现
 
 ```xml
-
 <dependency>
     <groupId>org.svnee</groupId>
     <artifactId>easyevent-transfer-rocketmq</artifactId>
@@ -81,7 +77,6 @@ CREATE TABLE bus_event_entity
 使用`kafka` 实现
 
 ```xml
-
 <dependency>
     <groupId>org.svnee</groupId>
     <artifactId>easyevent-transfer-kafka</artifactId>
@@ -124,7 +119,7 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.common.compensate.thread-pool.thread-prefix  | 执行补偿线程池线程前缀 | EventCompensateThread | |
 | easyevent.common.compensate.thread-pool.core-pool-size | 执行补偿线程池核心线程数 | 10 | |
 | easyevent.common.compensate.thread-pool.maximum-pool-size  | 执行补偿线程池最大线程数 | 20 | |
-| easyevent.common.compensate.thread-pool.keep-alive-time  | 执行补偿线程池线程空闲时间 | 30 |单位：s |
+| easyevent.common.compensate.thread-pool.keep-alive-time  | 执行补偿线程池线程空闲时间 | 30 |单位：秒 |
 | easyevent.common.compensate.thread-pool.max-blocking-queue-size | 执行补偿线程池最大等待队列长度 | 2048 | |
 
 ###### 补偿当前机器配置
@@ -147,8 +142,8 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.common.compensate.global.enabled | 是否开启调度补偿 | true | |
 | easyevent.common.compensate.global.offset  | 每次调度重试条数 | 100 | |
 | easyevent.common.compensate.global.compensate-state|调度补偿的状态|AVAILABLE,TRANSFER_FAILED,PROCESS_FAILED||
-| easyevent.common.compensate.global.before-start-seconds|调度补偿的时间范围-开始时间|60||
-| easyevent.common.compensate.global.before-end-seconds |调度补偿的时间范围-结束时间|3600||
+| easyevent.common.compensate.global.before-start-seconds|调度补偿的时间范围-开始时间|60| 单位 : 秒|
+| easyevent.common.compensate.global.before-end-seconds |调度补偿的时间范围-结束时间|3600| 单位 : 秒|
 | easyevent.common.compensate.global.schedule-period |执行周期|10||
 | easyevent.common.compensate.global.thread-pool-core-size |执行调度线程数|1||
 | easyevent.common.compensate.global.thread-pool-thread-prefix|执行调度的线程名前缀|EventCompensate||
@@ -160,7 +155,7 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.bus.thread-pool.thread-prefix | eventbus处理线程池线程前缀 | DefaultEventBusThreadPool | |
 | easyevent.bus.thread-pool.core-pool-size  | eventbus处理核心线程池 | 10 | |
 | easyevent.bus.thread-pool.maximum-pool-size  |  eventbus处理核心线程池最大线程数 | 20 | |
-| easyevent.bus.thread-pool.keep-alive-time | eventbus处理线程池最大空闲时间 | 30 | |
+| easyevent.bus.thread-pool.keep-alive-time | eventbus处理线程池最大空闲时间 | 30 | 单位:秒 |
 | easyevent.bus.thread-pool.max-blocking-queue-size | eventbus处理线程池最大队列长度 | 2048 | |
 
 #### 3、storage配置
@@ -204,7 +199,7 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.transfer.trigger.rocketmq.produce-group | 生产者组 | EasyEvent | |
 | easyevent.transfer.trigger.rocketmq.produce-latency-fault-enable | 是否开启故障转移 | true | |
 | easyevent.transfer.trigger.rocketmq.produce-message-size | 发送消息大小 | 1000000 | 单位：byte |
-| easyevent.transfer.trigger.rocketmq.produce-timeout  |  发送超时时间 | 1000 | 单位：s |
+| easyevent.transfer.trigger.rocketmq.produce-timeout  |  发送超时时间 | 1000 | 单位：秒 |
 | easyevent.transfer.trigger.rocketmq.produce-try-times | 发送尝试最大次数 | 5 | |
 
 **消费者配置**\
@@ -243,7 +238,7 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.transfer.trigger.kafka.consumers.<consumer alias>.currency |  消费并发数 | 4 | |
 | easyevent.transfer.trigger.kafka.consumers.<consumer alias>.client-id | 消费者ClientId |  | |
 | easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-max-retry | 消费者最大重试次数 | 5 | |
-| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-retry-delay-time-interval-seconds | 消费重试时间间隔 | 5 | 单位：s|
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-retry-delay-time-interval-seconds | 消费重试时间间隔 | 5 | 单位：秒|
 
 ### 四、编写代码
 
