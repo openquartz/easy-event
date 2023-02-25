@@ -199,3 +199,63 @@ public class EasyEventKafkaExampleStarter {
 ##### rocketmq 配置
 
 ##### kafka 配置
+
+### 四、编写代码
+
+发布事件
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Resource;
+import org.springframework.stereotype.Component;
+import org.svnee.easyevent.core.publisher.EventPublisher;
+import org.svnee.easyevent.example.event.TestEvent;
+
+/**
+ * @author svnee
+ **/
+@Component
+public class TestEventPublisher {
+
+    @Resource
+    private EventPublisher eventPublisher;
+
+    public void publish(TestEvent testEvent) {
+        eventPublisher.syncPublish(testEvent);
+    }
+
+    public void asyncPublish(TestEvent event) {
+        eventPublisher.asyncPublish(event);
+    }
+
+    public void asyncPublishList(List<TestEvent> eventList) {
+        ArrayList<Object> list = new ArrayList<>(eventList);
+        eventPublisher.asyncPublishList(list);
+    }
+
+}
+
+```
+
+订阅事件
+
+```java
+import org.svnee.easyevent.core.annotation.AllowConcurrentEvents;
+import org.svnee.easyevent.core.annotation.Subscribe;
+import org.svnee.easyevent.example.event.TestEvent;
+import org.svnee.easyevent.starter.annotation.EventHandler;
+
+/**
+ * @author svnee
+ **/
+@EventHandler
+public class Test2EventHandler {
+
+    @Subscribe
+    @AllowConcurrentEvents
+    public void handle(TestEvent event) {
+        // do 业务处理
+    }
+}
+```
