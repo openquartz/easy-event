@@ -203,7 +203,7 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.transfer.trigger.rocketmq.produce-try-times | 发送尝试最大次数 | 5 | |
 
 **消费者配置**\
-格式：`easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.x`
+**格式：** `easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.x`
 
 |  配置key   | 描述  | 默认值 | 备注 |
 |  ----  | ----  | --- | --- |
@@ -228,7 +228,8 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.transfer.trigger.kafka.produce-try-times | 发送尝试最大次数 | 5 | |
 
 **消费者配置**\
-格式：`easyevent.transfer.trigger.kafka.consumers.<consumer alias>.x`
+**格式：** `easyevent.transfer.trigger.kafka.consumers.<consumer alias>.x`\
+同一个topic下如果已经指定分区了,需要将全部分区都配置且不能配置有 `*` 的分区。
 
 |  配置key   | 描述  | 默认值 | 备注 |
 |  ----  | ----  | --- | --- |
