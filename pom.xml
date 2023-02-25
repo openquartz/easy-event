@@ -36,14 +36,12 @@
     <jjwt.version>0.9.0</jjwt.version>
     <reflections.version>0.9.10</reflections.version>
     <disruptor.version>3.4.2</disruptor.version>
-    <hutool.version>5.4.7</hutool.version>
 
     <rocketmq.version>4.9.3</rocketmq.version>
     <kafka.version>0.11.0.0</kafka.version>
     <slf4j.version>1.7.30</slf4j.version>
 
     <mybatis-plus.version>3.5.0</mybatis-plus.version>
-    <pagehelper.version>5.1.10</pagehelper.version>
     <spring-boot.version>2.3.2.RELEASE</spring-boot.version>
 
     <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
@@ -79,12 +77,6 @@
         <groupId>com.squareup.okhttp3</groupId>
         <artifactId>okhttp</artifactId>
         <version>${okhttp3.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.github.pagehelper</groupId>
-        <artifactId>pagehelper</artifactId>
-        <version>${pagehelper.version}</version>
       </dependency>
 
       <dependency>
@@ -182,12 +174,6 @@
         <groupId>com.lmax</groupId>
         <artifactId>disruptor</artifactId>
         <version>${disruptor.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>cn.hutool</groupId>
-        <artifactId>hutool-all</artifactId>
-        <version>${hutool.version}</version>
       </dependency>
 
       <dependency>

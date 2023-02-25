@@ -40,19 +40,16 @@
         <dependency>
             <groupId>org.svnee</groupId>
             <artifactId>easyevent-spring-boot-starter</artifactId>
-            <version>1.1.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.svnee</groupId>
             <artifactId>easyevent-storage-jdbc</artifactId>
-            <version>1.1.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.svnee</groupId>
             <artifactId>easyevent-transfer-disruptor</artifactId>
-            <version>1.1.0</version>
         </dependency>
 
         <dependency>
@@ -69,11 +66,6 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
         </dependency>
 
     </dependencies>
