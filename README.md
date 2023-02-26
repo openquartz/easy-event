@@ -61,7 +61,7 @@
 - `easyfile-example`: 样例工程
   - `easyevent-example-disruptor`: 使用disruptor 作为传输调度层
   - `easyevent-example-rocketmq`: 使用rocketmq 作为传输调度层
-  - `easyevent-example-rocketmq`: 使用kafka 作为传输调度层
+  - `easyevent-example-kafka`: 使用kafka 作为传输调度层
 
 ### 快速开始
 

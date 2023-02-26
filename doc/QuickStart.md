@@ -14,12 +14,12 @@
 
 #### 2、引入EventStorage依赖
 
-需要引入EventStorage的实现.目前只支持jdbc实现的各种数据库。推荐使用mysql。
+需要引入`EventStorage`的实现.目前只支持`jdbc`实现的各种数据库。推荐使用`mysql`。
 
 ```xml
 <dependency>
     <groupId>org.svnee</groupId>
-    <artifactId>easyevent-storage</artifactId>
+    <artifactId>easyevent-storage-jdbcc</artifactId>
     <version>${lastVersion}</version>
 </dependency>
 ```
