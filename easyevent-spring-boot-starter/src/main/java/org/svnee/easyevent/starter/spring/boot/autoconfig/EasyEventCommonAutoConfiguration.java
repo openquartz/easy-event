@@ -12,7 +12,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.svnee.easyevent.common.concurrent.lock.LockSupport;
 import org.svnee.easyevent.common.serde.Serializer;
 import org.svnee.easyevent.common.transaction.TransactionSupport;
-import org.svnee.easyevent.common.concurrent.lock.DistributedLockSupport;
+import org.svnee.easyevent.common.concurrent.lock.DistributedLockFactory;
 import org.svnee.easyevent.common.concurrent.lock.impl.LockSupportImpl;
 import org.svnee.easyevent.starter.init.EasyEventInitializingEntrance;
 import org.svnee.easyevent.starter.spring.boot.autoconfig.property.EasyEventCommonProperties;
@@ -49,8 +49,8 @@ public class EasyEventCommonAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public LockSupport lockSupport(@Autowired(required = false) DistributedLockSupport distributedLockSupport) {
-        return new LockSupportImpl(distributedLockSupport);
+    public LockSupport lockSupport(@Autowired(required = false) DistributedLockFactory distributedLockFactory) {
+        return new LockSupportImpl(distributedLockFactory);
     }
 
 }

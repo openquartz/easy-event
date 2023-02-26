@@ -281,7 +281,7 @@ public interface EventTransferTriggerLimitingControl {
 由于`EasyEvent`需要中间件来做分布式调度时,可能存在消息丢失的情况或者触发失败以及积压等情况时,所以`EasyEvent`设置了补偿Job触发。\
 所以很难保证在同一时刻的同一事件的消费不会并发执行。目前`EasyEvent`提供了单机的安全。但是在分布式环境下，需要用户自定义实现分布式锁以保证并发。 或者用户在 消费订阅者的 实际事件处理逻辑中兼容掉此并发。
 
-如果用户实现分布式锁的，系统提供扩展点接口`org.svnee.easyevent.common.concurrent.lock.DistributedLockSupport`
+如果用户实现分布式锁的，系统提供扩展点接口`org.svnee.easyevent.common.concurrent.lock.DistributedLockFactory`
 
 ```java
 package org.svnee.easyevent.common.concurrent.lock;
@@ -294,7 +294,7 @@ import org.svnee.easyevent.common.model.Pair;
  *
  * @author svnee
  */
-public interface DistributedLockSupport {
+public interface DistributedLockFactory {
 
     /**
      * Get Lock

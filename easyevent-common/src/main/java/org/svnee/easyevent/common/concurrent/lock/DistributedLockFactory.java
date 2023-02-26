@@ -8,7 +8,7 @@ import org.svnee.easyevent.common.model.Pair;
  *
  * @author svnee
  */
-public interface DistributedLockSupport {
+public interface DistributedLockFactory {
 
     /**
      * Get Lock

@@ -9,7 +9,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import lombok.extern.slf4j.Slf4j;
 import org.svnee.easyevent.common.concurrent.lock.Consumer;
-import org.svnee.easyevent.common.concurrent.lock.DistributedLockSupport;
+import org.svnee.easyevent.common.concurrent.lock.DistributedLockFactory;
 import org.svnee.easyevent.common.concurrent.lock.LockBizType;
 import org.svnee.easyevent.common.concurrent.lock.LockSupport;
 import org.svnee.easyevent.common.exception.CommonErrorCode;
@@ -24,11 +24,11 @@ import org.svnee.easyevent.common.utils.Asserts;
 @Slf4j
 public class LockSupportImpl implements LockSupport {
 
-    private final DistributedLockSupport distributedLockSupport;
+    private final DistributedLockFactory distributedLockFactory;
     private final Map<String, Lock> localLockMap = new ConcurrentHashMap<>();
 
-    public LockSupportImpl(DistributedLockSupport distributedLockSupport) {
-        this.distributedLockSupport = distributedLockSupport;
+    public LockSupportImpl(DistributedLockFactory distributedLockFactory) {
+        this.distributedLockFactory = distributedLockFactory;
     }
 
     public static final String LOCK_KEY_FORMATTER = "%s:%s";
@@ -54,11 +54,11 @@ public class LockSupportImpl implements LockSupport {
         Lock lock = localLockMap.computeIfAbsent(identifyLockKey, k -> new ReentrantLock());
         if (lock.tryLock()) {
             try {
-                if (Objects.isNull(distributedLockSupport)) {
+                if (Objects.isNull(distributedLockFactory)) {
                     consumer.consume();
                     return true;
                 } else {
-                    Lock dLock = distributedLockSupport.getLock(lockKey);
+                    Lock dLock = distributedLockFactory.getLock(lockKey);
                     checkNotNull(dLock);
                     if (dLock.tryLock()) {
                         try {
