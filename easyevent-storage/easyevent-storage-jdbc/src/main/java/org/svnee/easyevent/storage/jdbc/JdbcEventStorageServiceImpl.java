@@ -54,7 +54,7 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
     public EventId save(Object event) {
         BusEventEntity busEventEntity = buildInitBusEventEntity(event);
         if (Objects.nonNull(idGenerator)) {
-            long eventEntityId = idGenerator.generateId();
+            long eventEntityId = idGenerator.generateId(event);
             busEventEntity.setEntityId(eventEntityId);
         }
         Long sourceId = TraceContext.getSourceEventId();
@@ -98,8 +98,9 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
             .collect(Collectors.toList());
 
         if (Objects.nonNull(idGenerator)) {
-            for (BusEventEntity busEventEntity : entityList) {
-                busEventEntity.setEntityId(idGenerator.generateId());
+            for (int i = 0; i < entityList.size(); i++) {
+                BusEventEntity busEventEntity = entityList.get(i);
+                busEventEntity.setEntityId(idGenerator.generateId(eventList.get(i)));
             }
             busEventEntityMapper.insertListWithSupplierId(entityList);
         } else {

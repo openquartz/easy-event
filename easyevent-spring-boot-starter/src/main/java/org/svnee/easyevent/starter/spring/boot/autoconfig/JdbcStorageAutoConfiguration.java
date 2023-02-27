@@ -5,11 +5,9 @@ import static org.svnee.easyevent.common.utils.ParamUtils.checkNotNull;
 
 import java.util.Map;
 import java.util.Properties;
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -35,6 +33,9 @@ import org.svnee.easyevent.storage.identify.IdGenerator;
 import org.svnee.easyevent.storage.jdbc.JdbcEventStorageServiceImpl;
 import org.svnee.easyevent.storage.jdbc.mapper.BusEventEntityMapper;
 import org.svnee.easyevent.storage.jdbc.mapper.impl.BusEventEntityMapperImpl;
+import org.svnee.easyevent.storage.jdbc.sharding.ShardingRouter;
+import org.svnee.easyevent.storage.jdbc.sharding.impl.DefaultShardingRouterImpl;
+import org.svnee.easyevent.storage.jdbc.sharding.property.EventStorageShardingProperty;
 import org.svnee.easyevent.storage.jdbc.table.EasyEventTableGeneratorSupplier;
 
 /**
@@ -47,10 +48,7 @@ import org.svnee.easyevent.storage.jdbc.table.EasyEventTableGeneratorSupplier;
 @EnableConfigurationProperties(JdbcStorageProperties.class)
 @ConditionalOnClass(JdbcEventStorageServiceImpl.class)
 @AutoConfigureAfter(EasyEventStorageAutoConfiguration.class)
-public class JdbcStorageAutoConfiguration implements InitializingBean {
-
-    @Resource
-    private JdbcStorageProperties jdbcStorageProperties;
+public class JdbcStorageAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(type = "easyEventJdbcStorageDataSource", value = DataSource.class)
@@ -118,8 +116,24 @@ public class JdbcStorageAutoConfiguration implements InitializingBean {
     @Bean
     @ConditionalOnMissingBean(type = "busEventEntityMapperImpl", value = BusEventEntityMapper.class)
     public BusEventEntityMapper busEventEntityMapperImpl(
-        @Qualifier("jdbcStorageJdbcTemplate") JdbcTemplate jdbcTemplate) {
-        return new BusEventEntityMapperImpl(jdbcTemplate);
+        @Qualifier("jdbcStorageJdbcTemplate") JdbcTemplate jdbcTemplate,
+        EasyEventTableGeneratorSupplier easyEventTableGeneratorSupplier) {
+        return new BusEventEntityMapperImpl(jdbcTemplate, easyEventTableGeneratorSupplier);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ShardingRouter shardingRouter(JdbcStorageProperties jdbcStorageProperties,
+        @Autowired(required = false) IdGenerator idGenerator) {
+        EventStorageShardingProperty shardingProperty = new EventStorageShardingProperty();
+        shardingProperty.setTotalSharding(jdbcStorageProperties.getTable().getTotalSharding());
+        return new DefaultShardingRouterImpl(shardingProperty, idGenerator);
+    }
+
+    @Bean
+    public EasyEventTableGeneratorSupplier easyEventTableGeneratorSupplier(JdbcStorageProperties jdbcStorageProperties,
+        ShardingRouter shardingRouter) {
+        return new EasyEventTableGeneratorSupplier(jdbcStorageProperties.getTable().getPrefix(), shardingRouter);
     }
 
     @Bean
@@ -132,11 +146,5 @@ public class JdbcStorageAutoConfiguration implements InitializingBean {
 
         return new JdbcEventStorageServiceImpl(busEventEntityMapper, serializer, idGenerator, easyEventProperties);
     }
-
-    @Override
-    public void afterPropertiesSet() {
-        EasyEventTableGeneratorSupplier.setPrefix(jdbcStorageProperties.getTable().getPrefix());
-    }
-
 
 }
