@@ -25,9 +25,10 @@
 ```
 
 ##### 执行SQL
-
+如果不开启分表，直接执行对应的SQL.
+如果开启分表，执行表: `{table-prefix}_bus_event_entity_{sharding-index}`
 ```sql
-CREATE TABLE bus_event_entity
+CREATE TABLE ee_bus_event_entity
 (
     entity_id                 BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'eventId',
     app_id                    VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'appId',
