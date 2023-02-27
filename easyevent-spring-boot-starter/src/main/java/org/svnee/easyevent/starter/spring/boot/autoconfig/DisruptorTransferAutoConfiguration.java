@@ -29,8 +29,8 @@ import org.svnee.easyevent.transfer.disruptor.property.DisruptorTriggerProperty;
 @ConditionalOnClass(DisruptorTriggerEventSender.class)
 public class DisruptorTransferAutoConfiguration {
 
-    @ConditionalOnMissingBean
     @Bean(initMethod = "init", destroyMethod = "destroy")
+    @ConditionalOnMissingBean
     public EventSender eventSender(DisruptorTransferProperties properties,
         EventStorageService eventStorageService,
         TransactionSupport transactionSupport,
