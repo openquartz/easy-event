@@ -338,3 +338,37 @@ public interface IdGenerator {
 
 并注入到Spring工厂中。\
 推荐使用`雪花算法ID`
+
+### 分表支持
+
+`EasyEvent`支持按照EventEntityID 进行自定义分表。默认是进行hash 分表。
+自定义分表路由接口为:`org.svnee.easyevent.storage.jdbc.sharding.ShardingRouter`.
+
+默认实现为：`org.svnee.easyevent.storage.jdbc.sharding.impl.DefaultShardingRouterImpl`.依赖提供`IdGenerator`的实现。
+```java
+package org.svnee.easyevent.storage.jdbc.sharding;
+
+/**
+ * sharding
+ *
+ * @author svnee
+ */
+public interface ShardingRouter {
+
+    /**
+     * 分片
+     *
+     * 如果不开启分片时,需要返回值小于0即可。否则返回的是下标
+     *
+     * @param eventEntityId entityId
+     * @return sharding index
+     */
+    int sharding(Long eventEntityId);
+
+    /**
+     * totalSharding
+     * @return totalSharding
+     */
+    int totalSharding();
+}
+```

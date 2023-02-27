@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,14 +30,14 @@ import org.svnee.easyevent.common.utils.Joiner;
 import org.svnee.easyevent.common.utils.MapUtils;
 import org.svnee.easyevent.common.utils.StringUtils;
 import org.svnee.easyevent.storage.identify.EventId;
-import org.svnee.easyevent.storage.model.BaseEventEntity;
-import org.svnee.easyevent.storage.model.BusEventEntity;
-import org.svnee.easyevent.storage.model.BusEventSelectorCondition;
-import org.svnee.easyevent.storage.model.EventLifecycleState;
 import org.svnee.easyevent.storage.jdbc.constant.JdbcTemplateConstants;
 import org.svnee.easyevent.storage.jdbc.mapper.BusEventEntityMapper;
 import org.svnee.easyevent.storage.jdbc.table.EasyEventTableGeneratorSupplier;
 import org.svnee.easyevent.storage.jdbc.utils.CustomerJdbcTemplate;
+import org.svnee.easyevent.storage.model.BaseEventEntity;
+import org.svnee.easyevent.storage.model.BusEventEntity;
+import org.svnee.easyevent.storage.model.BusEventSelectorCondition;
+import org.svnee.easyevent.storage.model.EventLifecycleState;
 
 /**
  * BusEventEntityMapper
@@ -47,13 +48,17 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
     private final JdbcTemplate jdbcTemplate;
     private final CustomerJdbcTemplate customerJdbcTemplate;
+    private final EasyEventTableGeneratorSupplier supplier;
 
-    public BusEventEntityMapperImpl(JdbcTemplate jdbcTemplate) {
+    public BusEventEntityMapperImpl(JdbcTemplate jdbcTemplate,
+        EasyEventTableGeneratorSupplier supplier) {
 
         checkNotNull(jdbcTemplate);
+        checkNotNull(supplier);
 
         this.jdbcTemplate = jdbcTemplate;
         this.customerJdbcTemplate = new CustomerJdbcTemplate(jdbcTemplate);
+        this.supplier = supplier;
     }
 
     private static final String GET_SUCCESS_SUBSCRIBER_SQL = "select successful_subscriber from {0} where id = ?";
@@ -91,7 +96,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         paramMap.put("entityId", entityId);
 
         String sql = MessageFormat
-            .format(REFRESH_SOURCE_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
+            .format(REFRESH_SOURCE_SQL, supplier.genBusEventEntityTable(entityId));
 
         int actual = new NamedParameterJdbcTemplate(jdbcTemplate).update(sql, paramMap);
         DataUtils.checkUpdateOne(actual);
@@ -100,7 +105,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     @Override
     public void insertList(List<BusEventEntity> entityList) {
 
-        String sql = MessageFormat.format(INSERT_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
+        String sql = MessageFormat.format(INSERT_SQL, supplier.genBusEventEntityTable());
 
         GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
         customerJdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
@@ -145,39 +150,45 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     @Override
     public void insertListWithSupplierId(List<BusEventEntity> entityList) {
 
-        String sql = MessageFormat
-            .format(INSERT_SQL_WITH_ID, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
+        Map<String, List<BusEventEntity>> shardingTable2EntityMap = entityList.stream().collect(Collectors
+            .groupingBy(e -> supplier.genBusEventEntityTable(e.getEntityId()),
+                Collectors.toList()));
 
-        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(@NonNull PreparedStatement ps, int i) throws SQLException {
-                BusEventEntity entity = entityList.get(i);
-                ps.setString(1, entity.getAppId());
-                ps.setLong(2, entity.getSourceId());
-                ps.setString(3, entity.getClassName());
-                ps.setInt(4, entity.getErrorCount());
-                ps.setString(5, Joiner.join(entity.getSuccessfulSubscriberList(), CommonConstants.COMMA));
-                ps.setString(6, entity.getProcessingState().getCode());
-                ps.setString(7, entity.getTraceId());
-                ps.setString(8, entity.getEventData());
-                ps.setString(9, entity.getCreatingOwner());
-                ps.setString(10, entity.getProcessingOwner());
-                ps.setDate(11, Objects.nonNull(entity.getProcessingAvailableDate()) ? new java.sql.Date(
-                    entity.getProcessingAvailableDate().getTime()) : null);
-                ps.setString(12, entity.getProcessingFailedReason());
-                ps.setTimestamp(13,
-                    Objects.nonNull(entity.getCreatedTime()) ? new Timestamp(entity.getCreatedTime().getTime())
-                        : null);
-                ps.setTimestamp(14,
-                    Objects.nonNull(entity.getUpdatedTime()) ? new Timestamp(entity.getUpdatedTime().getTime())
-                        : null);
-                ps.setLong(15, entity.getEntityId());
-            }
+        shardingTable2EntityMap.forEach((table, data) -> {
 
-            @Override
-            public int getBatchSize() {
-                return entityList.size();
-            }
+            String sql = MessageFormat.format(INSERT_SQL_WITH_ID, table);
+
+            jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+                @Override
+                public void setValues(@NonNull PreparedStatement ps, int i) throws SQLException {
+                    BusEventEntity entity = data.get(i);
+                    ps.setString(1, entity.getAppId());
+                    ps.setLong(2, Objects.nonNull(entity.getSourceId())?entity.getSourceId():0);
+                    ps.setString(3, entity.getClassName());
+                    ps.setInt(4, entity.getErrorCount());
+                    ps.setString(5, Joiner.join(entity.getSuccessfulSubscriberList(), CommonConstants.COMMA));
+                    ps.setString(6, entity.getProcessingState().getCode());
+                    ps.setString(7, entity.getTraceId());
+                    ps.setString(8, entity.getEventData());
+                    ps.setString(9, entity.getCreatingOwner());
+                    ps.setString(10, entity.getProcessingOwner());
+                    ps.setTimestamp(11, Objects.nonNull(entity.getProcessingAvailableDate()) ?
+                        new Timestamp(entity.getProcessingAvailableDate().getTime()) : null);
+                    ps.setString(12, entity.getProcessingFailedReason());
+                    ps.setTimestamp(13,
+                        Objects.nonNull(entity.getCreatedTime()) ? new Timestamp(entity.getCreatedTime().getTime())
+                            : null);
+                    ps.setTimestamp(14,
+                        Objects.nonNull(entity.getUpdatedTime()) ? new Timestamp(entity.getUpdatedTime().getTime())
+                            : null);
+                    ps.setLong(15, entity.getEntityId());
+                }
+
+                @Override
+                public int getBatchSize() {
+                    return data.size();
+                }
+            });
         });
     }
 
@@ -196,17 +207,20 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         checkNotEmpty(eventIdList);
         checkNotNull(transferSuccess);
 
-        List<Long> idList = eventIdList.stream().map(EventId::getId).collect(Collectors.toList());
+        Map<String, List<Long>> shardingTable2EntityIdMap = eventIdList.stream()
+            .collect(Collectors.groupingBy(e -> supplier.genBusEventEntityTable(e.getId()),
+                Collectors.mapping(EventId::getId, Collectors.toList())));
 
-        String sql = MessageFormat
-            .format(BATCH_REFRESH_PROCESS_STATE_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
+        shardingTable2EntityIdMap.forEach((k, v) -> {
+            String sql = MessageFormat.format(BATCH_REFRESH_PROCESS_STATE_SQL, k);
 
-        Map<String, Object> paramMap = MapUtils.newHashMapWithExpectedSize(3);
-        paramMap.put("processingState", transferSuccess.getCode());
-        paramMap.put("idList", idList);
-        paramMap.put("processingFailedReason", StringUtils.EMPTY);
+            Map<String, Object> paramMap = MapUtils.newHashMapWithExpectedSize(3);
+            paramMap.put("processingState", transferSuccess.getCode());
+            paramMap.put("idList", v);
+            paramMap.put("processingFailedReason", StringUtils.EMPTY);
 
-        new NamedParameterJdbcTemplate(jdbcTemplate).update(sql, paramMap);
+            new NamedParameterJdbcTemplate(jdbcTemplate).update(sql, paramMap);
+        });
     }
 
     @Override
@@ -216,7 +230,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         checkNotNull(transferFailed);
 
         String sql = MessageFormat
-            .format(REFRESH_SEND_FAILED_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
+            .format(REFRESH_SEND_FAILED_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
         String processFailedReason = Objects.nonNull(ex) ? ex.getMessage() : StringUtils.EMPTY;
         int actual = jdbcTemplate.update(sql, transferFailed.getCode(), processFailedReason, eventId.getId());
@@ -226,7 +240,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     private void refreshProcessState(EventId eventId, EventLifecycleState state, String processFailedReason) {
 
         String sql = MessageFormat
-            .format(REFRESH_PROCESS_STATE_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
+            .format(REFRESH_PROCESS_STATE_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
         int actual = jdbcTemplate.update(sql, state.getCode(), processFailedReason, eventId.getId());
         DataUtils.checkUpdateOne(actual);
@@ -239,7 +253,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         checkNotNull(startProcessing);
 
         String sql = MessageFormat
-            .format(REFRESH_START_PROCESSING_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
+            .format(REFRESH_START_PROCESSING_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
         int actual = jdbcTemplate
             .update(sql, startProcessing.getCode(), StringUtils.EMPTY, IpUtil.getIp(), eventId.getId());
@@ -263,7 +277,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
         String successfulSubscriber = Joiner.join(successSubscriberIdentifyList, CommonConstants.COMMA);
         String sql = MessageFormat
-            .format(REFRESH_PROCESSING_FAILED_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
+            .format(REFRESH_PROCESSING_FAILED_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
         int affect = jdbcTemplate.update(sql, processFailed.getCode(),
             Objects.nonNull(invokeError) ? invokeError.getMessage() : StringUtils.EMPTY,
@@ -276,7 +290,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     public List<String> getSuccessfulSubscriberIdentify(EventId eventId) {
         // SQL
         String sql = MessageFormat
-            .format(GET_SUCCESS_SUBSCRIBER_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
+            .format(GET_SUCCESS_SUBSCRIBER_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
         String successfulSubscriber = jdbcTemplate.queryForObject(sql, String.class, eventId.getId());
         return Joiner.split(successfulSubscriber, CommonConstants.COMMA);
@@ -287,7 +301,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
         checkNotNull(eventId);
 
-        String sql = MessageFormat.format(GET_BASE_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
+        String sql = MessageFormat.format(GET_BASE_SQL, supplier.genBusEventEntityTable(eventId.getId()));
         List<BaseEventEntity> entityList = jdbcTemplate.query(sql, (rs, rowNum) -> {
             BaseEventEntity baseEventEntity = new BaseEventEntity();
             baseEventEntity.setEntityId(rs.getLong("id"));
@@ -311,45 +325,54 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
         checkNotNull(condition);
 
-        String sql = MessageFormat.format(GET_ALL_SQL, EasyEventTableGeneratorSupplier.genBusEventEntityTable());
-        StringJoiner joiner = new StringJoiner(" and ");
+        List<String> shardingTableList = supplier.genAllBusEventEntityTableList();
 
-        Map<String, Object> paramMap = MapUtils.newHashMap();
-        if (CollectionUtils.isNotEmpty(condition.getLifecycleStateList())) {
-            List<String> lifecycleStateList = condition.getLifecycleStateList().stream()
-                .map(EventLifecycleState::getCode)
-                .collect(Collectors.toList());
+        List<BusEventEntity> resultList = new ArrayList<>();
+        for (String shardingTable : shardingTableList) {
 
-            joiner.add("processing_state in (:processingState)");
-            paramMap.put("processingState", lifecycleStateList);
-        }
-        if (CollectionUtils.isNotEmpty(condition.getCreatingOwnerList())) {
-            joiner.add("creating_owner in (:creatingOwner)");
-            paramMap.put("creatingOwner", condition.getCreatingOwnerList());
-        }
-        if (Objects.nonNull(condition.getCreateTimeRange())) {
-            if (Objects.nonNull(condition.getCreateTimeRange().getStart())) {
-                joiner.add("created_time >= :startCreateTime");
-                paramMap.put("startCreateTime", new Timestamp(condition.getCreateTimeRange().getStart().getTime()));
+            String sql = MessageFormat.format(GET_ALL_SQL, shardingTable);
+            StringJoiner joiner = new StringJoiner(" and ");
+
+            Map<String, Object> paramMap = MapUtils.newHashMap();
+            if (CollectionUtils.isNotEmpty(condition.getLifecycleStateList())) {
+                List<String> lifecycleStateList = condition.getLifecycleStateList().stream()
+                    .map(EventLifecycleState::getCode)
+                    .collect(Collectors.toList());
+
+                joiner.add("processing_state in (:processingState)");
+                paramMap.put("processingState", lifecycleStateList);
             }
-            if (Objects.nonNull(condition.getCreateTimeRange().getEnd())) {
-                joiner.add("created_time < :endCreateTime");
-                paramMap.put("endCreateTime", new Timestamp(condition.getCreateTimeRange().getEnd().getTime()));
+            if (CollectionUtils.isNotEmpty(condition.getCreatingOwnerList())) {
+                joiner.add("creating_owner in (:creatingOwner)");
+                paramMap.put("creatingOwner", condition.getCreatingOwnerList());
             }
-        }
-        if (Objects.nonNull(condition.getMaxErrorCount())) {
-            joiner.add("error_count <= :maxErrorCount");
-            paramMap.put("maxErrorCount", condition.getMaxErrorCount());
-        }
-        if (joiner.length() > 0) {
-            sql = sql + " where " + joiner;
-        }
-        if (Objects.nonNull(condition.getOffset())) {
-            sql = sql + " limit :offset";
-            paramMap.put("offset", condition.getOffset());
-        }
+            if (Objects.nonNull(condition.getCreateTimeRange())) {
+                if (Objects.nonNull(condition.getCreateTimeRange().getStart())) {
+                    joiner.add("created_time >= :startCreateTime");
+                    paramMap.put("startCreateTime", new Timestamp(condition.getCreateTimeRange().getStart().getTime()));
+                }
+                if (Objects.nonNull(condition.getCreateTimeRange().getEnd())) {
+                    joiner.add("created_time < :endCreateTime");
+                    paramMap.put("endCreateTime", new Timestamp(condition.getCreateTimeRange().getEnd().getTime()));
+                }
+            }
+            if (Objects.nonNull(condition.getMaxErrorCount())) {
+                joiner.add("error_count <= :maxErrorCount");
+                paramMap.put("maxErrorCount", condition.getMaxErrorCount());
+            }
+            if (joiner.length() > 0) {
+                sql = sql + " where " + joiner;
+            }
+            if (Objects.nonNull(condition.getOffset())) {
+                sql = sql + " limit :offset";
+                paramMap.put("offset", condition.getOffset());
+            }
 
-        return new NamedParameterJdbcTemplate(jdbcTemplate).query(sql, paramMap, new BusEventEntityRowMapper());
+            List<BusEventEntity> entityList = new NamedParameterJdbcTemplate(jdbcTemplate)
+                .query(sql, paramMap, new BusEventEntityRowMapper());
+            resultList.addAll(entityList);
+        }
+        return resultList;
     }
 
     public static class BusEventEntityRowMapper implements RowMapper<BusEventEntity> {
@@ -361,10 +384,10 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             busEventEntity.setEventData(rs.getString("event_data"));
             busEventEntity.setCreatingOwner(rs.getString("creating_owner"));
             busEventEntity.setProcessingOwner(rs.getString("processing_owner"));
-            busEventEntity.setProcessingAvailableDate(rs.getDate("processing_available_date"));
+            busEventEntity.setProcessingAvailableDate(rs.getTimestamp("processing_available_date"));
             busEventEntity.setProcessingFailedReason(rs.getString("processing_failed_reason"));
-            busEventEntity.setCreatedTime(rs.getDate("created_time"));
-            busEventEntity.setUpdatedTime(rs.getDate("updated_time"));
+            busEventEntity.setCreatedTime(rs.getTimestamp("created_time"));
+            busEventEntity.setUpdatedTime(rs.getTimestamp("updated_time"));
             busEventEntity.setEntityId(rs.getLong("id"));
             busEventEntity.setAppId(rs.getString("app_id"));
             busEventEntity.setSourceId(rs.getLong("source_id"));

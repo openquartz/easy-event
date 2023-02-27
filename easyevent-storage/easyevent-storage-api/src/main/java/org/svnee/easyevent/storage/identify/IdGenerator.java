@@ -11,9 +11,11 @@ public interface IdGenerator {
      * 生成ID
      * 如果返回null 代表使用数据库自增实现
      *
+     * @param event 事件内容
+     *
      * @return ID
      */
-    default Long generateId() {
+    default <T> Long generateId(T event) {
         return null;
     }
 

@@ -28,12 +28,25 @@ public class JdbcStorageProperties {
 
         private String prefix = "ee";
 
+        /**
+         * 总的分片数。小于0不开启分表。大于0则为开启分表数表后缀为[0,totalSharding)范围内
+         */
+        private int totalSharding = -1;
+
         public String getPrefix() {
             return prefix;
         }
 
         public void setPrefix(String prefix) {
             this.prefix = prefix;
+        }
+
+        public int getTotalSharding() {
+            return totalSharding;
+        }
+
+        public void setTotalSharding(int totalSharding) {
+            this.totalSharding = totalSharding;
         }
     }
 
