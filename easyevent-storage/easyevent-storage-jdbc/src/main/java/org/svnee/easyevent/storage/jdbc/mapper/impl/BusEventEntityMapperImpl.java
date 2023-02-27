@@ -163,7 +163,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 public void setValues(@NonNull PreparedStatement ps, int i) throws SQLException {
                     BusEventEntity entity = data.get(i);
                     ps.setString(1, entity.getAppId());
-                    ps.setLong(2, entity.getSourceId());
+                    ps.setLong(2, Objects.nonNull(entity.getSourceId())?entity.getSourceId():0);
                     ps.setString(3, entity.getClassName());
                     ps.setInt(4, entity.getErrorCount());
                     ps.setString(5, Joiner.join(entity.getSuccessfulSubscriberList(), CommonConstants.COMMA));
@@ -186,7 +186,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
                 @Override
                 public int getBatchSize() {
-                    return entityList.size();
+                    return data.size();
                 }
             });
         });

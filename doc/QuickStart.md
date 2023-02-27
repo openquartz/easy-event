@@ -168,6 +168,7 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.storage.jdbc.datasource.username  | 存储jdbc连接用户名 |  | |
 | easyevent.storage.jdbc.datasource.password  | 存储jdbc连接密码 | | |
 | easyevent.storage.jdbc.table.prefix | 存储jdbc表前缀 | ee | |
+| easyevent.storage.jdbc.table.total-sharding | 存储jdbc分表数 | -1 | -1:不分表,>0 代表分表数 |
 
 #### 4、transfer配置
 
