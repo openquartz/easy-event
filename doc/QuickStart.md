@@ -5,6 +5,7 @@
 #### 1、引入starter依赖
 
 ```xml
+
 <dependency>
     <groupId>org.svnee</groupId>
     <artifactId>easyevent-spring-boot-starter</artifactId>
@@ -17,6 +18,7 @@
 需要引入`EventStorage`的实现.目前只支持`jdbc`实现的各种数据库。推荐使用`mysql`。
 
 ```xml
+
 <dependency>
     <groupId>org.svnee</groupId>
     <artifactId>easyevent-storage-jdbc</artifactId>
@@ -25,8 +27,9 @@
 ```
 
 ##### 执行SQL
-如果不开启分表，直接执行对应的SQL.
-如果开启分表，执行表: `{table-prefix}_bus_event_entity_{sharding-index}`
+
+如果不开启分表，直接执行对应的SQL. 如果开启分表，执行表: `{table-prefix}_bus_event_entity_{sharding-index}`
+
 ```sql
 CREATE TABLE ee_bus_event_entity
 (
@@ -58,6 +61,7 @@ CREATE TABLE ee_bus_event_entity
 使用`disruptor`实现
 
 ```xml
+
 <dependency>
     <groupId>org.svnee</groupId>
     <artifactId>easyevent-transfer-disruptor</artifactId>
@@ -68,6 +72,7 @@ CREATE TABLE ee_bus_event_entity
 使用`rocketmq`实现
 
 ```xml
+
 <dependency>
     <groupId>org.svnee</groupId>
     <artifactId>easyevent-transfer-rocketmq</artifactId>
@@ -78,6 +83,7 @@ CREATE TABLE ee_bus_event_entity
 使用`kafka` 实现
 
 ```xml
+
 <dependency>
     <groupId>org.svnee</groupId>
     <artifactId>easyevent-transfer-kafka</artifactId>
@@ -245,7 +251,14 @@ public class EasyEventKafkaExampleStarter {
 
 ### 四、编写代码
 
-发布事件
+#### 发布事件
+
+`EasyEvent` 发布事件的统一入口为`org.svnee.easyevent.core.publisher.EventPublisher`。可以使用Spring的直接注入到方法中使用进行发布事件类。 目前支持发布**同步事件**
+和**异步事件**。
+**同步事件**：指和当前发布事件线程在同一线程中触发执行;
+**异步事件**：指的是通过中间件进行异步调度然后最终一致性实现订阅处理的事件。
+
+样例：
 
 ```java
 import java.util.ArrayList;
@@ -281,7 +294,18 @@ public class TestEventPublisher {
 
 ```
 
-订阅事件
+#### 订阅事件
+
+订阅者需要在类上加上注解(`org.svnee.easyevent.starter.annotation.EventHandler`)来标识这是一个Event处理类。
+
+同时在订阅的方法上加上注解(`org.svnee.easyevent.core.annotation.Subscribe`)可以标识这个方法在订阅参数中的事件。
+
+`EasyEvent` 订阅者订阅事件,目前支持**串行订阅事件**和**并行订阅事件**。
+**串行订阅事件**：默认是串行订阅。和当前主线程在同一个线程中,一起成功,或者一起失败。
+允许进行编排顺序。可以通过加上注解(`org.svnee.easyevent.core.annotation.Order`)在订阅方法上，其中值越小越优先执行。
+
+**并行订阅事件**：并行订阅事件。指订阅者之间是互不影响，独立触发执行。使用并行订阅线程池触发执行。
+可以通过加上注解(`org.svnee.easyevent.core.annotation.AllowConcurrentEvents`)在订阅方法上。
 
 ```java
 import org.svnee.easyevent.core.annotation.AllowConcurrentEvents;
