@@ -25,8 +25,8 @@ import java.lang.annotation.Target;
  *
  * <p>This does not mark the method, and so should be used in combination with {@link Subscribe}.
  *
- * @author Cliff Biffle
- * @since 10.0
+ * @author svnee
+ * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

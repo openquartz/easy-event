@@ -19,7 +19,7 @@
 ```xml
 <dependency>
     <groupId>org.svnee</groupId>
-    <artifactId>easyevent-storage-jdbcc</artifactId>
+    <artifactId>easyevent-storage-jdbc</artifactId>
     <version>${lastVersion}</version>
 </dependency>
 ```

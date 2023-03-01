@@ -17,16 +17,17 @@ import static org.svnee.easyevent.common.utils.ParamUtils.checkNotNull;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
+import org.svnee.easyevent.common.model.Pair;
+import org.svnee.easyevent.common.utils.CollectionUtils;
 import org.svnee.easyevent.core.Subscriber;
 import org.svnee.easyevent.core.Subscriber.SynchronizedSubscriber;
 import org.svnee.easyevent.core.intreceptor.HandlerInterceptorContext;
-import org.svnee.easyevent.common.model.Pair;
-import org.svnee.easyevent.common.utils.CollectionUtils;
 
 /**
  * Dispatcher
@@ -162,6 +163,8 @@ public abstract class Dispatcher {
 
                         invokeResult = invokeResult
                             .merge(dispatchConcurrentEvent(concurrentSubscriberList, nextEvent.getEvent(), context));
+                        // sort sync subscriber
+                        syncSubscriberList.sort((Comparator.comparingInt(Subscriber::getOrder)));
                         invokeResult = invokeResult
                             .merge(dispatchSyncEvent(syncSubscriberList, nextEvent.getEvent(), context));
                     }
@@ -214,6 +217,9 @@ public abstract class Dispatcher {
                     concurrentSubscriberList.add(subscriber);
                 }
             }
+
+            // sort sync subscriber
+            syncSubscriberList.sort((Comparator.comparingInt(Subscriber::getOrder)));
 
             return dispatchConcurrentEvent(concurrentSubscriberList, event, context)
                 .merge(dispatchSyncEvent(syncSubscriberList, event, context));

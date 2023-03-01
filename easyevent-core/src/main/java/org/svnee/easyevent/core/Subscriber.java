@@ -17,9 +17,11 @@ import static org.svnee.easyevent.common.utils.ParamUtils.checkNotNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import org.svnee.easyevent.core.annotation.AllowConcurrentEvents;
+import org.svnee.easyevent.core.annotation.Order;
 import org.svnee.easyevent.core.intreceptor.HandlerInterceptorChain;
 import org.svnee.easyevent.core.intreceptor.HandlerInterceptorContext;
 
@@ -30,21 +32,34 @@ import org.svnee.easyevent.core.intreceptor.HandlerInterceptorContext;
  */
 public class Subscriber {
 
-    /** Creates a {@code Subscriber} for {@code method} on {@code listener}. */
+    /**
+     * Creates a {@code Subscriber} for {@code method} on {@code listener}.
+     */
     static Subscriber create(EventBus bus, Object listener, Method method) {
         return isDeclaredThreadSafe(method)
             ? new Subscriber(bus, listener, method)
             : new SynchronizedSubscriber(bus, listener, method);
     }
 
-    /** The event bus this subscriber belongs to. */
+    /**
+     * The event bus this subscriber belongs to.
+     */
     private final EventBus bus;
 
-    /** The object with the subscriber method. */
+    /**
+     * The object with the subscriber method.
+     */
     final Object target;
 
-    /** Subscriber method. */
+    /**
+     * Subscriber method.
+     */
     private final Method method;
+
+    /**
+     * subscriber order
+     */
+    private final int order;
 
     /** Executor to use for dispatching events to this subscriber. */
     private final ExecutorService executor;
@@ -59,6 +74,8 @@ public class Subscriber {
         method.setAccessible(true);
 
         this.executor = bus.executor();
+        Order orderAnnotation = method.getAnnotation(Order.class);
+        this.order = Objects.nonNull(orderAnnotation) ? orderAnnotation.value() : Integer.MAX_VALUE;
     }
 
     /** Dispatches {@code event} to this subscriber using the proper executor. */
@@ -166,6 +183,13 @@ public class Subscriber {
      */
     public String getTargetIdentify() {
         return target.getClass().getName() + "#" + method.getName();
+    }
+
+    /**
+     * order index
+     */
+    public int getOrder() {
+        return order;
     }
 
     /**
