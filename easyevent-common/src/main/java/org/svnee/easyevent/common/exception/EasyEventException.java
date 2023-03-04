@@ -35,4 +35,8 @@ public class EasyEventException extends RuntimeException {
         return new EasyEventException(errorCode, MessageFormat.format(errorCode.getErrorMsg(), placeHold));
     }
 
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        return this;
+    }
 }
