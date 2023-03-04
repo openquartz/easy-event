@@ -61,7 +61,7 @@ public final class PublisherInterceptorChain {
                 PublisherInterceptor interceptor = interceptors.get(i - 1);
                 try {
                     interceptor.afterCompletion(event, context, ex);
-                } catch (Throwable ex2) {
+                } catch (Exception ex2) {
                     log.error("HandlerInterceptor.afterCompletion threw exception", ex2);
                 }
             }
