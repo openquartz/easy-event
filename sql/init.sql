@@ -1,6 +1,6 @@
-CREATE TABLE bus_event_entity
+CREATE TABLE ee_bus_event_entity
 (
-    entity_id                 BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'eventId',
+    id                        BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'eventId',
     app_id                    VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'appId',
     source_id                 BIGINT (20) NOT NULL DEFAULT 0 COMMENT 'sourceId',
     class_name                VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'Event-Class',
