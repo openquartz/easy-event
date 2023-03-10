@@ -31,12 +31,13 @@
 
 5、解决DDD中的事件驱动问题
 
+6、解决分布式事件中的问题：例如：事件过多的存储问题。事件集中出现导致尖刺明显。存在处理慢的实现阻塞其他事件正常订阅等等
+
 ### 软件架构
 
 `EasyEvent` 为了实现上述问题。抽象出几个核心的角色。通过`EventStorage` 进行存储,可以通过SPI的形式进行扩展实现。\
 通过`EventTransfer`进行事件的分布式调度处理。也可通过自定义SPI实现。\
 异步事件处理调度如下图所示：
-
 
 ![EasyEvent异步事件处理流程示意图](./doc/image/EasyEvent.png)
 
@@ -48,7 +49,7 @@
 
 - `easyevent-storage`: 存储服务
   - `easyevent-storage-api`: 存储服务API
-  - `easyfile-storage-jdbc`: 基于jdbc的存储实现
+  - `easyevent-storage-jdbc`: 基于jdbc的存储实现
 
 - `easyevent-transfer`: 事件传输服务
   - `easyevent-transfer-api`: 事件传输协议
@@ -58,7 +59,7 @@
 
 - `easyevent-spring-boot-starter`: easyevent starter 包
 
-- `easyfile-example`: 样例工程
+- `easyevent-example`: 样例工程
   - `easyevent-example-disruptor`: 使用disruptor 作为传输调度层
   - `easyevent-example-rocketmq`: 使用rocketmq 作为传输调度层
   - `easyevent-example-kafka`: 使用kafka 作为传输调度层
