@@ -16,7 +16,11 @@ import org.svnee.easyevent.transfer.api.EventSender;
  * @author svnee
  **/
 @Configuration
-@AutoConfigureAfter(RocketMqTransferAutoConfiguration.class)
+@AutoConfigureAfter({
+    DisruptorTransferAutoConfiguration.class,
+    RocketMqTransferAutoConfiguration.class,
+    KafkaTransferAutoConfiguration.class
+})
 public class EasyEventAfterAutoConfiguration {
 
     @Bean
