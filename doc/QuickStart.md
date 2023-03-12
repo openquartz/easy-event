@@ -91,26 +91,7 @@ CREATE TABLE ee_bus_event_entity
 </dependency>
 ```
 
-### 二、启动自动配置
-
-在启动类上加上注解`org.svnee.easyevent.starter.annotation.EnableEasyEventAutoConfiguration`
-例如：
-
-```java
-/**
- * @author svnee
- **/
-@SpringBootApplication
-@EnableEasyEventAutoConfiguration
-public class EasyEventKafkaExampleStarter {
-
-    public static void main(String[] args) {
-        SpringApplication.run(EasyEventKafkaExampleStarter.class);
-    }
-}
-```
-
-### 三、配置
+### 二、配置
 
 #### 1、common配置
 
@@ -249,7 +230,7 @@ public class EasyEventKafkaExampleStarter {
 | easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-max-retry | 消费者最大重试次数 | 5 | |
 | easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-retry-delay-time-interval-seconds | 消费重试时间间隔 | 5 | 单位：秒|
 
-### 四、编写代码
+### 三、编写代码
 
 #### 发布事件
 
