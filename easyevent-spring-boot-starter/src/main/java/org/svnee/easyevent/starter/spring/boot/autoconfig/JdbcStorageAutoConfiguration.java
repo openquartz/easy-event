@@ -5,12 +5,13 @@ import static org.svnee.easyevent.common.utils.ParamUtils.checkNotNull;
 
 import java.util.Map;
 import java.util.Properties;
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,6 +21,7 @@ import org.springframework.boot.context.properties.source.ConfigurationPropertyS
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.svnee.easyevent.common.constant.CommonConstants;
@@ -48,7 +50,14 @@ import org.svnee.easyevent.storage.jdbc.table.EasyEventTableGeneratorSupplier;
 @EnableConfigurationProperties(JdbcStorageProperties.class)
 @ConditionalOnClass(JdbcEventStorageServiceImpl.class)
 @AutoConfigureAfter(EasyEventStorageAutoConfiguration.class)
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 120)
 public class JdbcStorageAutoConfiguration {
+
+    @PostConstruct
+    public void init() {
+        log.info(
+            "-----------------------------------------JdbcStorageAutoConfiguration-------------------------------");
+    }
 
     @Bean
     @ConditionalOnMissingBean(type = "easyEventJdbcStorageDataSource", value = DataSource.class)
@@ -109,16 +118,15 @@ public class JdbcStorageAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(type = "jdbcStorageJdbcTemplate", value = JdbcTemplate.class)
-    public JdbcTemplate jdbcStorageJdbcTemplate(@Qualifier("easyEventJdbcStorageDataSource") DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
+    public JdbcTemplate jdbcStorageJdbcTemplate(DataSource easyEventJdbcStorageDataSource) {
+        return new JdbcTemplate(easyEventJdbcStorageDataSource);
     }
 
     @Bean
     @ConditionalOnMissingBean(type = "busEventEntityMapperImpl", value = BusEventEntityMapper.class)
-    public BusEventEntityMapper busEventEntityMapperImpl(
-        @Qualifier("jdbcStorageJdbcTemplate") JdbcTemplate jdbcTemplate,
+    public BusEventEntityMapper busEventEntityMapperImpl(JdbcTemplate jdbcStorageJdbcTemplate,
         EasyEventTableGeneratorSupplier easyEventTableGeneratorSupplier) {
-        return new BusEventEntityMapperImpl(jdbcTemplate, easyEventTableGeneratorSupplier);
+        return new BusEventEntityMapperImpl(jdbcStorageJdbcTemplate, easyEventTableGeneratorSupplier);
     }
 
     @Bean
@@ -138,13 +146,12 @@ public class JdbcStorageAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(type = "jdbcEventStorageService", value = EventStorageService.class)
-    public EventStorageService jdbcEventStorageService(
-        @Qualifier("busEventEntityMapperImpl") BusEventEntityMapper busEventEntityMapper,
+    public EventStorageService jdbcEventStorageService(BusEventEntityMapper busEventEntityMapperImpl,
         Serializer serializer,
         @Autowired(required = false) IdGenerator idGenerator,
         EasyEventProperties easyEventProperties) {
 
-        return new JdbcEventStorageServiceImpl(busEventEntityMapper, serializer, idGenerator, easyEventProperties);
+        return new JdbcEventStorageServiceImpl(busEventEntityMapperImpl, serializer, idGenerator, easyEventProperties);
     }
 
 }

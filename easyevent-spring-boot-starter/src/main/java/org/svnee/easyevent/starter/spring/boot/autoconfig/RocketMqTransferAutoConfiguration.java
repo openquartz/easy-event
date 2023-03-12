@@ -4,15 +4,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.MQProducer;
 import org.apache.rocketmq.common.UtilAll;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 import org.svnee.easyevent.common.concurrent.lock.LockSupport;
 import org.svnee.easyevent.common.serde.Serializer;
 import org.svnee.easyevent.common.transaction.TransactionSupport;
@@ -43,7 +46,14 @@ import org.svnee.easyevent.transfer.rocket.property.RocketMqTriggerProperty.Rock
 @EnableConfigurationProperties(RocketTransferProperties.class)
 @AutoConfigureAfter(EasyEventTransferAutoConfiguration.class)
 @ConditionalOnClass(RocketMqEventTrigger.class)
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10040)
 public class RocketMqTransferAutoConfiguration {
+
+    @PostConstruct
+    public void init() {
+        log.info(
+            "-----------------------------------------RocketMqTransferAutoConfiguration-------------------------------");
+    }
 
     @Bean(initMethod = "init", destroyMethod = "destroy")
     @ConditionalOnMissingBean

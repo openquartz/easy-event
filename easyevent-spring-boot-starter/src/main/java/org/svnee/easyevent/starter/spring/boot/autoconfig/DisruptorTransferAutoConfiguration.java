@@ -1,11 +1,14 @@
 package org.svnee.easyevent.starter.spring.boot.autoconfig;
 
+import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 import org.svnee.easyevent.common.concurrent.lock.LockSupport;
 import org.svnee.easyevent.common.serde.Serializer;
 import org.svnee.easyevent.common.transaction.TransactionSupport;
@@ -27,7 +30,14 @@ import org.svnee.easyevent.transfer.disruptor.property.DisruptorTriggerProperty;
 @EnableConfigurationProperties(DisruptorTransferProperties.class)
 @AutoConfigureAfter(EasyEventTransferAutoConfiguration.class)
 @ConditionalOnClass(DisruptorTriggerEventSender.class)
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10020)
 public class DisruptorTransferAutoConfiguration {
+
+    @PostConstruct
+    public void init() {
+        log.info(
+            "-----------------------------------------DisruptorTransferAutoConfiguration-------------------------------");
+    }
 
     @Bean(initMethod = "init", destroyMethod = "destroy")
     @ConditionalOnMissingBean

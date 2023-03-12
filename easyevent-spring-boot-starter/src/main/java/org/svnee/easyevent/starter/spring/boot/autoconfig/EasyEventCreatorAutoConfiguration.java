@@ -4,13 +4,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.svnee.easyevent.common.concurrent.ThreadFactoryBuilder;
 import org.svnee.easyevent.common.concurrent.TraceThreadPoolExecutor;
 import org.svnee.easyevent.common.concurrent.lock.LockSupport;
@@ -39,7 +42,14 @@ import org.svnee.easyevent.transfer.api.EventSender;
 @Configuration
 @EnableConfigurationProperties(DefaultEventBusProperties.class)
 @AutoConfigureAfter(JdbcStorageAutoConfiguration.class)
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 1000)
 public class EasyEventCreatorAutoConfiguration {
+
+    @PostConstruct
+    public void init() {
+        log.info(
+            "-----------------------------------------EasyEventCreatorAutoConfiguration-------------------------------");
+    }
 
     @Bean
     @ConditionalOnMissingBean(EventBus.class)

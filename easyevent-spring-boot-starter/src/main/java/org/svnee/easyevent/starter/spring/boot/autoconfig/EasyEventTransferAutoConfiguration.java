@@ -3,10 +3,14 @@ package org.svnee.easyevent.starter.spring.boot.autoconfig;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 import org.svnee.easyevent.common.concurrent.ThreadFactoryBuilder;
 import org.svnee.easyevent.common.concurrent.TraceThreadPoolExecutor;
 import org.svnee.easyevent.starter.spring.boot.autoconfig.property.DefaultTransferProperties;
@@ -23,9 +27,17 @@ import org.svnee.easyevent.transfer.api.route.EventRouter;
  *
  * @author svnee
  **/
+@Slf4j
 @AutoConfigureAfter(EasyEventCreatorAutoConfiguration.class)
 @EnableConfigurationProperties({DefaultTransferSenderProperties.class, DefaultTransferProperties.class})
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10000)
 public class EasyEventTransferAutoConfiguration {
+
+    @PostConstruct
+    public void init() {
+        log.info(
+            "-----------------------------------------EasyEventTransferAutoConfiguration-------------------------------");
+    }
 
     @Bean
     @ConditionalOnMissingBean(name = "asyncSendExecutor")
