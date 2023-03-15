@@ -42,7 +42,6 @@ public class DisruptorTriggerEventSender implements EventSender {
     private final Serializer serializer;
     private final TransactionSupport transactionSupport;
     private final EventStorageService eventStorageService;
-    private final LockSupport lockSupport;
 
     public DisruptorTriggerEventSender(DisruptorTriggerProperty property,
         Consumer<EventMessage> eventHandler,
@@ -54,7 +53,6 @@ public class DisruptorTriggerEventSender implements EventSender {
         this.serializer = serializer;
         this.transactionSupport = transactionSupport;
         this.eventStorageService = eventStorageService;
-        this.lockSupport = lockSupport;
 
         this.disruptor = new Disruptor<>(new DisruptorTriggerEventFactory(),
             property.getConsumerProperty().getBufferSize(), runnable -> {

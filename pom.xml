@@ -58,6 +58,7 @@
     <maven.deploy.version>2.8.2</maven.deploy.version>
     <license-maven-plugin.version>3.0</license-maven-plugin.version>
   </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
