@@ -360,6 +360,10 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 joiner.add("error_count <= :maxErrorCount");
                 paramMap.put("maxErrorCount", condition.getMaxErrorCount());
             }
+            if (Objects.nonNull(condition.getMinErrorCount())) {
+                joiner.add("error_count >= :minErrorCount");
+                paramMap.put("minErrorCount", condition.getMinErrorCount());
+            }
             if (joiner.length() > 0) {
                 sql = sql + " where " + joiner;
             }

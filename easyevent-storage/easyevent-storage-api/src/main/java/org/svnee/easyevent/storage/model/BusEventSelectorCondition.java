@@ -17,6 +17,7 @@ public final class BusEventSelectorCondition {
     private List<String> creatingOwnerList;
     private Range<Date> createTimeRange;
     private Integer maxErrorCount;
+    private Integer minErrorCount;
     private final Integer offset;
 
     private BusEventSelectorCondition(Integer offset) {
@@ -63,6 +64,11 @@ public final class BusEventSelectorCondition {
 
     public BusEventSelectorCondition maxErrorCount(Integer maxErrorCount) {
         this.maxErrorCount = maxErrorCount;
+        return this;
+    }
+
+    public BusEventSelectorCondition minErrorCount(Integer minErrorCount) {
+        this.minErrorCount = minErrorCount;
         return this;
     }
 }
