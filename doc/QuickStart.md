@@ -307,3 +307,45 @@ public class Test2EventHandler {
     }
 }
 ```
+
+### 四、预警通知(可选)
+
+服务提供重试达到最大次数的事件仍然未能成功的进行预警。实现接口`org.svnee.easyevent.core.notify.EventHandleFailedNotifier`。\
+默认实现为`org.svnee.easyevent.starter.schedule.DefaultEventHandleFailedNotifier`.
+
+预警通知接口为: `org.svnee.easyevent.core.notify.EventNotifier`
+
+```java
+package org.svnee.easyevent.core.notify;
+
+import java.util.List;
+import org.svnee.easyevent.storage.model.BusEventEntity;
+
+/**
+ * event notifier
+ *
+ * @author svnee
+ */
+public interface EventNotifier {
+
+    /**
+     * notify event
+     *
+     * @param eventList eventList
+     */
+    void notify(List<BusEventEntity> eventList);
+}
+```
+
+默认实现是`org.svnee.easyevent.core.notify.LogEventNotifier`。 用户可以自定义实现进行使用不同方式通知,并注入到Spring工厂中。例如:`微信`,`钉钉`等。
+
+同时默认提供了预警自定义配置
+
+|  配置key   | 描述  | 默认值 | 备注 |
+|  ----  | ----  | --- | --- |
+|  easyevent.common.notify.enabled | 是否启用预警 | true | |
+|  easyevent.common.notify.identify | 通知唯一标识 | EventFailedNotifier | |
+|  easyevent.common.notify.period  | 通知周期 | 10 | 单位：分钟 |
+|  easyevent.common.notify.thread-prefix  | 通知线程前缀名称 | EventNotifierThread | |
+
+如果需要支持分布式预警通知,需要用于提供实现接口`org.svnee.easyevent.common.concurrent.lock.DistributedLockFactory`并注入到Spring工厂中。
