@@ -1,6 +1,6 @@
 # EasyEvent
 
-** Make Distributed Event Driven Easier!**
+**Make Distributed Event Driven Easier!**
 
 ### 欢迎Star (Welcome Star)!!!
 
