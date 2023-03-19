@@ -37,6 +37,11 @@ public class EasyEventCommonProperties implements EasyEventProperties {
      */
     private EventCompensateProperty compensate = new EventCompensateProperty();
 
+    /**
+     * event notify
+     */
+    private EventNotifyProperty notify = new EventNotifyProperty();
+
     @Override
     public String getAppId() {
         return appId;
@@ -62,6 +67,15 @@ public class EasyEventCommonProperties implements EasyEventProperties {
     public void setCompensate(
         EventCompensateProperty compensate) {
         this.compensate = compensate;
+    }
+
+    public EventNotifyProperty getNotify() {
+        return notify;
+    }
+
+    public void setNotify(
+        EventNotifyProperty notify) {
+        this.notify = notify;
     }
 
     /**
@@ -99,6 +113,62 @@ public class EasyEventCommonProperties implements EasyEventProperties {
         public void setThreadPool(
             EventCompensateThreadPoolProperty threadPool) {
             this.threadPool = threadPool;
+        }
+    }
+
+    public static class EventNotifyProperty {
+
+        /**
+         * enable notify
+         */
+        private boolean enabled = true;
+
+        /**
+         * 唯一标识
+         */
+        private String identify = "EventFailedNotifier";
+
+        /**
+         * 线程名前缀
+         */
+        private String threadPrefix = "EventNotifierThread";
+
+        /**
+         * 周期
+         * 单位：minutes
+         */
+        private int period = 10;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getThreadPrefix() {
+            return threadPrefix;
+        }
+
+        public void setThreadPrefix(String threadPrefix) {
+            this.threadPrefix = threadPrefix;
+        }
+
+        public String getIdentify() {
+            return identify;
+        }
+
+        public void setIdentify(String identify) {
+            this.identify = identify;
+        }
+
+        public int getPeriod() {
+            return period;
+        }
+
+        public void setPeriod(int period) {
+            this.period = period;
         }
     }
 

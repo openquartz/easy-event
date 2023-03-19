@@ -23,9 +23,13 @@ import org.svnee.easyevent.core.DirectInterruptExceptionHandler;
 import org.svnee.easyevent.core.EventBus;
 import org.svnee.easyevent.core.compensate.EventCompensateService;
 import org.svnee.easyevent.core.compensate.EventCompensateServiceImpl;
+import org.svnee.easyevent.core.notify.EventHandleFailedNotifier;
+import org.svnee.easyevent.core.notify.EventNotifier;
+import org.svnee.easyevent.core.notify.LogEventNotifier;
 import org.svnee.easyevent.core.trigger.AsyncEventHandler;
 import org.svnee.easyevent.starter.schedule.CompensateProcessGlobalScheduleService;
 import org.svnee.easyevent.starter.schedule.CompensateProcessSelfScheduleService;
+import org.svnee.easyevent.starter.schedule.DefaultEventHandleFailedNotifier;
 import org.svnee.easyevent.starter.schedule.ScheduleCompensateRejectedExecutionHandler;
 import org.svnee.easyevent.starter.spring.boot.autoconfig.property.DefaultEventBusProperties;
 import org.svnee.easyevent.starter.spring.boot.autoconfig.property.EasyEventCommonProperties;
@@ -131,6 +135,25 @@ public class EasyEventCreatorAutoConfiguration {
         return new CompensateProcessSelfScheduleService(eventCompensateService,
             easyEventCommonProperties,
             scheduleCompensateRejectedExecutionHandler);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "easyevent.common.notify.enabled", havingValue = "true", matchIfMissing = true)
+    public EventHandleFailedNotifier eventHandleFailedNotifier(EasyEventCommonProperties easyEventCommonProperties,
+        EventStorageService eventStorageService,
+        EventNotifier eventNotifier,
+        LockSupport lockSupport) {
+        return new DefaultEventHandleFailedNotifier(eventStorageService, easyEventCommonProperties.getMaxRetryCount(),
+            eventNotifier,
+            easyEventCommonProperties.getNotify(),
+            lockSupport);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "easyevent.common.notify.enabled", havingValue = "true", matchIfMissing = true)
+    public EventNotifier eventNotifier() {
+        return new LogEventNotifier();
     }
 
 }

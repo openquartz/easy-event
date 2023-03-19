@@ -5,7 +5,6 @@ import static org.svnee.easyevent.storage.model.EventLifecycleState.IN_PROCESSIN
 import static org.svnee.easyevent.storage.model.EventLifecycleState.PROCESS_FAILED;
 import static org.svnee.easyevent.storage.model.EventLifecycleState.TRANSFER_FAILED;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import org.svnee.easyevent.common.utils.CollectionUtils;
@@ -13,7 +12,6 @@ import org.svnee.easyevent.common.utils.DateUtils;
 import org.svnee.easyevent.storage.api.EventStorageService;
 import org.svnee.easyevent.storage.model.BusEventEntity;
 import org.svnee.easyevent.storage.model.BusEventSelectorCondition;
-import org.svnee.easyevent.storage.model.EventLifecycleState;
 
 /**
  * EventHandleFailedNotifierAdapter
@@ -42,7 +40,7 @@ public abstract class EventHandleFailedNotifierAdapter implements EventHandleFai
             .minErrorCount(maxErrorCount)
             .lifecycleState(CollectionUtils.newArrayList(AVAILABLE, PROCESS_FAILED, IN_PROCESSING, TRANSFER_FAILED))
             .start(DateUtils.addHours(now, -2))
-            .end(DateUtils.addMinutes(now, -5));
+            .end(DateUtils.addMinutes(now, -10));
         List<BusEventEntity> entityList = eventStorageService.get(condition);
         if (CollectionUtils.isEmpty(entityList)) {
             return;
