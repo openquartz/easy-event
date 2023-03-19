@@ -1,8 +1,8 @@
 # EasyEvent
 
-**Make Distributed Event Driven Easier!**
+** Make Distributed Event Driven Easier!**
 
-### 开源不易,欢迎Star!!!
+### 欢迎Star (Welcome Star)!!!
 
 **[主页](https://svnlab.github.io/)** \
 **[Github](https://github.com/svnlab/easy-event) [Gitee](https://gitee.com/svnee/easy-event)**
