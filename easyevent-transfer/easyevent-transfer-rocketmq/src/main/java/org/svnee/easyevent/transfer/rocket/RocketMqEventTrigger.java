@@ -141,13 +141,13 @@ public class RocketMqEventTrigger implements EventTrigger {
                                     .getReconsumeTimes());
                         log.error(
                             "[RocketMQTriggerConsumer#create]Consumption failure!message is blocked!,message:{},properties:{},consumer-property:{}",
-                            message,
+                            message.getMsgId(),
                             commonProperty, consumerProperty, ex);
                         return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                     } else {
                         log.error(
                             "[RocketMQTriggerConsumer#create]Consumption failure,max consume retry!message:{},properties:{},consumer-property:{}",
-                            message,
+                            message.getMsgId(),
                             commonProperty, consumerProperty, ex);
                         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                     }
@@ -158,13 +158,13 @@ public class RocketMqEventTrigger implements EventTrigger {
                             .setDelayLevelWhenNextConsume(consumerProperty.getConsumeRetryDelayTimeIntervalSeconds());
                         log.error(
                             "[RocketMQTriggerConsumer#create]Consumption failure,message:{},properties:{},consumer-property:{}",
-                            message,
+                            message.getMsgId(),
                             commonProperty, consumerProperty, ex);
                         return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                     } else {
                         log.error(
                             "[RocketMQTriggerConsumer#create]Consumption failure,max consume retry!message:{},properties:{},consumer-property:{}",
-                            message,
+                            message.getMsgId(),
                             commonProperty, consumerProperty, ex);
                         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                     }
