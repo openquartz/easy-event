@@ -74,4 +74,17 @@ public final class StringUtils {
     public static boolean isEmpty(CharSequence str) {
         return str == null || str.length() == 0;
     }
+
+    /**
+     * split prefix
+     * @param source source
+     * @param maxLength max length
+     * @return prefix string
+     */
+    public static String splitPrefix(String source, int maxLength) {
+        if (StringUtils.isBlank(source) || source.length() <= maxLength) {
+            return source;
+        }
+        return source.substring(0, maxLength);
+    }
 }

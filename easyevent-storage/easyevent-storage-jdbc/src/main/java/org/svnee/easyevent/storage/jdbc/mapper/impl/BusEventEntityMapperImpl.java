@@ -76,6 +76,8 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     private static final String REFRESH_SEND_FAILED_SQL = "update {0} set processing_state=?,processing_failed_reason=?,processing_owner=?,error_count=error_count+1 where id = ?";
     private static final String REFRESH_PROCESSING_FAILED_SQL = "update {0} set processing_state=?,processing_failed_reason=?,successful_subscriber=?,error_count=error_count+1 where id = ?";
 
+    private static final int PROCESS_FAIL_REASON_LENGTH = 128;
+
     @Override
     public void insertSelective(BusEventEntity busEventEntity) {
 
@@ -233,6 +235,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             .format(REFRESH_SEND_FAILED_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
         String processFailedReason = Objects.nonNull(ex) ? ex.getMessage() : StringUtils.EMPTY;
+        processFailedReason = StringUtils.splitPrefix(processFailedReason, PROCESS_FAIL_REASON_LENGTH);
         int actual = jdbcTemplate
             .update(sql, transferFailed.getCode(), processFailedReason, IpUtil.getIp(), eventId.getId());
         DataUtils.checkUpdateOne(actual);
@@ -242,8 +245,9 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
         String sql = MessageFormat
             .format(REFRESH_PROCESS_STATE_SQL, supplier.genBusEventEntityTable(eventId.getId()));
-
-        int actual = jdbcTemplate.update(sql, state.getCode(), processFailedReason, eventId.getId());
+        int actual = jdbcTemplate
+            .update(sql, state.getCode(), StringUtils.splitPrefix(processFailedReason, PROCESS_FAIL_REASON_LENGTH),
+                eventId.getId());
         DataUtils.checkUpdateOne(actual);
     }
 
@@ -280,8 +284,10 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         String sql = MessageFormat
             .format(REFRESH_PROCESSING_FAILED_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
+        String failReason = Objects.nonNull(invokeError) ? invokeError.getMessage() : StringUtils.EMPTY;
+        failReason = StringUtils.splitPrefix(failReason, PROCESS_FAIL_REASON_LENGTH);
         int affect = jdbcTemplate.update(sql, processFailed.getCode(),
-            Objects.nonNull(invokeError) ? invokeError.getMessage() : StringUtils.EMPTY,
+            failReason,
             successfulSubscriber,
             eventId.getId());
         DataUtils.checkUpdateOne(affect);
