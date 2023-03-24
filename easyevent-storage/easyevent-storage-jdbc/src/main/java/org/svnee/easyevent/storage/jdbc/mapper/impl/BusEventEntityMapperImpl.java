@@ -163,7 +163,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 public void setValues(@NonNull PreparedStatement ps, int i) throws SQLException {
                     BusEventEntity entity = data.get(i);
                     ps.setString(1, entity.getAppId());
-                    ps.setLong(2, Objects.nonNull(entity.getSourceId())?entity.getSourceId():0);
+                    ps.setLong(2, Objects.nonNull(entity.getSourceId()) ? entity.getSourceId() : 0);
                     ps.setString(3, entity.getClassName());
                     ps.setInt(4, entity.getErrorCount());
                     ps.setString(5, Joiner.join(entity.getSuccessfulSubscriberList(), CommonConstants.COMMA));
@@ -233,7 +233,8 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             .format(REFRESH_SEND_FAILED_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
         String processFailedReason = Objects.nonNull(ex) ? ex.getMessage() : StringUtils.EMPTY;
-        int actual = jdbcTemplate.update(sql, transferFailed.getCode(), processFailedReason, eventId.getId());
+        int actual = jdbcTemplate
+            .update(sql, transferFailed.getCode(), processFailedReason, IpUtil.getIp(), eventId.getId());
         DataUtils.checkUpdateOne(actual);
     }
 

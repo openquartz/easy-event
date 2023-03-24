@@ -233,6 +233,33 @@ public class RocketTransferProperties {
         public void setConsumeLimingRetryDelayTimeBaseSeconds(Integer consumeLimingRetryDelayTimeBaseSeconds) {
             this.consumeLimingRetryDelayTimeBaseSeconds = consumeLimingRetryDelayTimeBaseSeconds;
         }
+
+        @Override
+        public String toString() {
+            return "RocketMqTransferConsumerProperties{" +
+                "consumerGroup='" + consumerGroup + '\'' +
+                ", topic='" + topic + '\'' +
+                ", tags='" + tags + '\'' +
+                ", consumerMaxThread=" + consumerMaxThread +
+                ", consumerMinThread=" + consumerMinThread +
+                ", consumeConcurrentlyMaxSpan=" + consumeConcurrentlyMaxSpan +
+                ", consumeMaxRetry=" + consumeMaxRetry +
+                ", consumeRetryDelayTimeIntervalSeconds=" + consumeRetryDelayTimeIntervalSeconds +
+                ", consumeLimingRetryDelayTimeBaseSeconds=" + consumeLimingRetryDelayTimeBaseSeconds +
+                '}';
+        }
     }
 
+    @Override
+    public String toString() {
+        return "RocketTransferProperties{" +
+            "host='" + host + '\'' +
+            ", produceGroup='" + produceGroup + '\'' +
+            ", produceTimeout=" + produceTimeout +
+            ", produceTryTimes=" + produceTryTimes +
+            ", produceLatencyFaultEnable=" + produceLatencyFaultEnable +
+            ", produceMessageSize=" + produceMessageSize +
+            ", consumers=" + consumers +
+            '}';
+    }
 }

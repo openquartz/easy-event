@@ -23,5 +23,10 @@ public class DefaultTransferProperties {
      */
     private String defaultTopic = "easyevent";
 
-
+    @Override
+    public String toString() {
+        return "DefaultTransferProperties{" +
+            "defaultTopic='" + defaultTopic + '\'' +
+            '}';
+    }
 }

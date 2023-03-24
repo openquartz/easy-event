@@ -136,6 +136,24 @@ public class DisruptorTransferProperties {
         public void setBufferSize(int bufferSize) {
             this.bufferSize = bufferSize;
         }
+
+        @Override
+        public String toString() {
+            return "DisruptorTransferConsumerProperty{" +
+                "threadPrefix='" + threadPrefix + '\'' +
+                ", corePoolSize=" + corePoolSize +
+                ", maximumPoolSize=" + maximumPoolSize +
+                ", keepAliveTime=" + keepAliveTime +
+                ", bufferSize=" + bufferSize +
+                '}';
+        }
     }
 
+    @Override
+    public String toString() {
+        return "DisruptorTransferProperties{" +
+            "sender=" + sender +
+            ", consumer=" + consumer +
+            '}';
+    }
 }

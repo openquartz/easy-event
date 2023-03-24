@@ -114,6 +114,15 @@ public class EasyEventCommonProperties implements EasyEventProperties {
             EventCompensateThreadPoolProperty threadPool) {
             this.threadPool = threadPool;
         }
+
+        @Override
+        public String toString() {
+            return "EventCompensateProperty{" +
+                "threadPool=" + threadPool +
+                ", self=" + self +
+                ", global=" + global +
+                '}';
+        }
     }
 
     public static class EventNotifyProperty {
@@ -350,5 +359,29 @@ public class EasyEventCommonProperties implements EasyEventProperties {
         public void setSchedulePeriod(Integer schedulePeriod) {
             this.schedulePeriod = schedulePeriod;
         }
+
+        @Override
+        public String toString() {
+            return "EventCompensateProcessProperty{" +
+                "enabled=" + enabled +
+                ", threadPoolThreadPrefix='" + threadPoolThreadPrefix + '\'' +
+                ", threadPoolCoreSize=" + threadPoolCoreSize +
+                ", compensateState='" + compensateState + '\'' +
+                ", beforeStartSeconds=" + beforeStartSeconds +
+                ", beforeEndSeconds=" + beforeEndSeconds +
+                ", offset=" + offset +
+                ", schedulePeriod=" + schedulePeriod +
+                '}';
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "EasyEventCommonProperties{" +
+            "appId='" + appId + '\'' +
+            ", maxRetryCount=" + maxRetryCount +
+            ", compensate=" + compensate +
+            ", notify=" + notify +
+            '}';
     }
 }

@@ -156,6 +156,21 @@ public class RocketMqTriggerProperty {
         public void setConsumeLimingRetryDelayTimeBaseSeconds(Integer consumeLimingRetryDelayTimeBaseSeconds) {
             this.consumeLimingRetryDelayTimeBaseSeconds = consumeLimingRetryDelayTimeBaseSeconds;
         }
+
+        @Override
+        public String toString() {
+            return "RocketMqConsumerProperty{" +
+                "consumerGroup='" + consumerGroup + '\'' +
+                ", topic='" + topic + '\'' +
+                ", tags='" + tags + '\'' +
+                ", consumerMaxThread=" + consumerMaxThread +
+                ", consumerMinThread=" + consumerMinThread +
+                ", consumeConcurrentlyMaxSpan=" + consumeConcurrentlyMaxSpan +
+                ", consumeMaxRetry=" + consumeMaxRetry +
+                ", consumeRetryDelayTimeIntervalSeconds=" + consumeRetryDelayTimeIntervalSeconds +
+                ", consumeLimingRetryDelayTimeBaseSeconds=" + consumeLimingRetryDelayTimeBaseSeconds +
+                '}';
+        }
     }
 
 }

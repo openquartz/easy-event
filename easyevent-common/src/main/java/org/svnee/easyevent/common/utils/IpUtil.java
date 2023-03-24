@@ -12,6 +12,15 @@ public final class IpUtil {
     private IpUtil() {
     }
 
+    private static String ipAddress = null;
+
+    static {
+        try {
+            ipAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (Exception ignored) {
+        }
+    }
+
     /**
      * 获取当前机器的IP
      *
@@ -19,12 +28,13 @@ public final class IpUtil {
      */
     public static String getIp() {
         // 查询当前IP
-        String ip = null;
         try {
-            ip = InetAddress.getLocalHost().getHostAddress();
+            if (ipAddress == null) {
+                ipAddress = InetAddress.getLocalHost().getHostAddress();
+            }
         } catch (Exception ignored) {
         }
-        return ip;
+        return ipAddress;
     }
 
 }

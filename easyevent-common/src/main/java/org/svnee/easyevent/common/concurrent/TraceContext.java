@@ -66,7 +66,6 @@ public class TraceContext {
         return map.put(param.getCode(), value);
     }
 
-
     /**
      * 获取traceId
      *
@@ -91,7 +90,9 @@ public class TraceContext {
      * put trace
      */
     public static void putTrace(Map<String, String> traceMap) {
-        put(TraceContextParam.TRACE_ID, traceMap);
+        if (MapUtils.isNotEmpty(traceMap)) {
+            put(TraceContextParam.TRACE_ID, traceMap);
+        }
     }
 
     /**

@@ -193,6 +193,30 @@ public class KafkaTransferProperties {
         public void setClientId(String clientId) {
             this.clientId = clientId;
         }
+
+        @Override
+        public String toString() {
+            return "KafkaTransferConsumerProperties{" +
+                "consumerGroup='" + consumerGroup + '\'' +
+                ", clientId='" + clientId + '\'' +
+                ", topic='" + topic + '\'' +
+                ", partition='" + partition + '\'' +
+                ", currency=" + currency +
+                ", consumeMaxRetry=" + consumeMaxRetry +
+                ", consumeRetryDelayTimeIntervalSeconds=" + consumeRetryDelayTimeIntervalSeconds +
+                '}';
+        }
     }
 
+    @Override
+    public String toString() {
+        return "KafkaTransferProperties{" +
+            "host='" + host + '\'' +
+            ", produceGroup='" + produceGroup + '\'' +
+            ", produceTimeout=" + produceTimeout +
+            ", produceTryTimes=" + produceTryTimes +
+            ", produceTopicPartitions=" + produceTopicPartitions +
+            ", consumers=" + consumers +
+            '}';
+    }
 }

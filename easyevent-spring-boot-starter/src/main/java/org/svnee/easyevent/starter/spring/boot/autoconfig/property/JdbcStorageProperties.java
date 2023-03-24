@@ -48,6 +48,14 @@ public class JdbcStorageProperties {
         public void setTotalSharding(int totalSharding) {
             this.totalSharding = totalSharding;
         }
+
+        @Override
+        public String toString() {
+            return "JdbcTableProperties{" +
+                "prefix='" + prefix + '\'' +
+                ", totalSharding=" + totalSharding +
+                '}';
+        }
     }
 
     public static class JdbcDatasourceProperties {
@@ -115,6 +123,17 @@ public class JdbcStorageProperties {
 
         public void setPassword(String password) {
             this.password = password;
+        }
+
+        @Override
+        public String toString() {
+            return "JdbcDatasourceProperties{" +
+                "type='" + type + '\'' +
+                ", url='" + url + '\'' +
+                ", driverClassName='" + driverClassName + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                '}';
         }
     }
 
