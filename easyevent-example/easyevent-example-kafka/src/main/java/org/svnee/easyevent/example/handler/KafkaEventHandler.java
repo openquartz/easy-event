@@ -38,7 +38,6 @@ public class KafkaEventHandler {
         } else {
             throw new RuntimeException("xxxxxxxxx");
         }
-
     }
 
     @Subscribe

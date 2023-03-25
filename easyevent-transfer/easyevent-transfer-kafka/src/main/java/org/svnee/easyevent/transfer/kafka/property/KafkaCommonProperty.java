@@ -17,7 +17,7 @@ public class KafkaCommonProperty {
      * produce topic partitions
      * 默认topic分区数
      */
-    private Integer produceTopicPartitions = 4;
+    private Integer produceTopicPartitions = 2;
 
     /**
      * 发送超时

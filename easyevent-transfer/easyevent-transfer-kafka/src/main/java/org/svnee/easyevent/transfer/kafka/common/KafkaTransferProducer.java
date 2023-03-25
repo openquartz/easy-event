@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Random;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +21,7 @@ import org.svnee.easyevent.common.utils.Asserts;
 import org.svnee.easyevent.common.utils.CollectionUtils;
 import org.svnee.easyevent.common.utils.ExceptionUtils;
 import org.svnee.easyevent.common.utils.JSONUtil;
+import org.svnee.easyevent.common.utils.RandomUtils;
 import org.svnee.easyevent.storage.identify.EventId;
 import org.svnee.easyevent.transfer.api.adapter.TransferProducer;
 import org.svnee.easyevent.transfer.api.common.BatchSendResult;
@@ -107,7 +107,7 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
     private int parseRoutePartition(Pair<String, String> routeTopic) {
         int partition;
         if (Objects.isNull(routeTopic.getValue())) {
-            partition = new Random(kafkaCommonProperty.getProduceTopicPartitions()).nextInt();
+            partition = RandomUtils.nextInt(kafkaCommonProperty.getProduceTopicPartitions());
         } else {
             int currentPartition = Integer.parseInt(routeTopic.getValue());
             Asserts.isTrueIfLog(currentPartition < kafkaCommonProperty.getProduceTopicPartitions(),

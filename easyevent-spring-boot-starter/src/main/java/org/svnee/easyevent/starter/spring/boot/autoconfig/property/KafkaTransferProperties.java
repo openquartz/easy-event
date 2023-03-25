@@ -19,7 +19,7 @@ public class KafkaTransferProperties {
     /**
      * host
      */
-    private String host = "127.0.0.1:9876";
+    private String host = "127.0.0.1:9092";
 
     /**
      * 发送者组
@@ -40,7 +40,7 @@ public class KafkaTransferProperties {
     /**
      * 生产者topic 的partition分区数
      */
-    private int produceTopicPartitions = 4;
+    private int produceTopicPartitions = 2;
 
     /**
      * consumers

@@ -720,7 +720,6 @@ public abstract class TypeToken<T> extends TypeCapture<T> implements Serializabl
         // Use raw type so that compiler allows us to call getSupertype()
         @SuppressWarnings("rawtypes")
         TypeToken componentType = getComponentType();
-        // TODO(cpovirk): checkArgument?
         if (componentType == null) {
             throw new IllegalArgumentException(supertype + " isn't a super type of " + this);
         }
