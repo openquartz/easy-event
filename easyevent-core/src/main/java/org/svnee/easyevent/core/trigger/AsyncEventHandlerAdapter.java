@@ -3,6 +3,7 @@ package org.svnee.easyevent.core.trigger;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.svnee.easyevent.common.concurrent.TraceContext;
 import org.svnee.easyevent.common.exception.EasyEventException;
 import org.svnee.easyevent.common.property.EasyEventProperties;
 import org.svnee.easyevent.common.serde.Serializer;
@@ -68,70 +69,77 @@ public abstract class AsyncEventHandlerAdapter implements AsyncEventHandler {
         if (entity.isProcessComplete() || entity.getErrorCount() >= getEasyEventProperties().getMaxRetryCount()) {
             return;
         }
-
-        TriggerInterceptorContext context = new TriggerInterceptorContext();
-        boolean preTrigger = TriggerInterceptorChain.applyPreTrigger(eventMessage, context);
-        if (!preTrigger) {
-            return;
-        }
-
-        // 开启处理
-        String eventData = eventMessage.getEventData();
-        Object event = null;
         try {
-            event = getSerializer().deserialize(Class.forName(eventMessage.getClassName()), eventData);
-        } catch (Exception ex) {
-            log.error("[EventTriggerAdapter#trigger]deserialize-error!eventMessage:{}", eventMessage, ex);
-            getEventStorageService().processingFailed(eventMessage.getEventId(), ex);
-            // trigger-complete
-            TriggerInterceptorChain.triggerAfterCompletion(eventMessage, context, ex);
-            ExceptionUtils.rethrow(ex);
-        }
-        boolean executeSuccess;
-        try {
-            // 执行EventBus.
-            boolean process = getEventStorageService().startProcessing(eventMessage.getEventId());
-            if (!process) {
-                log.error("[EventTriggerAdapter#trigger]start-process-failed!event:{}", eventMessage);
+
+            // put traceId
+            TraceContext.putSourceEventIdIfAbsent(eventMessage.getEventId().getId());
+
+            TriggerInterceptorContext context = new TriggerInterceptorContext();
+            boolean preTrigger = TriggerInterceptorChain.applyPreTrigger(eventMessage, context);
+            if (!preTrigger) {
                 return;
             }
-            Object finalEvent = event;
-            executeSuccess = getTransactionSupport().execute(() -> {
-                DispatchInvokeResult invokeResult = getHandleEventBus()
-                    .postAll(finalEvent, entity.getSuccessfulSubscriberList());
-                List<String> successfulSubIdentifyList = invokeResult.getSuccessSubscriberList()
-                    .stream()
-                    .map(Subscriber::getTargetIdentify)
-                    .collect(Collectors.toList());
-                // 未执行成功
-                if (!invokeResult.isSuccess()) {
-                    getEventStorageService()
-                        .processingFailed(eventMessage.getEventId(), successfulSubIdentifyList,
-                            invokeResult.getInvokeError());
-                } else {
-                    getEventStorageService()
-                        .processingCompleted(eventMessage.getEventId());
-                }
-                return invokeResult.isSuccess();
-            });
-        } catch (Exception ex) {
-            log.error("[EventTriggerAdapter#trigger]exe-error!eventMessage:{}", eventMessage, ex);
-            getEventStorageService().processingFailed(eventMessage.getEventId(), ex);
-            executeSuccess = false;
-            // trigger complete
-            TriggerInterceptorChain.triggerAfterCompletion(eventMessage, context, ex);
-            ExceptionUtils.rethrow(ex);
-        }
 
-        if (executeSuccess) {
-            // trigger-complete
-            TriggerInterceptorChain.triggerAfterCompletion(eventMessage, context, null);
-        } else {
-            log.error("[EventTriggerAdapter#trigger]execute-process-failed!event:{}", eventMessage);
-            Exception ex = new EasyEventException(EventBusErrorCode.EVENT_HANDLE_ERROR);
-            // trigger-complete
-            TriggerInterceptorChain.triggerAfterCompletion(eventMessage, context, ex);
-            ExceptionUtils.rethrow(ex);
+            // 开启处理
+            String eventData = eventMessage.getEventData();
+            Object event = null;
+            try {
+                event = getSerializer().deserialize(Class.forName(eventMessage.getClassName()), eventData);
+            } catch (Exception ex) {
+                log.error("[EventTriggerAdapter#trigger]deserialize-error!eventMessage:{}", eventMessage, ex);
+                getEventStorageService().processingFailed(eventMessage.getEventId(), ex);
+                // trigger-complete
+                TriggerInterceptorChain.triggerAfterCompletion(eventMessage, context, ex);
+                ExceptionUtils.rethrow(ex);
+            }
+            boolean executeSuccess;
+            try {
+                // 执行EventBus.
+                boolean process = getEventStorageService().startProcessing(eventMessage.getEventId());
+                if (!process) {
+                    log.error("[EventTriggerAdapter#trigger]start-process-failed!event:{}", eventMessage);
+                    return;
+                }
+                Object finalEvent = event;
+                executeSuccess = getTransactionSupport().execute(() -> {
+                    DispatchInvokeResult invokeResult = getHandleEventBus()
+                        .postAll(finalEvent, entity.getSuccessfulSubscriberList());
+                    List<String> successfulSubIdentifyList = invokeResult.getSuccessSubscriberList()
+                        .stream()
+                        .map(Subscriber::getTargetIdentify)
+                        .collect(Collectors.toList());
+                    // 未执行成功
+                    if (!invokeResult.isSuccess()) {
+                        getEventStorageService()
+                            .processingFailed(eventMessage.getEventId(), successfulSubIdentifyList,
+                                invokeResult.getInvokeError());
+                    } else {
+                        getEventStorageService()
+                            .processingCompleted(eventMessage.getEventId());
+                    }
+                    return invokeResult.isSuccess();
+                });
+            } catch (Exception ex) {
+                log.error("[EventTriggerAdapter#trigger]exe-error!eventMessage:{}", eventMessage, ex);
+                getEventStorageService().processingFailed(eventMessage.getEventId(), ex);
+                executeSuccess = false;
+                // trigger complete
+                TriggerInterceptorChain.triggerAfterCompletion(eventMessage, context, ex);
+                ExceptionUtils.rethrow(ex);
+            }
+
+            if (executeSuccess) {
+                // trigger-complete
+                TriggerInterceptorChain.triggerAfterCompletion(eventMessage, context, null);
+            } else {
+                log.error("[EventTriggerAdapter#trigger]execute-process-failed!event:{}", eventMessage);
+                Exception ex = new EasyEventException(EventBusErrorCode.EVENT_HANDLE_ERROR);
+                // trigger-complete
+                TriggerInterceptorChain.triggerAfterCompletion(eventMessage, context, ex);
+                ExceptionUtils.rethrow(ex);
+            }
+        } finally {
+            TraceContext.clearSourceEventId();
         }
     }
 }

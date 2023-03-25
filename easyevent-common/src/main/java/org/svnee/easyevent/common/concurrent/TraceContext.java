@@ -33,6 +33,10 @@ public class TraceContext {
         CURRENT_TRACE_CONTEXT.remove();
     }
 
+    public static void clear(TraceContextParam param) {
+        CURRENT_TRACE_CONTEXT.get().remove(param.getCode());
+    }
+
     private static Object get(TraceContextParam param) {
 
         checkNotNull(param);
@@ -112,6 +116,13 @@ public class TraceContext {
      */
     public static Long putSourceEventIdIfAbsent(Long sourceEventId) {
         return (Long) putIfAbsent(TraceContextParam.SOURCE_EVENT_ID, sourceEventId);
+    }
+
+    /**
+     * clear source trace
+     */
+    public static void clearSourceEventId() {
+        clear(TraceContextParam.SOURCE_EVENT_ID);
     }
 
 }
