@@ -71,7 +71,15 @@ public class KafkaEventTrigger implements EventTrigger {
                 .values()
                 .stream()
                 .collect(Collectors.groupingBy(KafkaConsumerProperty::getConsumerGroup, Collectors.toList()));
+            // create consume thread
             consumerGroup2KafkaConsumerMap.values().forEach(k -> create(kafkaCommonProperty, k, countDownLatch));
+            for (KafkaTransferConsumer consumer : kafkaConsumerList) {
+                try {
+                    consumer.start();
+                } catch (Exception ex) {
+                    log.error("[KafkaEventTrigger#init]consume-start!", ex);
+                }
+            }
         }
     }
 

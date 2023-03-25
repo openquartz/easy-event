@@ -45,7 +45,7 @@ public class KafkaTransferConsumer extends Thread {
         }
     }
 
-    public void doWork() {
+    private void doWork() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 ConsumerRecords<String, String> consumerRecords = consumer.poll(Long.MAX_VALUE);
