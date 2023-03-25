@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.svnee.easyevent.common.utils.MapUtils;
 
 /**
  * Trace线程池执行
@@ -47,7 +48,10 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
                 Map<String, Object> traceContextMap = traceRunnable.getTraceContextMap();
                 if (traceContextMap != null && !traceContextMap.isEmpty()) {
                     TraceContext.setTraceContextMap(traceContextMap);
-                    MDC.setContextMap(TraceContext.getTrace());
+                    Map<String, String> trace = TraceContext.getTrace();
+                    if (MapUtils.isNotEmpty(trace)) {
+                        MDC.setContextMap(trace);
+                    }
                 }
             } catch (Exception ex) {
                 log.error("[trace execute thread pool] set context error", ex);

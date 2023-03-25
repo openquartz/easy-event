@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -59,9 +60,7 @@ public class JdbcStorageAutoConfiguration {
             "-----------------------------------------JdbcStorageAutoConfiguration-------------------------------");
     }
 
-    @Bean
-    @ConditionalOnMissingBean(type = "easyEventJdbcStorageDataSource", value = DataSource.class)
-    public DataSource easyEventJdbcStorageDataSource(JdbcStorageProperties jdbcStorageProperties,
+    private DataSource newEventJdbcStorageDataSource(JdbcStorageProperties jdbcStorageProperties,
         Environment environment) {
 
         Iterable<ConfigurationPropertySource> sources = ConfigurationPropertySources
@@ -75,7 +74,6 @@ public class JdbcStorageAutoConfiguration {
         buildDataSourceProperties(dataSource, properties);
         return dataSource;
     }
-
 
     private DataSource buildDataSource(JdbcStorageProperties jdbcStorageProperties) {
         try {
@@ -118,13 +116,15 @@ public class JdbcStorageAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(type = "jdbcStorageJdbcTemplate", value = JdbcTemplate.class)
-    public JdbcTemplate jdbcStorageJdbcTemplate(DataSource easyEventJdbcStorageDataSource) {
-        return new JdbcTemplate(easyEventJdbcStorageDataSource);
+    public JdbcTemplate jdbcStorageJdbcTemplate(JdbcStorageProperties jdbcStorageProperties,
+        Environment environment) {
+        return new JdbcTemplate(newEventJdbcStorageDataSource(jdbcStorageProperties, environment));
     }
 
     @Bean
     @ConditionalOnMissingBean(type = "busEventEntityMapperImpl", value = BusEventEntityMapper.class)
-    public BusEventEntityMapper busEventEntityMapperImpl(JdbcTemplate jdbcStorageJdbcTemplate,
+    public BusEventEntityMapper busEventEntityMapperImpl(
+        @Qualifier("jdbcStorageJdbcTemplate") JdbcTemplate jdbcStorageJdbcTemplate,
         EasyEventTableGeneratorSupplier easyEventTableGeneratorSupplier) {
         return new BusEventEntityMapperImpl(jdbcStorageJdbcTemplate, easyEventTableGeneratorSupplier);
     }
