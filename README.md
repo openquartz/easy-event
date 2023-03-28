@@ -77,13 +77,13 @@
 
 |     |  easy-event | Google EventBus | killbill-queue | SpringCloud-Bus | RocketMQ EventBridge |
 |  ----  | ----  | --- | ---  | --- |  --- |
-| 介绍 | 基于`Google Guava`开发的分布式的最终一致性的，用法基本相同 | 基于单机内存的 EventBus | 基于DB+Google EventBus开发的扩展 | springcloud 提供的可单机可分布式的EventBus | 基于RocketMQ5.0的高可靠、低耦合、高性能的事件驱动架构  |
+| 介绍 | 基于`Google Guava`开发的分布式的最终一致性的，用法基本相同 | 基于单机内存的 `EventBus` | 基于`DB`+`Google EventBus`开发的扩展 | springcloud 提供的可单机可分布式的`EventBus` | 基于`RocketMQ5.0`的高可靠、低耦合、高性能的事件驱动架构  |
 | 分布式 | 支持单服务的多机器的分布式环境 | 只支持单机 | 支持单服务的多机器的分布式 | 支持微服务下的分布式环境 | 支持微服务下的分布式环境 | 
-| 可靠性  | 使用本地消息表完成分布式事件驱动,数据不会丢失 | 事件未持久,存在丢失可能 | 使用本地消息表完成分布式事件驱动 | 未作持久化,分布式下依赖 MQ的可靠性 | 依赖RocketMQ的稳定性 |
-| 易用性 | SpringBootStarer包,引入相关依赖即可快熟使用。使用方法几乎和`Google EventBus` 相同 | 用法简单 | `Google EventBus` 相同 | 和Spring Application Event使用用法相同 | 引入EventBridge相关依赖 |
-| 运维  | 常用组件生态,无需额外部署 |  无需额外部署  | 依赖Oracle（无MySql对应版本） | 常用组件生态,无需额外部署 | 部署服务RocketMQ EventBridge |
+| 可靠性  | 使用本地消息表完成分布式事件驱动,数据不会丢失.最终一致性实现 | 事件未持久,存在丢失可能 | 使用本地消息表完成分布式事件驱动 | 未作持久化,分布式下依赖 MQ的可靠性 | 依赖`RocketMQ`的稳定性 |
+| 易用性 | 提供`SpringBootStarer`包,引入相关依赖即可快熟使用。使用方法几乎和`Google EventBus` 相同 | 用法简单 | `Google EventBus` 相同 | 和`Spring Application Event`使用用法相同 | 引入EventBridge相关依赖 |
+| 运维  | 常用组件生态,无需额外部署(`DB`+`MQ`) |  无需额外部署  | 依赖`Oracle`（无`MySql`对应版本） | 常用组件生态,无需额外部署(依赖`MQ`组件) | 部署服务`RocketMQ EventBridge` 与 `RocketMQ` |
 | 隔离性 | 支持不同事件自定义隔离（存储、传递）可扩展 | 无 | 无 | 无 | 无 |
-| 稳定性 | 异步事件触发支持消费和发送自定义限流。支持tag级别的隔离 | 无 | 定时调度.很难控制频率 | 分布式下事件强依赖MQ稳定性。突发事件过多易出现尖刺 | 依赖服务 RocketMQ EventBridge 稳定性 |
-| 扩展性 | 存储支持使用Jdbc等关系型数据库，也可以根据api自定义扩展。传输支持rocketmq、kafka.也可以自定义扩展 | 无 | 依赖Oracle.其他存储组件需要改写代码重新实现 | 传输提供了多个组件的实现。易扩展。 | 强依赖RocketMQ,暂未提供其他可替换组件 |
+| 稳定性 | 异步事件触发支持消费和发送自定义限流。支持tag级别的隔离 | 无 | 定时调度.很难控制频率 | 分布式下事件强依赖MQ稳定性。突发事件过多易出现尖刺 | 依赖服务 `RocketMQ EventBridge` 稳定性和`RocketMQ`稳定性 |
+| 扩展性 | 存储支持使用`JDBC`等关系型数据库，也可以根据api自定义扩展。传输支持`RocketMQ`、`Kafka`.也可以自定义扩展 | 无 | 依赖`Oracle`.其他存储组件需要改写代码重新实现 | 传输提供了多个组件的实现。易扩展。 | 强依赖`RocketMQ`,暂未提供其他可替换组件 |
 
 
