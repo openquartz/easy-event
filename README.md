@@ -83,7 +83,7 @@
 | 易用性 | 提供`SpringBootStarer`包,引入相关依赖即可快熟使用。使用方法几乎和`Google EventBus` 相同 | 用法简单 | `Google EventBus` 相同 | 和`Spring Application Event`使用用法相同 | 引入EventBridge相关依赖 |
 | 运维  | 常用组件生态,无需额外部署(`DB`+`MQ`) |  无需额外部署  | 依赖`Oracle`（无`MySql`对应版本） | 常用组件生态,无需额外部署(依赖`MQ`组件) | 部署服务`RocketMQ EventBridge` 与 `RocketMQ` |
 | 隔离性 | 支持不同事件自定义隔离（存储、传递）可扩展 | 无 | 无 | 无 | 无 |
-| 稳定性 | 异步事件触发支持消费和发送自定义限流。支持tag级别的隔离 | 无 | 定时调度.很难控制频率 | 分布式下事件强依赖MQ稳定性。突发事件过多易出现尖刺 | 依赖服务 `RocketMQ EventBridge` 稳定性和`RocketMQ`稳定性 |
+| 稳定性 | 异步事件触发支持消费和发送自定义限流。支持tag级别的隔离 | 无 | 定时调度.很难控制频率。实时性较差 | 分布式下事件强依赖MQ稳定性。突发事件过多易出现尖刺 | 依赖服务 `RocketMQ EventBridge` 稳定性和`RocketMQ`稳定性 |
 | 扩展性 | 存储支持使用`JDBC`等关系型数据库，也可以根据api自定义扩展。传输支持`RocketMQ`、`Kafka`.也可以自定义扩展 | 无 | 依赖`Oracle`.其他存储组件需要改写代码重新实现 | 传输提供了多个组件的实现。易扩展。 | 强依赖`RocketMQ`,暂未提供其他可替换组件 |
 
 
