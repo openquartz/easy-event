@@ -70,7 +70,11 @@ public class LockSupportImpl implements LockSupport {
                     }
                 }
             } finally {
-                lock.unlock();
+                try {
+                    lock.unlock();
+                } catch (Exception ex) {
+                    log.error("[LockSupport#consumeIfTryLock] release lock error!lockKey:{}", lockKey, ex);
+                }
                 localLockMap.remove(identifyLockKey, lock);
             }
         }
