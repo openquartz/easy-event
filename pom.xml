@@ -16,6 +16,7 @@
     <module>easyevent-transfer</module>
     <module>easyevent-spring-boot-starter</module>
     <module>easyevent-example</module>
+      <module>easyevent-monitor</module>
   </modules>
 
   <name>${project.artifactId}</name>
@@ -103,6 +104,24 @@
       <dependency>
         <groupId>org.svnee</groupId>
         <artifactId>easyevent-core</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.svnee</groupId>
+        <artifactId>easyevent-monitor-api</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.svnee</groupId>
+        <artifactId>easyevent-monitor-log</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.svnee</groupId>
+        <artifactId>easyevent-monitor-prometheus</artifactId>
         <version>${revision}</version>
       </dependency>
 
