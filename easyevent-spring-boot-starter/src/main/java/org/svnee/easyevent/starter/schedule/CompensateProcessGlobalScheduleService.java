@@ -26,6 +26,7 @@ public class CompensateProcessGlobalScheduleService implements InitializingBean 
 
     private ScheduledThreadPoolExecutor init(EventCompensateProcessProperty property,
         RejectedExecutionHandler rejectedExecutionHandler) {
+
         return new ScheduledThreadPoolExecutor(property.getThreadPoolCoreSize(),
             new ThreadFactoryBuilder()
                 .setNameFormat(property.getThreadPoolThreadPrefix() + "-global-thread-%d")
