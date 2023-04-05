@@ -4,7 +4,7 @@
 ### 欢迎Star (Welcome Star)!!!
 
 **[主页](https://svnlab.github.io/)** \
-**[Github](https://github.com/svnlab/easy-event) [Gitee](https://gitee.com/svnee/easy-event)**
+**[Github](https://github.com/openquartz/easy-event)**
 
 ### 介绍
 
