@@ -7,7 +7,7 @@
 ```xml
 
 <dependency>
-    <groupId>org.svnee</groupId>
+    <groupId>com.openquartz</groupId>
     <artifactId>easyevent-spring-boot-starter</artifactId>
     <version>${lastVersion}</version>
 </dependency>
@@ -20,7 +20,7 @@
 ```xml
 
 <dependency>
-    <groupId>org.svnee</groupId>
+    <groupId>com.openquartz</groupId>
     <artifactId>easyevent-storage-jdbc</artifactId>
     <version>${lastVersion}</version>
 </dependency>
@@ -63,7 +63,7 @@ CREATE TABLE ee_bus_event_entity
 ```xml
 
 <dependency>
-    <groupId>org.svnee</groupId>
+    <groupId>com.openquartz</groupId>
     <artifactId>easyevent-transfer-disruptor</artifactId>
     <version>${lastVersion}</version>
 </dependency>
@@ -74,7 +74,7 @@ CREATE TABLE ee_bus_event_entity
 ```xml
 
 <dependency>
-    <groupId>org.svnee</groupId>
+    <groupId>com.openquartz</groupId>
     <artifactId>easyevent-transfer-rocketmq</artifactId>
     <version>${lastVersion}</version>
 </dependency>
@@ -85,7 +85,7 @@ CREATE TABLE ee_bus_event_entity
 ```xml
 
 <dependency>
-    <groupId>org.svnee</groupId>
+    <groupId>com.openquartz</groupId>
     <artifactId>easyevent-transfer-kafka</artifactId>
     <version>${lastVersion}</version>
 </dependency>
@@ -234,7 +234,7 @@ CREATE TABLE ee_bus_event_entity
 
 #### 发布事件
 
-`EasyEvent` 发布事件的统一入口为`org.svnee.easyevent.core.publisher.EventPublisher`。可以使用Spring的直接注入到方法中使用进行发布事件类。 目前支持发布**同步事件**
+`EasyEvent` 发布事件的统一入口为`com.openquartz.easyevent.core.publisher.EventPublisher`。可以使用Spring的直接注入到方法中使用进行发布事件类。 目前支持发布**同步事件**
 和**异步事件**。
 **同步事件**：指和当前发布事件线程在同一线程中触发执行;
 **异步事件**：指的是通过中间件进行异步调度然后最终一致性实现订阅处理的事件。
@@ -246,8 +246,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Resource;
 import org.springframework.stereotype.Component;
-import org.svnee.easyevent.core.publisher.EventPublisher;
-import org.svnee.easyevent.example.event.TestEvent;
+import com.openquartz.easyevent.core.publisher.EventPublisher;
+import com.openquartz.easyevent.example.event.TestEvent;
 
 /**
  * @author svnee
@@ -277,22 +277,22 @@ public class TestEventPublisher {
 
 #### 订阅事件
 
-订阅者需要在类上加上注解(`org.svnee.easyevent.starter.annotation.EventHandler`)来标识这是一个Event处理类。
+订阅者需要在类上加上注解(`com.openquartz.easyevent.starter.annotation.EventHandler`)来标识这是一个Event处理类。
 
-同时在订阅的方法上加上注解(`org.svnee.easyevent.core.annotation.Subscribe`)可以标识这个方法在订阅参数中的事件。
+同时在订阅的方法上加上注解(`com.openquartz.easyevent.core.annotation.Subscribe`)可以标识这个方法在订阅参数中的事件。
 
 `EasyEvent` 订阅者订阅事件,目前支持**串行订阅事件**和**并行订阅事件**。
 **串行订阅事件**：默认是串行订阅。和当前主线程在同一个线程中,一起成功,或者一起失败。
-允许进行编排顺序。可以通过加上注解(`org.svnee.easyevent.core.annotation.Order`)在订阅方法上，其中值越小越优先执行。
+允许进行编排顺序。可以通过加上注解(`com.openquartz.easyevent.core.annotation.Order`)在订阅方法上，其中值越小越优先执行。
 
 **并行订阅事件**：并行订阅事件。指订阅者之间是互不影响，独立触发执行。使用并行订阅线程池触发执行。
-可以通过加上注解(`org.svnee.easyevent.core.annotation.AllowConcurrentEvents`)在订阅方法上。
+可以通过加上注解(`com.openquartz.easyevent.core.annotation.AllowConcurrentEvents`)在订阅方法上。
 
 ```java
-import org.svnee.easyevent.core.annotation.AllowConcurrentEvents;
-import org.svnee.easyevent.core.annotation.Subscribe;
-import org.svnee.easyevent.example.event.TestEvent;
-import org.svnee.easyevent.starter.annotation.EventHandler;
+import com.openquartz.easyevent.core.annotation.AllowConcurrentEvents;
+import com.openquartz.easyevent.core.annotation.Subscribe;
+import com.openquartz.easyevent.example.event.TestEvent;
+import com.openquartz.easyevent.starter.annotation.EventHandler;
 
 /**
  * @author svnee
@@ -310,16 +310,16 @@ public class Test2EventHandler {
 
 ### 四、预警通知(可选)
 
-服务提供重试达到最大次数的事件仍然未能成功的进行预警。实现接口`org.svnee.easyevent.core.notify.EventHandleFailedNotifier`。\
-默认实现为`org.svnee.easyevent.starter.schedule.DefaultEventHandleFailedNotifier`.
+服务提供重试达到最大次数的事件仍然未能成功的进行预警。实现接口`com.openquartz.easyevent.core.notify.EventHandleFailedNotifier`。\
+默认实现为`com.openquartz.easyevent.starter.schedule.DefaultEventHandleFailedNotifier`.
 
-预警通知接口为: `org.svnee.easyevent.core.notify.EventNotifier`
+预警通知接口为: `com.openquartz.easyevent.core.notify.EventNotifier`
 
 ```java
-package org.svnee.easyevent.core.notify;
+package com.openquartz.easyevent.core.notify;
 
 import java.util.List;
-import org.svnee.easyevent.storage.model.BusEventEntity;
+import com.openquartz.easyevent.storage.model.BusEventEntity;
 
 /**
  * event notifier
@@ -337,7 +337,7 @@ public interface EventNotifier {
 }
 ```
 
-默认实现是`org.svnee.easyevent.core.notify.LogEventNotifier`。 用户可以自定义实现进行使用不同方式通知,并注入到Spring工厂中。例如:`微信`,`钉钉`等。
+默认实现是`com.openquartz.easyevent.core.notify.LogEventNotifier`。 用户可以自定义实现进行使用不同方式通知,并注入到Spring工厂中。例如:`微信`,`钉钉`等。
 
 同时默认提供了预警自定义配置
 
@@ -348,4 +348,4 @@ public interface EventNotifier {
 |  easyevent.common.notify.period  | 通知周期 | 10 | 单位：分钟 |
 |  easyevent.common.notify.thread-prefix  | 通知线程前缀名称 | EventNotifierThread | |
 
-如果需要支持分布式预警通知,需要用于提供实现接口`org.svnee.easyevent.common.concurrent.lock.DistributedLockFactory`并注入到Spring工厂中。
+如果需要支持分布式预警通知,需要用于提供实现接口`com.openquartz.easyevent.common.concurrent.lock.DistributedLockFactory`并注入到Spring工厂中。
