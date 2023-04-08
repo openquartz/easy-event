@@ -4,7 +4,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.svnee</groupId>
+  <groupId>com.openquartz</groupId>
   <artifactId>easy-event</artifactId>
   <packaging>pom</packaging>
   <version>${revision}</version>
@@ -102,7 +102,7 @@
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-core</artifactId>
         <version>${revision}</version>
       </dependency>
@@ -126,49 +126,49 @@
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-transfer-api</artifactId>
         <version>${revision}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-transfer-rocketmq</artifactId>
         <version>${revision}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-transfer-disruptor</artifactId>
         <version>${revision}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-transfer-kafka</artifactId>
         <version>${revision}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-storage-api</artifactId>
         <version>${revision}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-spring-boot-starter</artifactId>
         <version>${revision}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-storage-jdbc</artifactId>
         <version>${revision}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-common</artifactId>
         <version>${revision}</version>
       </dependency>

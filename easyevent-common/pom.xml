@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easy-event</artifactId>
         <version>${revision}</version>
     </parent>

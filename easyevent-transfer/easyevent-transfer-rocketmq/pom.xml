@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-transfer</artifactId>
         <version>${revision}</version>
     </parent>
@@ -23,17 +23,17 @@
         </dependency>
 
         <dependency>
-            <groupId>org.svnee</groupId>
+            <groupId>com.openquartz</groupId>
             <artifactId>easyevent-transfer-api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.svnee</groupId>
+            <groupId>com.openquartz</groupId>
             <artifactId>easyevent-storage-api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.svnee</groupId>
+            <groupId>com.openquartz</groupId>
             <artifactId>easyevent-common</artifactId>
         </dependency>
 
