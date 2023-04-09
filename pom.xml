@@ -16,7 +16,7 @@
     <module>easyevent-transfer</module>
     <module>easyevent-spring-boot-starter</module>
     <module>easyevent-example</module>
-      <module>easyevent-monitor</module>
+    <module>easyevent-monitor</module>
   </modules>
 
   <name>${project.artifactId}</name>
