@@ -108,19 +108,19 @@
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-monitor-api</artifactId>
         <version>${revision}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-monitor-log</artifactId>
         <version>${revision}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.svnee</groupId>
+        <groupId>com.openquartz</groupId>
         <artifactId>easyevent-monitor-prometheus</artifactId>
         <version>${revision}</version>
       </dependency>
