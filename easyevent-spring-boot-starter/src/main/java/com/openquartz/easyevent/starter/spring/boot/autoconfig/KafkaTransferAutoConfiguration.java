@@ -1,23 +1,10 @@
 package com.openquartz.easyevent.starter.spring.boot.autoconfig;
 
-import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.KafkaTransferProperties;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.Ordered;
 import com.openquartz.easyevent.common.concurrent.lock.LockSupport;
 import com.openquartz.easyevent.common.serde.Serializer;
 import com.openquartz.easyevent.common.transaction.TransactionSupport;
 import com.openquartz.easyevent.core.trigger.AsyncEventHandler;
+import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.KafkaTransferProperties;
 import com.openquartz.easyevent.storage.api.EventStorageService;
 import com.openquartz.easyevent.transfer.api.EventSender;
 import com.openquartz.easyevent.transfer.api.EventTrigger;
@@ -30,6 +17,18 @@ import com.openquartz.easyevent.transfer.kafka.common.KafkaTransferProducer;
 import com.openquartz.easyevent.transfer.kafka.common.KafkaTriggerProperty;
 import com.openquartz.easyevent.transfer.kafka.common.KafkaTriggerProperty.KafkaConsumerProperty;
 import com.openquartz.easyevent.transfer.kafka.property.KafkaCommonProperty;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 
 /**
  * Kafka Transfer AutoConfiguration
@@ -42,12 +41,6 @@ import com.openquartz.easyevent.transfer.kafka.property.KafkaCommonProperty;
 @ConditionalOnClass(KafkaEventTrigger.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10060)
 public class KafkaTransferAutoConfiguration {
-
-    @PostConstruct
-    public void init() {
-        log.info(
-            "-----------------------------------------KafkaTransferAutoConfiguration-------------------------------");
-    }
 
     @Bean(initMethod = "init", destroyMethod = "destroy")
     @ConditionalOnMissingBean

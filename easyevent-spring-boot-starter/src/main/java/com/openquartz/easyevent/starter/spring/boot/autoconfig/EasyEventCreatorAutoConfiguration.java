@@ -49,12 +49,6 @@ import com.openquartz.easyevent.transfer.api.EventSender;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 1000)
 public class EasyEventCreatorAutoConfiguration {
 
-    @PostConstruct
-    public void init() {
-        log.info(
-            "-----------------------------------------EasyEventCreatorAutoConfiguration-------------------------------");
-    }
-
     @Bean
     @ConditionalOnMissingBean(EventBus.class)
     public EventBus handleEventBus(ExecutorService defaultEventBusThreadPool) {

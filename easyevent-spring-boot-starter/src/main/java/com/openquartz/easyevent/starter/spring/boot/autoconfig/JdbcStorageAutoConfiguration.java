@@ -3,10 +3,23 @@ package com.openquartz.easyevent.starter.spring.boot.autoconfig;
 import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotEmpty;
 import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
+import com.openquartz.easyevent.common.constant.CommonConstants;
+import com.openquartz.easyevent.common.exception.CommonErrorCode;
+import com.openquartz.easyevent.common.exception.EasyEventException;
+import com.openquartz.easyevent.common.property.EasyEventProperties;
+import com.openquartz.easyevent.common.serde.Serializer;
 import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.JdbcStorageProperties;
+import com.openquartz.easyevent.storage.api.EventStorageService;
+import com.openquartz.easyevent.storage.identify.IdGenerator;
+import com.openquartz.easyevent.storage.jdbc.JdbcEventStorageServiceImpl;
+import com.openquartz.easyevent.storage.jdbc.mapper.BusEventEntityMapper;
+import com.openquartz.easyevent.storage.jdbc.mapper.impl.BusEventEntityMapperImpl;
+import com.openquartz.easyevent.storage.jdbc.sharding.ShardingRouter;
+import com.openquartz.easyevent.storage.jdbc.sharding.impl.DefaultShardingRouterImpl;
+import com.openquartz.easyevent.storage.jdbc.sharding.property.EventStorageShardingProperty;
+import com.openquartz.easyevent.storage.jdbc.table.EasyEventTableGeneratorSupplier;
 import java.util.Map;
 import java.util.Properties;
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -26,20 +39,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
-import com.openquartz.easyevent.common.constant.CommonConstants;
-import com.openquartz.easyevent.common.exception.CommonErrorCode;
-import com.openquartz.easyevent.common.exception.EasyEventException;
-import com.openquartz.easyevent.common.property.EasyEventProperties;
-import com.openquartz.easyevent.common.serde.Serializer;
-import com.openquartz.easyevent.storage.api.EventStorageService;
-import com.openquartz.easyevent.storage.identify.IdGenerator;
-import com.openquartz.easyevent.storage.jdbc.JdbcEventStorageServiceImpl;
-import com.openquartz.easyevent.storage.jdbc.mapper.BusEventEntityMapper;
-import com.openquartz.easyevent.storage.jdbc.mapper.impl.BusEventEntityMapperImpl;
-import com.openquartz.easyevent.storage.jdbc.sharding.ShardingRouter;
-import com.openquartz.easyevent.storage.jdbc.sharding.impl.DefaultShardingRouterImpl;
-import com.openquartz.easyevent.storage.jdbc.sharding.property.EventStorageShardingProperty;
-import com.openquartz.easyevent.storage.jdbc.table.EasyEventTableGeneratorSupplier;
 
 /**
  * Jdbc Storage Configuration
@@ -53,12 +52,6 @@ import com.openquartz.easyevent.storage.jdbc.table.EasyEventTableGeneratorSuppli
 @AutoConfigureAfter(EasyEventStorageAutoConfiguration.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 120)
 public class JdbcStorageAutoConfiguration {
-
-    @PostConstruct
-    public void init() {
-        log.info(
-            "-----------------------------------------JdbcStorageAutoConfiguration-------------------------------");
-    }
 
     private DataSource newEventJdbcStorageDataSource(JdbcStorageProperties jdbcStorageProperties,
         Environment environment) {
