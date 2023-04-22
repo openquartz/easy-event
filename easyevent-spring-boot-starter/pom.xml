@@ -10,105 +10,40 @@
     </parent>
 
     <artifactId>easyevent-spring-boot-starter</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
     <description>${project.artifactId}</description>
 
+    <modules>
+        <module>easyevent-spring-boot-starter-parent</module>
+        <module>easyevent-spring-boot-starter-disruptor</module>
+        <module>easyevent-spring-boot-starter-kafka</module>
+        <module>easyevent-spring-boot-starter-rocketmq</module>
+    </modules>
+
     <dependencies>
 
-        <!--springboot -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-tx</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!--第三方-->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
-        </dependency>
-
-        <!-- this project module-->
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-transfer-rocketmq</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-storage-jdbc</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-transfer-disruptor</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-transfer-kafka</artifactId>
-            <optional>true</optional>
-        </dependency>
 
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <configuration>
-                        <archive>
-                            <manifestEntries>
-                                <Implementation-Title>${project.artifactId}</Implementation-Title>
-                                <Implementation-Version>${project.version}</Implementation-Version>
-                                <Build-Time>${maven.build.timestamp}</Build-Time>
-                                <Built-By>svnee</Built-By>
-                            </manifestEntries>
-                        </archive>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.10.3</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>1.6</version>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven.deploy.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>

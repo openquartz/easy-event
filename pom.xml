@@ -155,6 +155,12 @@
       </dependency>
 
       <dependency>
+        <groupId>com.openquartz</groupId>
+        <artifactId>easyevent-spring-boot-starter-parent</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.github.rholder</groupId>
         <artifactId>guava-retrying</artifactId>
         <version>${guava.retry.version}</version>
