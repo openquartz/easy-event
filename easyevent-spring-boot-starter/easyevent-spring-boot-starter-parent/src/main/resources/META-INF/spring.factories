@@ -4,7 +4,4 @@ com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventStorageAutoConf
 com.openquartz.easyevent.starter.spring.boot.autoconfig.JdbcStorageAutoConfiguration,\
 com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventCreatorAutoConfiguration,\
 com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventTransferAutoConfiguration,\
-com.openquartz.easyevent.starter.spring.boot.autoconfig.DisruptorTransferAutoConfiguration,\
-com.openquartz.easyevent.starter.spring.boot.autoconfig.RocketMqTransferAutoConfiguration,\
-com.openquartz.easyevent.starter.spring.boot.autoconfig.KafkaTransferAutoConfiguration,\
 com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventAfterAutoConfiguration

@@ -8,7 +8,6 @@ import com.openquartz.easyevent.starter.publisher.DefaultEventPublisher;
 import com.openquartz.easyevent.transfer.api.EventSender;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -20,11 +19,6 @@ import org.springframework.core.Ordered;
  **/
 @Slf4j
 @Configuration
-@AutoConfigureAfter({
-    DisruptorTransferAutoConfiguration.class,
-    RocketMqTransferAutoConfiguration.class,
-    KafkaTransferAutoConfiguration.class
-})
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 100000)
 public class EasyEventAfterAutoConfiguration {
 

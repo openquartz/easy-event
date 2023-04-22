@@ -1,12 +1,13 @@
-package com.openquartz.easyevent.starter.spring.boot.autoconfig;
+package com.openquartz.easyevent.starter.rocketmq.spring.boot.autoconfig;
 
 import com.openquartz.easyevent.common.concurrent.lock.LockSupport;
 import com.openquartz.easyevent.common.serde.Serializer;
 import com.openquartz.easyevent.common.transaction.TransactionSupport;
 import com.openquartz.easyevent.common.utils.IpUtil;
 import com.openquartz.easyevent.core.trigger.AsyncEventHandler;
+import com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventAfterAutoConfiguration;
+import com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventTransferAutoConfiguration;
 import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.EasyEventCommonProperties;
-import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.RocketTransferProperties;
 import com.openquartz.easyevent.storage.api.EventStorageService;
 import com.openquartz.easyevent.transfer.api.EventSender;
 import com.openquartz.easyevent.transfer.api.EventTrigger;
@@ -29,6 +30,7 @@ import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.MQProducer;
 import org.apache.rocketmq.common.UtilAll;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -43,6 +45,7 @@ import org.springframework.core.Ordered;
  **/
 @Slf4j
 @EnableConfigurationProperties(RocketTransferProperties.class)
+@AutoConfigureBefore(EasyEventAfterAutoConfiguration.class)
 @AutoConfigureAfter(EasyEventTransferAutoConfiguration.class)
 @ConditionalOnClass(RocketMqEventTrigger.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10040)
@@ -83,8 +86,7 @@ public class RocketMqTransferAutoConfiguration {
         String ipAddress = IpUtil.getIp();
         String[] split = ipAddress.split("\\.");
         producer.setInstanceName(
-            TransferConstants.SENDER_PREFIX + "@" + easyEventCommonProperties.getAppId() + "@" + split[split.length
-                - 1]
+            TransferConstants.SENDER_PREFIX + "@" + easyEventCommonProperties.getAppId() + "@" + split[split.length - 1]
                 + "@" + UtilAll.getPid());
         producer.setClientIP(ipAddress);
         return producer;

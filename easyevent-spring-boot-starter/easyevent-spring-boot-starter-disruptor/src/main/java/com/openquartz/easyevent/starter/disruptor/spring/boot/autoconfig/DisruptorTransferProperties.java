@@ -1,4 +1,4 @@
-package com.openquartz.easyevent.starter.spring.boot.autoconfig.property;
+package com.openquartz.easyevent.starter.disruptor.spring.boot.autoconfig;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

@@ -1,10 +1,11 @@
-package com.openquartz.easyevent.starter.spring.boot.autoconfig;
+package com.openquartz.easyevent.starter.kafka.spring.boot.autoconfig;
 
 import com.openquartz.easyevent.common.concurrent.lock.LockSupport;
 import com.openquartz.easyevent.common.serde.Serializer;
 import com.openquartz.easyevent.common.transaction.TransactionSupport;
 import com.openquartz.easyevent.core.trigger.AsyncEventHandler;
-import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.KafkaTransferProperties;
+import com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventAfterAutoConfiguration;
+import com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventTransferAutoConfiguration;
 import com.openquartz.easyevent.storage.api.EventStorageService;
 import com.openquartz.easyevent.transfer.api.EventSender;
 import com.openquartz.easyevent.transfer.api.EventTrigger;
@@ -23,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -37,6 +39,7 @@ import org.springframework.core.Ordered;
  **/
 @Slf4j
 @EnableConfigurationProperties(KafkaTransferProperties.class)
+@AutoConfigureBefore(EasyEventAfterAutoConfiguration.class)
 @AutoConfigureAfter(EasyEventTransferAutoConfiguration.class)
 @ConditionalOnClass(KafkaEventTrigger.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10060)

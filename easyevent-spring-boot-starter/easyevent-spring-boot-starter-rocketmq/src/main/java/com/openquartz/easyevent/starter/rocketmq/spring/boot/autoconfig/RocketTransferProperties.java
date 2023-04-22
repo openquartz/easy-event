@@ -1,4 +1,4 @@
-package com.openquartz.easyevent.starter.spring.boot.autoconfig.property;
+package com.openquartz.easyevent.starter.rocketmq.spring.boot.autoconfig;
 
 import java.util.Map;
 import java.util.TreeMap;

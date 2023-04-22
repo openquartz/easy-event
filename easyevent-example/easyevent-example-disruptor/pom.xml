@@ -39,7 +39,7 @@
 
         <dependency>
             <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-spring-boot-starter</artifactId>
+            <artifactId>easyevent-spring-boot-starter-disruptor</artifactId>
         </dependency>
 
         <dependency>
