@@ -37,35 +37,16 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
-        </dependency>
 
         <!-- this project module-->
         <dependency>
             <groupId>com.openquartz</groupId>
             <artifactId>easyevent-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-transfer-rocketmq</artifactId>
-            <optional>true</optional>
-        </dependency>
+
         <dependency>
             <groupId>com.openquartz</groupId>
             <artifactId>easyevent-storage-jdbc</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-transfer-disruptor</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-transfer-kafka</artifactId>
-            <optional>true</optional>
         </dependency>
 
     </dependencies>

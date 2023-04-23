@@ -1,9 +1,7 @@
 package com.openquartz.easyevent.starter.disruptor.spring.boot.autoconfig;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import com.openquartz.easyevent.transfer.disruptor.DisruptorTriggerEventSender;
 
 /**
  * Disruptor Transfer Properties
@@ -11,7 +9,6 @@ import com.openquartz.easyevent.transfer.disruptor.DisruptorTriggerEventSender;
  * @author svnee
  **/
 @Slf4j
-@ConditionalOnClass(DisruptorTriggerEventSender.class)
 @ConfigurationProperties(prefix = DisruptorTransferProperties.PREFIX)
 public class DisruptorTransferProperties {
 

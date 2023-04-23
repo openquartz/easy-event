@@ -17,23 +17,16 @@
 
     <dependencies>
 
-        <!--springboot -->
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-spring-boot-starter-parent</artifactId>
-        </dependency>
-
         <!--第三方-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
 
-        <!-- this project module-->
+        <!--springboot -->
         <dependency>
             <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-storage-jdbc</artifactId>
-            <optional>true</optional>
+            <artifactId>easyevent-spring-boot-starter-parent</artifactId>
         </dependency>
 
         <dependency>

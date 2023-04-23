@@ -21,11 +21,7 @@
   </modules>
 
   <dependencies>
-    <dependency>
-      <groupId>com.openquartz</groupId>
-      <artifactId>easyevent-spring-boot-starter</artifactId>
-      <version>${revision}</version>
-    </dependency>
+
   </dependencies>
 
   <build>

@@ -29,13 +29,6 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
-        <!-- this project module-->
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-storage-jdbc</artifactId>
-            <optional>true</optional>
-        </dependency>
-
         <dependency>
             <groupId>com.openquartz</groupId>
             <artifactId>easyevent-transfer-rocketmq</artifactId>

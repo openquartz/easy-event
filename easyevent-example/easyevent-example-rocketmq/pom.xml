@@ -43,16 +43,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.openquartz</groupId>
-      <artifactId>easyevent-storage-jdbc</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.openquartz</groupId>
-      <artifactId>easyevent-transfer-rocketmq</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>javax.persistence</groupId>
       <artifactId>javax.persistence-api</artifactId>
     </dependency>
