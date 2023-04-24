@@ -45,7 +45,7 @@ public final class Joiner {
 
         checkNotEmpty(splitter);
 
-        if (obj != null && obj.length != 0) {
+        if (obj == null || obj.length == 0) {
             return StringUtils.EMPTY;
         }
 

@@ -118,7 +118,8 @@ public class RocketMqProducer implements TransferProducer, LifecycleBean {
         // mapping routeInfo 2 index
         Map<Pair<String, String>, List<Pair<Integer, Object>>> routeInfo2EventMap = index2EventList.stream()
             .map(e -> Pair.of(eventRouter.route(e.getValue()), e))
-            .collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+            .collect(Collectors.groupingBy(Pair::getKey,
+                Collectors.mapping(Pair::getValue, Collectors.toList())));
 
         BatchSendResult batchSendResult = new BatchSendResult();
 
