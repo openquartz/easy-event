@@ -3,7 +3,7 @@ package com.openquartz.easyevent.transfer.disruptor.property;
 import lombok.Data;
 
 /**
- * RocketMQ consumer Property
+ * RocketMQ's consumer Property
  *
  * @author svnee
  **/

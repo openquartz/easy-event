@@ -2,6 +2,7 @@ package com.openquartz.easyevent.transfer.disruptor.factory;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
+import lombok.NonNull;
 
 /**
  * DisruptorTriggerThreadFactory
@@ -35,7 +36,7 @@ public final class DisruptorTriggerThreadFactory implements ThreadFactory {
     }
 
     @Override
-    public Thread newThread(final Runnable runnable) {
+    public Thread newThread(@NonNull final Runnable runnable) {
         Thread thread = new Thread(threadGroup, runnable,
             threadGroup.getName() + "-" + namePrefix + "-" + threadNumber.getAndIncrement());
         thread.setDaemon(daemon);

@@ -123,12 +123,12 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
     }
 
     @Override
-    public void sendFailed(EventId eventId, Exception ex) {
+    public void sendFailed(EventId eventId, Throwable ex) {
         busEventEntityMapper.refreshSendFailed(eventId, EventLifecycleState.TRANSFER_FAILED, ex);
     }
 
     @Override
-    public void sendFailedList(List<EventId> eventIdList, Exception ex) {
+    public void sendFailedList(List<EventId> eventIdList, Throwable ex) {
 
         checkNotEmpty(eventIdList);
 
@@ -143,12 +143,12 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
     }
 
     @Override
-    public void processingFailed(EventId eventId, Exception ex) {
+    public void processingFailed(EventId eventId, Throwable ex) {
         processingFailed(eventId, Collections.emptyList(), ex);
     }
 
     @Override
-    public void processingFailed(EventId eventId, List<String> successSubscriberList, Exception invokeError) {
+    public void processingFailed(EventId eventId, List<String> successSubscriberList, Throwable invokeError) {
 
         List<String> subscriberIdentifyList = busEventEntityMapper.getSuccessfulSubscriberIdentify(eventId);
         List<String> successfulSubscriberList = CollectionUtils

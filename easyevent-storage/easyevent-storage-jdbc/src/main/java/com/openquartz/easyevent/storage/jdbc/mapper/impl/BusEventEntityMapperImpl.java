@@ -226,7 +226,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     }
 
     @Override
-    public void refreshSendFailed(EventId eventId, EventLifecycleState transferFailed, Exception ex) {
+    public void refreshSendFailed(EventId eventId, EventLifecycleState transferFailed, Throwable ex) {
 
         checkNotNull(eventId);
         checkNotNull(transferFailed);
@@ -276,7 +276,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
     @Override
     public void processingFailed(EventId eventId, EventLifecycleState processFailed,
-        List<String> successSubscriberIdentifyList, Exception invokeError) {
+        List<String> successSubscriberIdentifyList, Throwable invokeError) {
 
         checkNotNull(eventId);
 

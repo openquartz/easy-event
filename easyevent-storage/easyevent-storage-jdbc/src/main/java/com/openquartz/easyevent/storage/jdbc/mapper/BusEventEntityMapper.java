@@ -66,7 +66,7 @@ public interface BusEventEntityMapper {
      * @param transferFailed 发送失败
      * @param ex ex
      */
-    void refreshSendFailed(EventId eventId, EventLifecycleState transferFailed, Exception ex);
+    void refreshSendFailed(EventId eventId, EventLifecycleState transferFailed, Throwable ex);
 
     /**
      * 开始处理
@@ -93,7 +93,7 @@ public interface BusEventEntityMapper {
      * @param invokeError invoke error
      */
     void processingFailed(EventId eventId, EventLifecycleState processFailed,
-        List<String> successSubscriberIdentifyList, Exception invokeError);
+        List<String> successSubscriberIdentifyList, Throwable invokeError);
 
     /**
      * get successfulSubscriber-Identify

@@ -112,17 +112,23 @@ public class KafkaEventTrigger implements EventTrigger {
             Map<String, List<KafkaConsumerProperty>> partition2KafkaConsumerPropertyMap = entry.getValue().stream()
                 .collect(Collectors.groupingBy(e -> e.getPartition().trim(), Collectors.toList()));
             if (partition2KafkaConsumerPropertyMap.containsKey(CommonConstants.ALL_MATCH_EXPRESSION)) {
+
                 Asserts.isTrueIfLog(partition2KafkaConsumerPropertyMap.keySet().size() == 1,
                     () -> log.error(
                         "[KafkaEventTrigger#create] same topic has all match expression,meantime has spec partition expression! partition:{}",
                         partition2KafkaConsumerPropertyMap.keySet()),
                     TransferErrorCode.CONSUMER_PARTITION_CONFIG_ILLEGAL);
+
             } else {
-                partition2KafkaConsumerPropertyMap.values().forEach(k -> Asserts.isTrueIfLog(k.size() == 1,
-                    () -> log.error(
-                        "[KafkaEventTrigger#create] same topic has all match expression,meantime has spec partition expression! partition:{}",
-                        k),
-                    TransferErrorCode.CONSUMER_PARTITION_CONFIG_ILLEGAL));
+                partition2KafkaConsumerPropertyMap
+                    .values()
+                    .forEach(k ->
+                        Asserts.isTrueIfLog(k.size() == 1,
+                            () -> log.error(
+                                "[KafkaEventTrigger#create] same topic has all match expression,meantime has spec partition expression! partition:{}",
+                                k),
+                            TransferErrorCode.CONSUMER_PARTITION_CONFIG_ILLEGAL)
+                    );
             }
             // create consumer
             for (KafkaConsumerProperty property : entry.getValue()) {
@@ -169,13 +175,16 @@ public class KafkaEventTrigger implements EventTrigger {
                 consumer,
                 latch,
                 consumerRecord -> {
+
                     EventMessage eventMessage = null;
                     try {
                         eventMessage = JSONUtil.parseObject(consumerRecord.value(), EventMessage.class);
                     } catch (Exception e) {
                         log.error("[KafkaEventTrigger#consume] parse data error!data:{}", consumerRecord.value(), e);
                     }
+
                     checkNotNull(eventMessage);
+
                     // consume if lock
                     eventTransferTriggerLimitingControl.control(eventMessage,
                         msg -> lockSupport.consumeIfLock(
