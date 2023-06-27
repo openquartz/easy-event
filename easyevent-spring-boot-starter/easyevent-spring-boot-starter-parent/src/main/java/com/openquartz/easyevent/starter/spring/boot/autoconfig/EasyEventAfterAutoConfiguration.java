@@ -24,8 +24,7 @@ public class EasyEventAfterAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public EventPublisher defaultEventPublisher(EventBus eventBus,
-        EventSender eventSender) {
+    public EventPublisher defaultEventPublisher(EventBus eventBus, EventSender eventSender) {
         return new DefaultEventPublisher(eventBus, eventSender);
     }
 
