@@ -2,6 +2,7 @@ package com.openquartz.easyevent.storage.model;
 
 import java.util.Date;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * EventEntity
@@ -9,6 +10,7 @@ import lombok.Data;
  * @author svnee
  **/
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class BusEventEntity extends BaseEventEntity {
 
     /**
