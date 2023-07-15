@@ -138,7 +138,7 @@ public abstract class AbstractSenderAdapter implements EventSender {
                 // 发送消息
                 try {
                     getTransferProducer().sendMessage(e, eId);
-                } catch (Exception ex) {
+                } catch (Throwable ex) {
                     getEventStorageService().sendFailed(eId, ex);
                     return;
                 }

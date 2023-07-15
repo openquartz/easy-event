@@ -3,28 +3,33 @@
 ### 一、引入依赖
 
 #### 1、引入starter依赖
-
+ 使用`disruptor`作为传输的maven pom
 ```xml
-
 <dependency>
     <groupId>com.openquartz</groupId>
-    <artifactId>easyevent-spring-boot-starter</artifactId>
+    <artifactId>easyevent-spring-boot-starter-disruptor</artifactId>
+    <version>${lastVersion}</version>
+</dependency>
+```
+或 使用`kafka`作为传输的maven pom 
+```xml
+<dependency>
+    <groupId>com.openquartz</groupId>
+    <artifactId>easyevent-spring-boot-starter-kafka</artifactId>
     <version>${lastVersion}</version>
 </dependency>
 ```
 
-#### 2、引入EventStorage依赖
-
-需要引入`EventStorage`的实现.目前只支持`jdbc`实现的各种数据库。推荐使用`mysql`。
-
+或 使用`rocketmq`作为传输的maven pom (**推荐**)
 ```xml
-
 <dependency>
     <groupId>com.openquartz</groupId>
-    <artifactId>easyevent-storage-jdbc</artifactId>
+    <artifactId>easyevent-spring-boot-starter-rocketmq</artifactId>
     <version>${lastVersion}</version>
 </dependency>
 ```
+
+#### 2、EventStorage依赖
 
 ##### 执行SQL
 
@@ -33,7 +38,7 @@
 ```sql
 CREATE TABLE ee_bus_event_entity
 (
-    entity_id                 BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'eventId',
+    id                 BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'eventId',
     app_id                    VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'appId',
     source_id                 BIGINT (20) NOT NULL DEFAULT 0 COMMENT 'sourceId',
     class_name                VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'Event-Class',
@@ -48,8 +53,8 @@ CREATE TABLE ee_bus_event_entity
     processing_failed_reason  VARCHAR(128) NOT NULL DEFAULT '' COMMENT '已经执行失败的原因',
     created_time              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_time              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (entity_id)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT 'ee_bus_event_entity';
+    PRIMARY KEY (id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT 'EventEntity';
 ```
 
 #### 3、引入EventTransfer依赖
@@ -57,39 +62,7 @@ CREATE TABLE ee_bus_event_entity
 需要引入`EventTransfer`的实现.目前支持`Disruptor`、`RocketMQ`、`Kafka`。
 > 推荐使用`RocketMQ`作为 `EventTransfer`的分布式调度。针对`RocketMQ` 的实现做了很多的优化。例如：批量消息发送,消息拆分,消费失败自定义重试,发送失败自定义重试次数等
 
-可以选择其中一个作为transfer实现。\
-使用`disruptor`实现
-
-```xml
-
-<dependency>
-    <groupId>com.openquartz</groupId>
-    <artifactId>easyevent-transfer-disruptor</artifactId>
-    <version>${lastVersion}</version>
-</dependency>
-```
-
-使用`rocketmq`实现
-
-```xml
-
-<dependency>
-    <groupId>com.openquartz</groupId>
-    <artifactId>easyevent-transfer-rocketmq</artifactId>
-    <version>${lastVersion}</version>
-</dependency>
-```
-
-使用`kafka` 实现
-
-```xml
-
-<dependency>
-    <groupId>com.openquartz</groupId>
-    <artifactId>easyevent-transfer-kafka</artifactId>
-    <version>${lastVersion}</version>
-</dependency>
-```
+可以选择其中一个作为transfer实现。
 
 ### 二、配置
 

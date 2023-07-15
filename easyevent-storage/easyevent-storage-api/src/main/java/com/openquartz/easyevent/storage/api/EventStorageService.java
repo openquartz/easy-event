@@ -42,7 +42,7 @@ public interface EventStorageService {
      * @param eventId eventId
      * @param ex send error
      */
-    void sendFailed(EventId eventId, Exception ex);
+    void sendFailed(EventId eventId, Throwable ex);
 
     /**
      * 发送完成
@@ -57,7 +57,7 @@ public interface EventStorageService {
      * @param eventIdList eventIdList
      * @param ex send error
      */
-    void sendFailedList(List<EventId> eventIdList, Exception ex);
+    void sendFailedList(List<EventId> eventIdList, Throwable ex);
 
     /**
      * getEvent
@@ -73,7 +73,7 @@ public interface EventStorageService {
      * @param eventId eventID
      * @param ex ex
      */
-    void processingFailed(EventId eventId, Exception ex);
+    void processingFailed(EventId eventId, Throwable ex);
 
     /**
      * 执行失败
@@ -82,7 +82,7 @@ public interface EventStorageService {
      * @param successSubscriberList 成功的订阅者
      * @param invokeError 执行失败异常
      */
-    void processingFailed(EventId eventId, List<String> successSubscriberList, Exception invokeError);
+    void processingFailed(EventId eventId, List<String> successSubscriberList, Throwable invokeError);
 
     /**
      * 执行成功

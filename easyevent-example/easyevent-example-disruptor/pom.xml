@@ -39,17 +39,7 @@
 
         <dependency>
             <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-spring-boot-starter</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-storage-jdbc</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-transfer-disruptor</artifactId>
+            <artifactId>easyevent-spring-boot-starter-disruptor</artifactId>
         </dependency>
 
         <dependency>
@@ -74,22 +64,5 @@
         </dependency>
 
     </dependencies>
-
-    <build>
-        <finalName>${project.artifactId}</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

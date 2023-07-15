@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.openquartz.easyevent.starter.kafka.spring.boot.autoconfig.KafkaTransferAutoConfiguration

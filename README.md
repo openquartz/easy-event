@@ -47,8 +47,8 @@
 - `easyevent-core`: 核心eventbus逻辑
 
 - `easyevent-storage`: 存储服务
-  - `easyevent-storage-api`: 存储服务API
-  - `easyevent-storage-jdbc`: 基于jdbc的存储实现
+  - `easyevent-storage-api`: 存储服务`API`
+  - `easyevent-storage-jdbc`: 基于`jdbc`的存储实现
 
 - `easyevent-transfer`: 事件传输服务
   - `easyevent-transfer-api`: 事件传输协议
@@ -57,11 +57,15 @@
   - `easyevent-transfer-kafka`: kafka 作为事件传输的实现
 
 - `easyevent-spring-boot-starter`: easyevent starter 包
-
+  - `easyevent-spring-boot-starter-parent`: `easyevent starter parent`工程
+  - `easyevent-spring-boot-starter-disruptor`: `disruptor` 作为事件传输的实现的 springboot starter
+  - `easyevent-spring-boot-starter-kafka`: `kafka` 作为事件传输的实现的 springboot starter
+  - `easyevent-spring-boot-starter-rocketmq`: `rocketmq` 作为事件传输的实现的 springboot starter
+  
 - `easyevent-example`: 样例工程
-  - `easyevent-example-disruptor`: 使用disruptor 作为传输调度层
-  - `easyevent-example-rocketmq`: 使用rocketmq 作为传输调度层
-  - `easyevent-example-kafka`: 使用kafka 作为传输调度层
+  - `easyevent-example-disruptor`: 使用`disruptor` 作为传输调度层
+  - `easyevent-example-rocketmq`: 使用`rocketmq` 作为传输调度层
+  - `easyevent-example-kafka`: 使用`kafka` 作为传输调度层
 
 ### 快速开始
 

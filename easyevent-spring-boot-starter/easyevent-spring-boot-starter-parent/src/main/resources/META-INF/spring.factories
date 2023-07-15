@@ -1,0 +1,7 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventCommonAutoConfiguration,\
+com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventStorageAutoConfiguration,\
+com.openquartz.easyevent.starter.spring.boot.autoconfig.JdbcStorageAutoConfiguration,\
+com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventCreatorAutoConfiguration,\
+com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventTransferAutoConfiguration,\
+com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventAfterAutoConfiguration
