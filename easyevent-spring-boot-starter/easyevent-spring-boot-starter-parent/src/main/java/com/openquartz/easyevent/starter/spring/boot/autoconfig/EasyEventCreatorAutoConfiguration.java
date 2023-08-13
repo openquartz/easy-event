@@ -1,26 +1,5 @@
 package com.openquartz.easyevent.starter.spring.boot.autoconfig;
 
-import com.openquartz.easyevent.starter.schedule.CompensateProcessGlobalScheduleService;
-import com.openquartz.easyevent.starter.schedule.CompensateProcessSelfScheduleService;
-import com.openquartz.easyevent.starter.schedule.DefaultEventHandleFailedNotifier;
-import com.openquartz.easyevent.starter.schedule.ScheduleCompensateRejectedExecutionHandler;
-import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.DefaultEventBusProperties;
-import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.EasyEventCommonProperties;
-import com.openquartz.easyevent.starter.trigger.DefaultAsyncEventHandler;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import com.openquartz.easyevent.common.concurrent.ThreadFactoryBuilder;
 import com.openquartz.easyevent.common.concurrent.TraceThreadPoolExecutor;
 import com.openquartz.easyevent.common.concurrent.lock.LockSupport;
@@ -34,8 +13,28 @@ import com.openquartz.easyevent.core.notify.EventHandleFailedNotifier;
 import com.openquartz.easyevent.core.notify.EventNotifier;
 import com.openquartz.easyevent.core.notify.LogEventNotifier;
 import com.openquartz.easyevent.core.trigger.AsyncEventHandler;
+import com.openquartz.easyevent.starter.schedule.CompensateProcessGlobalScheduleService;
+import com.openquartz.easyevent.starter.schedule.CompensateProcessSelfScheduleService;
+import com.openquartz.easyevent.starter.schedule.DefaultEventHandleFailedNotifier;
+import com.openquartz.easyevent.starter.schedule.ScheduleCompensateRejectedExecutionHandler;
+import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.DefaultEventBusProperties;
+import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.EasyEventCommonProperties;
+import com.openquartz.easyevent.starter.trigger.DefaultAsyncEventHandler;
 import com.openquartz.easyevent.storage.api.EventStorageService;
 import com.openquartz.easyevent.transfer.api.EventSender;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 
 /**
  * EasyEvent Creator AutoConfiguration
