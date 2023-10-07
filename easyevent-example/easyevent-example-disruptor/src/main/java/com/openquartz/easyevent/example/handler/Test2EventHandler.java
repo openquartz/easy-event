@@ -11,8 +11,8 @@ import com.openquartz.easyevent.starter.annotation.EventHandler;
 @EventHandler
 public class Test2EventHandler {
 
-    @Subscribe
     @AllowConcurrentEvents
+    @Subscribe(condition = "args[0].source.equals(\'\')")
     public void handle(TestEvent event) {
         throw new RuntimeException("xxxx");
     }

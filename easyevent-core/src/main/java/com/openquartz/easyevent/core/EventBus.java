@@ -24,10 +24,12 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.openquartz.easyevent.common.concurrent.DirectExecutor;
 import com.openquartz.easyevent.common.utils.CollectionUtils;
 import com.openquartz.easyevent.core.dispatcher.DispatchInvokeResult;
 import com.openquartz.easyevent.core.dispatcher.Dispatcher;
+import com.openquartz.easyevent.core.expression.ExpressionParser;
 
 /**
  * EventBus
@@ -43,7 +45,9 @@ public class EventBus {
     private final SubscriberRegistry subscribers = new SubscriberRegistry(this);
     private final Dispatcher dispatcher;
 
-    /** Creates a new EventBus named "default". */
+    /**
+     * Creates a new EventBus named "default".
+     */
     public EventBus() {
         this("default");
     }
@@ -52,22 +56,22 @@ public class EventBus {
      * Creates a new EventBus with the given {@code identifier}.
      *
      * @param identifier a brief name for this bus, for logging purposes. Should be a valid Java
-     * identifier.
+     *                   identifier.
      */
     public EventBus(String identifier) {
         this(
-            identifier,
-            DirectExecutor.INSTANCE,
-            Dispatcher.perThreadDispatchQueue(),
-            LoggingHandler.INSTANCE);
+                identifier,
+                DirectExecutor.INSTANCE,
+                Dispatcher.perThreadDispatchQueue(null),
+                LoggingHandler.INSTANCE);
     }
 
-    public EventBus(String identifier, SubscriberExceptionHandler subscriberExceptionHandler) {
+    public EventBus(String identifier, SubscriberExceptionHandler subscriberExceptionHandler, ExpressionParser expressionParser) {
         this(
-            identifier,
-            DirectExecutor.INSTANCE,
-            Dispatcher.perThreadDispatchQueue(),
-            subscriberExceptionHandler);
+                identifier,
+                DirectExecutor.INSTANCE,
+                Dispatcher.perThreadDispatchQueue(expressionParser),
+                subscriberExceptionHandler);
     }
 
     /**
@@ -76,19 +80,19 @@ public class EventBus {
      * @param exceptionHandler Handler for subscriber exceptions.
      * @since 16.0
      */
-    public EventBus(SubscriberExceptionHandler exceptionHandler, ExecutorService executor) {
+    public EventBus(SubscriberExceptionHandler exceptionHandler, ExecutorService executor, ExpressionParser expressionParser) {
         this(
-            "default",
-            executor,
-            Dispatcher.perThreadDispatchQueue(),
-            exceptionHandler);
+                "default",
+                executor,
+                Dispatcher.perThreadDispatchQueue(expressionParser),
+                exceptionHandler);
     }
 
     public EventBus(
-        String identifier,
-        ExecutorService executor,
-        Dispatcher dispatcher,
-        SubscriberExceptionHandler exceptionHandler) {
+            String identifier,
+            ExecutorService executor,
+            Dispatcher dispatcher,
+            SubscriberExceptionHandler exceptionHandler) {
 
         checkNotNull(identifier);
         checkNotNull(executor);
@@ -110,12 +114,16 @@ public class EventBus {
         return identifier;
     }
 
-    /** Returns the default executor this event bus uses for dispatching events to subscribers. */
+    /**
+     * Returns the default executor this event bus uses for dispatching events to subscribers.
+     */
     final ExecutorService executor() {
         return executor;
     }
 
-    /** Handles the given exception thrown by a subscriber with the given context. */
+    /**
+     * Handles the given exception thrown by a subscriber with the given context.
+     */
     void handleSubscriberException(Throwable e, SubscriberExceptionContext context) {
         checkNotNull(e);
         checkNotNull(context);
@@ -172,7 +180,7 @@ public class EventBus {
     /**
      * 指定排除触发
      *
-     * @param event 事件
+     * @param event                      事件
      * @param excludeIdentifySubscribers 排除指定订阅者
      * @return 执行结果
      */
@@ -198,11 +206,13 @@ public class EventBus {
     @Override
     public String toString() {
         return "EventBus{" +
-            "identifier='" + identifier + '\'' +
-            '}';
+                "identifier='" + identifier + '\'' +
+                '}';
     }
 
-    /** Simple logging handler for subscriber exceptions. */
+    /**
+     * Simple logging handler for subscriber exceptions.
+     */
     static final class LoggingHandler implements SubscriberExceptionHandler {
 
         static final LoggingHandler INSTANCE = new LoggingHandler();
@@ -222,14 +232,14 @@ public class EventBus {
         private static String message(SubscriberExceptionContext context) {
             Method method = context.getSubscriberMethod();
             return "Exception thrown by subscriber method "
-                + method.getName()
-                + '('
-                + method.getParameterTypes()[0].getName()
-                + ')'
-                + " on subscriber "
-                + context.getSubscriber()
-                + " when dispatching event: "
-                + context.getEvent();
+                    + method.getName()
+                    + '('
+                    + method.getParameterTypes()[0].getName()
+                    + ')'
+                    + " on subscriber "
+                    + context.getSubscriber()
+                    + " when dispatching event: "
+                    + context.getEvent();
         }
     }
 }

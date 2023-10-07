@@ -18,9 +18,11 @@ public class LogEventNotifier implements EventNotifier {
 
     @Override
     public void notify(List<BusEventEntity> eventList) {
+
         if (CollectionUtils.isEmpty(eventList)) {
             return;
         }
+
         String eventIdList = eventList.stream()
             .map(BaseEventEntity::getEntityId)
             .map(String::valueOf)

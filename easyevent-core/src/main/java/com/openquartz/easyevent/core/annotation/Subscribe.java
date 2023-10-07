@@ -31,9 +31,14 @@ import java.lang.annotation.Target;
  * <p>Unless also annotated with @{@link AllowConcurrentEvents}, event subscriber methods will be
  * invoked serially by each event bus that they are registered with.
  *
- * @author Cliff Biffle
- * @since 10.0
+ * @author svnee
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Subscribe {}
+public @interface Subscribe {
+
+    /**
+     * 条件
+     */
+    String condition() default "";
+}

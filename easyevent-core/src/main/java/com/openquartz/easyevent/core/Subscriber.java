@@ -15,12 +15,17 @@ package com.openquartz.easyevent.core;
 
 import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
+import com.openquartz.easyevent.common.utils.StringUtils;
+import com.openquartz.easyevent.core.annotation.Subscribe;
+import com.openquartz.easyevent.core.expression.ExpressionParser;
 import com.openquartz.easyevent.core.intreceptor.HandlerInterceptorContext;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+
 import com.openquartz.easyevent.core.annotation.AllowConcurrentEvents;
 import com.openquartz.easyevent.core.annotation.Order;
 import com.openquartz.easyevent.core.intreceptor.HandlerInterceptorChain;
@@ -37,8 +42,8 @@ public class Subscriber {
      */
     static Subscriber create(EventBus bus, Object listener, Method method) {
         return isDeclaredThreadSafe(method)
-            ? new Subscriber(bus, listener, method)
-            : new SynchronizedSubscriber(bus, listener, method);
+                ? new Subscriber(bus, listener, method)
+                : new SynchronizedSubscriber(bus, listener, method);
     }
 
     /**
@@ -61,7 +66,9 @@ public class Subscriber {
      */
     private final int order;
 
-    /** Executor to use for dispatching events to this subscriber. */
+    /**
+     * Executor to use for dispatching events to this subscriber.
+     */
     private final ExecutorService executor;
 
     private Subscriber(EventBus bus, Object target, Method method) {
@@ -78,7 +85,9 @@ public class Subscriber {
         this.order = Objects.nonNull(orderAnnotation) ? orderAnnotation.value() : Integer.MAX_VALUE;
     }
 
-    /** Dispatches {@code event} to this subscriber using the proper executor. */
+    /**
+     * Dispatches {@code event} to this subscriber using the proper executor.
+     */
     public final void dispatchEvent(Object event, HandlerInterceptorContext context) {
         executor.execute(() -> doDispatchEvent(event, context));
     }
@@ -94,7 +103,7 @@ public class Subscriber {
     /**
      * do dispatcher trigger event!
      *
-     * @param event event
+     * @param event   event
      * @param context context
      * @return invoke flag
      */
@@ -146,7 +155,9 @@ public class Subscriber {
         }
     }
 
-    /** Gets the context for the given event. */
+    /**
+     * Gets the context for the given event.
+     */
     private SubscriberExceptionContext context(Object event) {
         return new SubscriberExceptionContext(bus, event, target, method);
     }
@@ -190,6 +201,23 @@ public class Subscriber {
      */
     public int getOrder() {
         return order;
+    }
+
+    /**
+     * should subscribe expression
+     */
+    public boolean shouldSubscribe(ExpressionParser expressionParser, Object event) {
+
+        if (Objects.isNull(expressionParser)) {
+            return true;
+        }
+
+        Class<?> targetClass = this.target.getClass();
+        Subscribe annotation = this.method.getDeclaredAnnotation(Subscribe.class);
+        if (annotation == null || StringUtils.isBlank(annotation.condition())) {
+            return true;
+        }
+        return expressionParser.parse(annotation.condition(), event, method, targetClass);
     }
 
     /**
