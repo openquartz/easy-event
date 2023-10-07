@@ -253,6 +253,7 @@ public class TestEventPublisher {
 订阅者需要在类上加上注解(`com.openquartz.easyevent.starter.annotation.EventHandler`)来标识这是一个Event处理类。
 
 同时在订阅的方法上加上注解(`com.openquartz.easyevent.core.annotation.Subscribe`)可以标识这个方法在订阅参数中的事件。
+> 支持按条件订阅。可以在注解@Subscriube上添加属性condition。支持`SPEL` 表达式.
 
 `EasyEvent` 订阅者订阅事件,目前支持**串行订阅事件**和**并行订阅事件**。
 **串行订阅事件**：默认是串行订阅。和当前主线程在同一个线程中,一起成功,或者一起失败。
