@@ -29,11 +29,12 @@ public class CustomerJdbcTemplate {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @SuppressWarnings("unchecked")
     public int[] batchUpdate(final String sql, final BatchPreparedStatementSetter pss,
         final KeyHolder generatedKeyHolder) throws DataAccessException {
         return (int[]) jdbcTemplate.execute(
             conn -> conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS),
-            (PreparedStatementCallback) ps -> {
+            (PreparedStatementCallback<?>) ps -> {
                 if (log.isDebugEnabled()) {
                     log.debug("Executing batch SQL update and returning generated keys [" + sql + "]");
                 }
@@ -51,9 +52,10 @@ public class CustomerJdbcTemplate {
                         try {
                             keys = ps.getGeneratedKeys();
                             if (keys != null) {
-                                RowMapper rowMapper = new ColumnMapRowMapper();
-                                RowMapperResultSetExtractor rse =
-                                    new RowMapperResultSetExtractor(rowMapper, 1);
+                                @SuppressWarnings("unchecked")
+                                RowMapper<?> rowMapper = new ColumnMapRowMapper();
+                                RowMapperResultSetExtractor<?> rse =
+                                    new RowMapperResultSetExtractor<>(rowMapper, 1);
                                 generatedKeys.addAll(rse.extractData(keys));
                             }
                         } finally {

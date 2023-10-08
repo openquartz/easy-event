@@ -68,6 +68,7 @@ public class JdbcStorageAutoConfiguration {
         return dataSource;
     }
 
+    @SuppressWarnings("unchecked")
     private DataSource buildDataSource(JdbcStorageProperties jdbcStorageProperties) {
         try {
             String dataSourceType = jdbcStorageProperties.getDatasource().getType();

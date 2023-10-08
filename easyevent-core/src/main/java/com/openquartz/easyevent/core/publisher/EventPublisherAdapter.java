@@ -1,18 +1,16 @@
 package com.openquartz.easyevent.core.publisher;
 
-import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
-
+import com.openquartz.easyevent.common.utils.CollectionUtils;
 import com.openquartz.easyevent.core.EventBus;
 import com.openquartz.easyevent.core.dispatcher.DispatchInvokeResult;
 import com.openquartz.easyevent.core.intreceptor.PublisherInterceptorChain;
 import com.openquartz.easyevent.core.intreceptor.PublisherInterceptorContext;
-import java.util.List;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import com.openquartz.easyevent.common.utils.CollectionUtils;
-import com.openquartz.easyevent.common.concurrent.TraceThreadPoolExecutor;
 import com.openquartz.easyevent.transfer.api.EventSender;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
 /**
  * @author svnee
@@ -32,13 +30,6 @@ public abstract class EventPublisherAdapter implements EventPublisher {
      * @return 事件发送者
      */
     public abstract EventSender getEventSender();
-
-    /**
-     * 异步执行的线程池
-     */
-    public TraceThreadPoolExecutor getExecutor() {
-        return new TraceThreadPoolExecutor(10, 10, 100, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
-    }
 
     @Override
     public <T> boolean syncPublish(T event) {
