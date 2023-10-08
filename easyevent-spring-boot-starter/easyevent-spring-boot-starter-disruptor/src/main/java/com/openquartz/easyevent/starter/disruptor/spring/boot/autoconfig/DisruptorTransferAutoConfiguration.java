@@ -36,7 +36,7 @@ import org.springframework.core.Ordered;
 public class DisruptorTransferAutoConfiguration {
 
     @Bean(initMethod = "init", destroyMethod = "destroy")
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(EventSender.class)
     public EventSender eventSender(DisruptorTransferProperties properties,
         EventStorageService eventStorageService,
         TransactionSupport transactionSupport,
