@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.openquartz.easyevent.common.utils.CollectionUtils;
 import com.openquartz.easyevent.example.event.TestEvent;
-import com.openquartz.easyevent.example.publisher.TestEventPublisher;
+import com.openquartz.easyevent.example.publisher.IEventPublisher;
 
 /**
  * @author svnee
@@ -15,20 +15,20 @@ import com.openquartz.easyevent.example.publisher.TestEventPublisher;
 public class EventController {
 
     @Autowired
-    private TestEventPublisher testEventPublisher;
+    private IEventPublisher iEventPublisher;
 
     @RequestMapping("/sync")
     public void publish() {
 
         TestEvent source = new TestEvent("source");
-        testEventPublisher.publish(source);
+        iEventPublisher.publish(source);
     }
 
     @RequestMapping("/async")
     public void asyncPublish() {
 
         TestEvent source = new TestEvent("source");
-        testEventPublisher.asyncPublish(source);
+        iEventPublisher.asyncPublish(source);
     }
 
     @RequestMapping("/async-batch")
@@ -36,7 +36,7 @@ public class EventController {
         TestEvent source1 = new TestEvent("source1");
         TestEvent source2 = new TestEvent("source2");
 
-        testEventPublisher.asyncPublishList(CollectionUtils.newArrayList(source1, source2));
+        iEventPublisher.asyncPublishList(CollectionUtils.newArrayList(source1, source2));
     }
 
 }

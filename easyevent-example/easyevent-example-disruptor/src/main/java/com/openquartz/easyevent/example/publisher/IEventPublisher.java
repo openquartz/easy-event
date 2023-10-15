@@ -3,6 +3,8 @@ package com.openquartz.easyevent.example.publisher;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Resource;
+
+import com.openquartz.easyevent.example.event.IEvent;
 import org.springframework.stereotype.Component;
 import com.openquartz.easyevent.core.publisher.EventPublisher;
 import com.openquartz.easyevent.example.event.TestEvent;
@@ -11,20 +13,20 @@ import com.openquartz.easyevent.example.event.TestEvent;
  * @author svnee
  **/
 @Component
-public class TestEventPublisher {
+public class IEventPublisher {
 
     @Resource
     private EventPublisher eventPublisher;
 
-    public void publish(TestEvent testEvent) {
-        eventPublisher.syncPublish(testEvent);
+    public <T extends IEvent>void publish(T event) {
+        eventPublisher.syncPublish(event);
     }
 
-    public void asyncPublish(TestEvent event) {
+    public <T extends IEvent>void asyncPublish(T event) {
         eventPublisher.asyncPublish(event);
     }
 
-    public void asyncPublishList(List<TestEvent> eventList) {
+    public <T extends IEvent>void asyncPublishList(List<T> eventList) {
         ArrayList<Object> list = new ArrayList<>(eventList);
         eventPublisher.asyncPublishList(list);
     }
