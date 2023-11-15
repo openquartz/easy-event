@@ -70,7 +70,7 @@ public abstract class Dispatcher {
     /**
      * Dispatches the given {@code event} to the given {@code subscribers}.
      */
-    public abstract DispatchInvokeResult dispatch(Object event, Iterator<Subscriber> subscribers);
+    public abstract DispatchInvokeResult dispatch(Object event, Iterator<Subscriber> subscribers, boolean joinTransaction);
 
     protected DispatchInvokeResult dispatchConcurrentEvent(
             List<Subscriber> concurrentSubscriberList,
@@ -159,7 +159,7 @@ public abstract class Dispatcher {
         private final ThreadLocal<Boolean> dispatching = ThreadLocal.withInitial(() -> false);
 
         @Override
-        public DispatchInvokeResult dispatch(Object event, Iterator<Subscriber> subscribers) {
+        public DispatchInvokeResult dispatch(Object event, Iterator<Subscriber> subscribers, boolean joinTransaction) {
 
             checkNotNull(event);
             checkNotNull(subscribers);
@@ -176,10 +176,17 @@ public abstract class Dispatcher {
                 try {
                     EventAndSubscribers nextEvent;
                     while ((nextEvent = queueForThread.poll()) != null) {
+
                         List<Subscriber> syncSubscriberList = new ArrayList<>();
                         List<Subscriber> concurrentSubscriberList = new ArrayList<>();
+
                         while (nextEvent.getSubscribers().hasNext()) {
+
                             Subscriber subscriber = nextEvent.getSubscribers().next();
+                            // is join the transaction
+                            if (subscriber.isJoinTransaction() != joinTransaction) {
+                                continue;
+                            }
                             if (subscriber instanceof SynchronizedSubscriber) {
                                 syncSubscriberList.add(subscriber);
                             } else {
@@ -230,7 +237,7 @@ public abstract class Dispatcher {
         private static final ImmediateDispatcher INSTANCE = new ImmediateDispatcher();
 
         @Override
-        public DispatchInvokeResult dispatch(Object event, Iterator<Subscriber> subscribers) {
+        public DispatchInvokeResult dispatch(Object event, Iterator<Subscriber> subscribers, boolean joinTransaction) {
             checkNotNull(event);
             HandlerInterceptorContext context = new HandlerInterceptorContext();
 
@@ -238,7 +245,12 @@ public abstract class Dispatcher {
             List<Subscriber> concurrentSubscriberList = new ArrayList<>();
 
             while (subscribers.hasNext()) {
+
                 Subscriber subscriber = subscribers.next();
+                if (subscriber.isJoinTransaction() != joinTransaction) {
+                    continue;
+                }
+
                 if (subscriber instanceof SynchronizedSubscriber) {
                     syncSubscriberList.add(subscriber);
                 } else {

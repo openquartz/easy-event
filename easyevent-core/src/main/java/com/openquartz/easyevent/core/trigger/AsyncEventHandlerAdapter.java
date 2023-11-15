@@ -3,8 +3,10 @@ package com.openquartz.easyevent.core.trigger;
 import com.openquartz.easyevent.core.EventBus;
 import com.openquartz.easyevent.core.Subscriber;
 import com.openquartz.easyevent.core.dispatcher.DispatchInvokeResult;
+
 import java.util.List;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import com.openquartz.easyevent.common.concurrent.TraceContext;
 import com.openquartz.easyevent.common.exception.EasyEventException;
@@ -101,21 +103,30 @@ public abstract class AsyncEventHandlerAdapter implements AsyncEventHandler {
                     return;
                 }
                 Object finalEvent = event;
+
+                // execute the no join transaction subscribers
+                DispatchInvokeResult noJoinTransactionInvokeResult = getHandleEventBus()
+                        .postAll(finalEvent, entity.getSuccessfulSubscriberList(), false);
+
                 executeSuccess = getTransactionSupport().execute(() -> {
-                    DispatchInvokeResult invokeResult = getHandleEventBus()
-                        .postAll(finalEvent, entity.getSuccessfulSubscriberList());
+                    // execute the join transaction subscribers
+                    DispatchInvokeResult joinTransactionInvokeResult = getHandleEventBus()
+                            .postAll(finalEvent, entity.getSuccessfulSubscriberList(), true);
+
+                    DispatchInvokeResult invokeResult = noJoinTransactionInvokeResult.merge(joinTransactionInvokeResult);
                     List<String> successfulSubIdentifyList = invokeResult.getSuccessSubscriberList()
-                        .stream()
-                        .map(Subscriber::getTargetIdentify)
-                        .collect(Collectors.toList());
+                            .stream()
+                            .map(Subscriber::getTargetIdentify)
+                            .collect(Collectors.toList());
+
                     // 未执行成功
                     if (!invokeResult.isSuccess()) {
                         getEventStorageService()
-                            .processingFailed(eventMessage.getEventId(), successfulSubIdentifyList,
-                                invokeResult.getInvokeError());
+                                .processingFailed(eventMessage.getEventId(), successfulSubIdentifyList,
+                                        invokeResult.getInvokeError());
                     } else {
                         getEventStorageService()
-                            .processingCompleted(eventMessage.getEventId());
+                                .processingCompleted(eventMessage.getEventId());
                     }
                     return invokeResult.isSuccess();
                 });
