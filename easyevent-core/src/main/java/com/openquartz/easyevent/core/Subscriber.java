@@ -71,6 +71,11 @@ public class Subscriber {
      */
     private final ExecutorService executor;
 
+    /**
+     * join this event transaction
+     */
+    private final boolean joinTransaction;
+
     private Subscriber(EventBus bus, Object target, Method method) {
 
         checkNotNull(target);
@@ -83,6 +88,9 @@ public class Subscriber {
         this.executor = bus.executor();
         Order orderAnnotation = method.getAnnotation(Order.class);
         this.order = Objects.nonNull(orderAnnotation) ? orderAnnotation.value() : Integer.MAX_VALUE;
+
+        Subscribe subscribeAnnotation = method.getDeclaredAnnotation(Subscribe.class);
+        this.joinTransaction = Objects.nonNull(subscribeAnnotation) && subscribeAnnotation.joinTransaction();
     }
 
     /**
@@ -201,6 +209,15 @@ public class Subscriber {
      */
     public int getOrder() {
         return order;
+    }
+
+    /**
+     * is join the transaction
+     *
+     * @return is join the transaction
+     */
+    public boolean isJoinTransaction() {
+        return joinTransaction;
     }
 
     /**

@@ -41,4 +41,9 @@ public @interface Subscribe {
      * 条件
      */
     String condition() default "";
+
+    /**
+     * 加入到主事务中
+     */
+    boolean joinTransaction() default false;
 }

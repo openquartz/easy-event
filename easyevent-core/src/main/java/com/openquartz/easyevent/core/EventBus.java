@@ -159,22 +159,28 @@ public class EventBus {
      *
      * @param event event to post.
      */
-    public DispatchInvokeResult post(Object event) {
+    public DispatchInvokeResult post(Object event, boolean joinTransaction) {
         Iterator<Subscriber> eventSubscribers = subscribers.getSubscribers(event);
         if (eventSubscribers.hasNext()) {
-            return dispatcher.dispatch(event, eventSubscribers);
+            return dispatcher.dispatch(event, eventSubscribers,joinTransaction);
         } else if (!(event instanceof DeadEvent)) {
             // the event had no subscribers and was not itself a DeadEvent
-            return post(new DeadEvent(this, event));
+            return post(new DeadEvent(this, event), joinTransaction);
         }
         return new DispatchInvokeResult(event);
     }
 
-    public DispatchInvokeResult postAll(Object event, List<String> excludeIdentifySubscribers) {
+    public DispatchInvokeResult post(Object event) {
+        DispatchInvokeResult noJoinTransactionInvokeResult = post(event, false);
+        DispatchInvokeResult joinTransactionInvokeResult = post(event, true);
+        return noJoinTransactionInvokeResult.merge(joinTransactionInvokeResult);
+    }
+
+    public DispatchInvokeResult postAll(Object event, List<String> excludeIdentifySubscribers, boolean joinTransaction) {
         if (CollectionUtils.isEmpty(excludeIdentifySubscribers)) {
-            return post(event);
+            return post(event, joinTransaction);
         }
-        return post(event, excludeIdentifySubscribers);
+        return post(event, excludeIdentifySubscribers, joinTransaction);
     }
 
     /**
@@ -184,7 +190,7 @@ public class EventBus {
      * @param excludeIdentifySubscribers 排除指定订阅者
      * @return 执行结果
      */
-    public DispatchInvokeResult post(Object event, List<String> excludeIdentifySubscribers) {
+    public DispatchInvokeResult post(Object event, List<String> excludeIdentifySubscribers, boolean joinTransaction) {
         Iterator<Subscriber> eventSubscribers = this.subscribers.getSubscribers(event);
         if (eventSubscribers.hasNext()) {
             List<Subscriber> specSubscriberList = new ArrayList<>();
@@ -194,11 +200,11 @@ public class EventBus {
                 }
             });
             if (CollectionUtils.isNotEmpty(specSubscriberList)) {
-                return dispatcher.dispatch(event, specSubscriberList.iterator());
+                return dispatcher.dispatch(event, specSubscriberList.iterator(), joinTransaction);
             }
         } else if (!(event instanceof DeadEvent)) {
             // the event had no subscribers and was not itself a DeadEvent
-            return post(new DeadEvent(this, event));
+            return post(new DeadEvent(this, event), joinTransaction);
         }
         return new DispatchInvokeResult(event);
     }
