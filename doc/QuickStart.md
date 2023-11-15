@@ -258,6 +258,8 @@ public class TestEventPublisher {
 `EasyEvent` 订阅者订阅事件,目前支持**串行订阅事件**和**并行订阅事件**。
 **串行订阅事件**：默认是串行订阅。和当前主线程在同一个线程中,一起成功,或者一起失败。
 允许进行编排顺序。可以通过加上注解(`com.openquartz.easyevent.core.annotation.Order`)在订阅方法上，其中值越小越优先执行。
+> 针对串行订阅事件。可以选择是否加入到事件完成的事务中。可以配置属性`joinTrasnsaction=false`.默认加入一起事务中。\
+> 使用场景: 针对一些RPC的场景，可以使用`joinTrasnsaction=false`.以减少事务执行时长.避免大事务发生。
 
 **并行订阅事件**：并行订阅事件。指订阅者之间是互不影响，独立触发执行。使用并行订阅线程池触发执行。
 可以通过加上注解(`com.openquartz.easyevent.core.annotation.AllowConcurrentEvents`)在订阅方法上。

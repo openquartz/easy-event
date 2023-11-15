@@ -45,5 +45,5 @@ public @interface Subscribe {
     /**
      * 加入到主事务中
      */
-    boolean joinTransaction() default false;
+    boolean joinTransaction() default true;
 }
