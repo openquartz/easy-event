@@ -39,18 +39,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @AutoConfigureAfter(EasyEventStorageAutoConfiguration.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 120)
 public class JdbcStorageAutoConfiguration {
-    @Bean
-    @ConditionalOnMissingBean(type = "dataSourceFactory", value = DataSourceFactory.class)
-    public DataSourceFactory dataSourceFactory() {
-        return new DataSourceFactory();
-    }
 
     @Bean
     @ConditionalOnMissingBean(type = "jdbcStorageJdbcTemplate", value = JdbcTemplate.class)
     public JdbcTemplate jdbcStorageJdbcTemplate(JdbcStorageProperties jdbcStorageProperties,
-                                                Environment environment,
-                                                DataSourceFactory dataSourceFactory) {
-        return new JdbcTemplate(dataSourceFactory.create(jdbcStorageProperties, environment));
+                                                Environment environment) {
+        return new JdbcTemplate(DataSourceFactory.newInstance().create(jdbcStorageProperties, environment));
     }
 
     @Bean

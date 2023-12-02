@@ -22,8 +22,30 @@ import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 @Slf4j
 public class DataSourceFactory {
 
+    private static volatile DataSourceFactory instance = null;
+
+    private DataSourceFactory() {
+    }
+
+    /**
+     * new instance
+     *
+     * @return data source factory
+     */
+    public static DataSourceFactory newInstance() {
+        if (instance == null) {
+            // 同步代码块
+            synchronized (DataSourceFactory.class) {
+                if (instance == null) {
+                    instance = new DataSourceFactory();
+                }
+            }
+        }
+        return instance;
+    }
+
     public DataSource create(JdbcStorageProperties jdbcStorageProperties,
-                                                     Environment environment) {
+                             Environment environment) {
 
         Iterable<ConfigurationPropertySource> sources = ConfigurationPropertySources
                 .get(environment);
