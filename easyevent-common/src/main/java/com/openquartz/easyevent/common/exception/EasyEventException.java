@@ -3,7 +3,7 @@ package com.openquartz.easyevent.common.exception;
 import java.text.MessageFormat;
 
 /**
- * 异步文件异常
+ * Event事件异常
  *
  * @author svnee
  */
