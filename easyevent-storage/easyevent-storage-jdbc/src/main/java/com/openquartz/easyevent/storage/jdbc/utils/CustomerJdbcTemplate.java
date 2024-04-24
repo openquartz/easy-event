@@ -29,7 +29,7 @@ public class CustomerJdbcTemplate {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("all")
     public int[] batchUpdate(final String sql, final BatchPreparedStatementSetter pss,
         final KeyHolder generatedKeyHolder) throws DataAccessException {
         return (int[]) jdbcTemplate.execute(
@@ -52,7 +52,6 @@ public class CustomerJdbcTemplate {
                         try {
                             keys = ps.getGeneratedKeys();
                             if (keys != null) {
-                                @SuppressWarnings("unchecked")
                                 RowMapper<?> rowMapper = new ColumnMapRowMapper();
                                 RowMapperResultSetExtractor<?> rse =
                                     new RowMapperResultSetExtractor<>(rowMapper, 1);
