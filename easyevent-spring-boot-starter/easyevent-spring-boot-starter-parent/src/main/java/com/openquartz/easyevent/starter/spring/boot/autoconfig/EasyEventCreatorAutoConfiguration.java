@@ -25,6 +25,7 @@ import com.openquartz.easyevent.starter.trigger.DefaultAsyncEventHandler;
 import com.openquartz.easyevent.storage.api.EventStorageService;
 import com.openquartz.easyevent.transfer.api.EventSender;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -54,7 +55,8 @@ public class EasyEventCreatorAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(EventBus.class)
-    public EventBus handleEventBus(ExecutorService defaultEventBusThreadPool, ExpressionParser expressionParser) {
+    public EventBus handleEventBus(@Qualifier("defaultEventBusThreadPool") ExecutorService defaultEventBusThreadPool,
+                                   ExpressionParser expressionParser) {
         return new EventBus(new DirectInterruptExceptionHandler(), defaultEventBusThreadPool, expressionParser);
     }
 
@@ -70,7 +72,7 @@ public class EasyEventCreatorAutoConfiguration {
         return new SpringExpressionParser(spelExpressionParser);
     }
 
-    @Bean
+    @Bean(name = "defaultEventBusThreadPool")
     @ConditionalOnMissingBean(name = "defaultEventBusThreadPool")
     public ExecutorService defaultEventBusThreadPool(DefaultEventBusProperties defaultEventBusProperties) {
         return new TraceThreadPoolExecutor(

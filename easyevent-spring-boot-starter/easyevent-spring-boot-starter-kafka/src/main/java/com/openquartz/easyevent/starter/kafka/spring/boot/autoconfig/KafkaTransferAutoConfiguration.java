@@ -23,6 +23,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
@@ -48,7 +50,7 @@ public class KafkaTransferAutoConfiguration {
     @Bean(initMethod = "init", destroyMethod = "destroy")
     @ConditionalOnMissingBean
     public EventSender eventSender(EventStorageService eventStorageService,
-        ExecutorService asyncSendExecutor,
+        @Autowired @Qualifier("asyncSendExecutor") ExecutorService asyncSendExecutor,
         TransactionSupport transactionSupport,
         KafkaTransferProducer kafkaTransferProducer,
         EventTransferSenderLimitingControl eventTransferSenderLimitingControl) {
