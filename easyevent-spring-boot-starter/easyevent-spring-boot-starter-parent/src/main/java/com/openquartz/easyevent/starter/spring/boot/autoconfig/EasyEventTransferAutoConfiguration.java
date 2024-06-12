@@ -32,7 +32,7 @@ import org.springframework.core.Ordered;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10000)
 public class EasyEventTransferAutoConfiguration {
 
-    @Bean
+    @Bean(name = "asyncSendExecutor")
     @ConditionalOnMissingBean(name = "asyncSendExecutor")
     public ExecutorService asyncSendExecutor(DefaultTransferSenderProperties properties) {
         return new TraceThreadPoolExecutor(

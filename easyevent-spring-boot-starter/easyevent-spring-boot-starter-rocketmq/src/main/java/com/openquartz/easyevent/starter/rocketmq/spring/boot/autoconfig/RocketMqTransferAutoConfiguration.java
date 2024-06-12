@@ -21,14 +21,18 @@ import com.openquartz.easyevent.transfer.rocket.common.RocketMqProducer;
 import com.openquartz.easyevent.transfer.rocket.property.RocketMqCommonProperty;
 import com.openquartz.easyevent.transfer.rocket.property.RocketMqTriggerProperty;
 import com.openquartz.easyevent.transfer.rocket.property.RocketMqTriggerProperty.RocketMqConsumerProperty;
+
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.MQProducer;
 import org.apache.rocketmq.common.UtilAll;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
@@ -54,21 +58,21 @@ public class RocketMqTransferAutoConfiguration {
     @Bean(initMethod = "init", destroyMethod = "destroy")
     @ConditionalOnMissingBean
     public EventSender eventSender(EventStorageService eventStorageService,
-        ExecutorService asyncSendExecutor,
-        TransactionSupport transactionSupport,
-        RocketMqProducer rocketMqProducer,
-        EventTransferSenderLimitingControl eventTransferSenderLimitingControl) {
+                                   @Autowired @Qualifier("asyncSendExecutor") ExecutorService asyncSendExecutor,
+                                   TransactionSupport transactionSupport,
+                                   RocketMqProducer rocketMqProducer,
+                                   EventTransferSenderLimitingControl eventTransferSenderLimitingControl) {
 
         return new RocketMqEventSender(eventStorageService, asyncSendExecutor, transactionSupport,
-            rocketMqProducer, eventTransferSenderLimitingControl);
+                rocketMqProducer, eventTransferSenderLimitingControl);
     }
 
     @Bean
     @ConditionalOnMissingBean
     public RocketMqProducer rocketMqProducer(MQProducer easyEventTriggerMqProducer,
-        Serializer serializer,
-        EventRouter eventRouter,
-        RocketMqCommonProperty rocketMqCommonProperty) {
+                                             Serializer serializer,
+                                             EventRouter eventRouter,
+                                             RocketMqCommonProperty rocketMqCommonProperty) {
 
         return new RocketMqProducer(easyEventTriggerMqProducer, serializer, eventRouter, rocketMqCommonProperty);
     }
@@ -76,7 +80,7 @@ public class RocketMqTransferAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(value = MQProducer.class, name = "easyEventTriggerMqProducer")
     public MQProducer easyEventTriggerMqProducer(RocketTransferProperties transferProperties,
-        EasyEventCommonProperties easyEventCommonProperties) {
+                                                 EasyEventCommonProperties easyEventCommonProperties) {
 
         DefaultMQProducer producer = new DefaultMQProducer(transferProperties.getProduceGroup());
         producer.setNamesrvAddr(transferProperties.getHost());
@@ -86,8 +90,8 @@ public class RocketMqTransferAutoConfiguration {
         String ipAddress = IpUtil.getIp();
         String[] split = ipAddress.split("\\.");
         producer.setInstanceName(
-            TransferConstants.SENDER_PREFIX + "@" + easyEventCommonProperties.getAppId() + "@" + split[split.length - 1]
-                + "@" + UtilAll.getPid());
+                TransferConstants.SENDER_PREFIX + "@" + easyEventCommonProperties.getAppId() + "@" + split[split.length - 1]
+                        + "@" + UtilAll.getPid());
         producer.setClientIP(ipAddress);
         return producer;
     }
@@ -106,25 +110,25 @@ public class RocketMqTransferAutoConfiguration {
 
     @Bean
     public RocketMqTriggerProperty rocketMqTriggerProperties(
-        RocketTransferProperties rocketTransferProperties) {
+            RocketTransferProperties rocketTransferProperties) {
 
         Map<String, RocketMqConsumerProperty> propertyMap = rocketTransferProperties.getConsumers().entrySet()
-            .stream()
-            .collect(Collectors.toMap(Entry::getKey, e -> {
-                RocketMqConsumerProperty rocketMqConsumerProperty = new RocketMqConsumerProperty();
-                rocketMqConsumerProperty.setConsumerGroup(e.getValue().getConsumerGroup());
-                rocketMqConsumerProperty.setConsumerMaxThread(e.getValue().getConsumerMaxThread());
-                rocketMqConsumerProperty.setConsumeConcurrentlyMaxSpan(e.getValue().getConsumeConcurrentlyMaxSpan());
-                rocketMqConsumerProperty.setConsumerMinThread(e.getValue().getConsumerMinThread());
-                rocketMqConsumerProperty.setTags(e.getValue().getTags());
-                rocketMqConsumerProperty.setTopic(e.getValue().getTopic());
-                rocketMqConsumerProperty.setConsumeMaxRetry(e.getValue().getConsumeMaxRetry());
-                rocketMqConsumerProperty.setConsumeLimingRetryDelayTimeBaseSeconds(e.getValue()
-                    .getConsumeLimingRetryDelayTimeBaseSeconds());
-                rocketMqConsumerProperty
-                    .setConsumeRetryDelayTimeIntervalSeconds(e.getValue().getConsumeRetryDelayTimeIntervalSeconds());
-                return rocketMqConsumerProperty;
-            }));
+                .stream()
+                .collect(Collectors.toMap(Entry::getKey, e -> {
+                    RocketMqConsumerProperty rocketMqConsumerProperty = new RocketMqConsumerProperty();
+                    rocketMqConsumerProperty.setConsumerGroup(e.getValue().getConsumerGroup());
+                    rocketMqConsumerProperty.setConsumerMaxThread(e.getValue().getConsumerMaxThread());
+                    rocketMqConsumerProperty.setConsumeConcurrentlyMaxSpan(e.getValue().getConsumeConcurrentlyMaxSpan());
+                    rocketMqConsumerProperty.setConsumerMinThread(e.getValue().getConsumerMinThread());
+                    rocketMqConsumerProperty.setTags(e.getValue().getTags());
+                    rocketMqConsumerProperty.setTopic(e.getValue().getTopic());
+                    rocketMqConsumerProperty.setConsumeMaxRetry(e.getValue().getConsumeMaxRetry());
+                    rocketMqConsumerProperty.setConsumeLimingRetryDelayTimeBaseSeconds(e.getValue()
+                            .getConsumeLimingRetryDelayTimeBaseSeconds());
+                    rocketMqConsumerProperty
+                            .setConsumeRetryDelayTimeIntervalSeconds(e.getValue().getConsumeRetryDelayTimeIntervalSeconds());
+                    return rocketMqConsumerProperty;
+                }));
         RocketMqTriggerProperty rocketMqTriggerProperty = new RocketMqTriggerProperty();
         rocketMqTriggerProperty.setConsumerPropertyMap(propertyMap);
         return rocketMqTriggerProperty;
@@ -133,18 +137,18 @@ public class RocketMqTransferAutoConfiguration {
     @Bean(destroyMethod = "destroy", initMethod = "init")
     @ConditionalOnMissingBean
     public EventTrigger rocketMqEventTrigger(RocketMqCommonProperty rocketMqCommonProperty,
-        RocketMqTriggerProperty rocketMqTriggerProperty,
-        AsyncEventHandler defaultAsyncEventHandler,
-        EasyEventCommonProperties easyEventCommonProperties,
-        LockSupport lockSupport,
-        EventTransferTriggerLimitingControl eventTransferTriggerLimitingControl) {
+                                             RocketMqTriggerProperty rocketMqTriggerProperty,
+                                             AsyncEventHandler defaultAsyncEventHandler,
+                                             EasyEventCommonProperties easyEventCommonProperties,
+                                             LockSupport lockSupport,
+                                             EventTransferTriggerLimitingControl eventTransferTriggerLimitingControl) {
 
         return new RocketMqEventTrigger(rocketMqTriggerProperty,
-            rocketMqCommonProperty,
-            defaultAsyncEventHandler::handle,
-            easyEventCommonProperties,
-            lockSupport,
-            eventTransferTriggerLimitingControl);
+                rocketMqCommonProperty,
+                defaultAsyncEventHandler::handle,
+                easyEventCommonProperties,
+                lockSupport,
+                eventTransferTriggerLimitingControl);
     }
 
 
