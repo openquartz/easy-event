@@ -11,8 +11,8 @@ import com.openquartz.easyevent.starter.annotation.EventHandler;
 public class TestEventHandler {
 
     @Subscribe
-    public void handle(TestEvent testEvent){
-        System.out.println(testEvent);
+    public void handle(TestEvent event) {
+        System.out.println(">>>>>>>>>--------TestEventHandler" + event + ":" + Thread.currentThread().getId());
     }
 
 }

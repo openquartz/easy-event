@@ -14,7 +14,7 @@ public class Test2EventHandler {
     @AllowConcurrentEvents
     @Subscribe(condition = "args[0].source.equals(\'\')")
     public void handle(TestEvent event) {
-        throw new RuntimeException("xxxx");
+        System.out.println(">>>>>>>>>--------Test2EventHandler" + event + ":" + Thread.currentThread().getId());
     }
 
 }
