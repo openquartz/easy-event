@@ -44,6 +44,7 @@ public final class HandlerInterceptorCenter {
      * @param eventType event-type
      * @return interceptor
      */
+    @SuppressWarnings("all")
     public static List<HandlerInterceptor> match(Class<?> eventType) {
         List<HandlerInterceptor> interceptorList = new ArrayList<>();
         for (Entry<Class<?>, List<HandlerInterceptor<?>>> entry : INTERCEPTOR_MAP.entrySet()) {

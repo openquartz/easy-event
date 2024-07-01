@@ -1,10 +1,14 @@
 package com.openquartz.easyevent.starter.expression;
 
 import com.openquartz.easyevent.core.expression.ExpressionParser;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.AnnotatedElementKey;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.NonNull;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -15,9 +19,10 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author svnee
  */
-public class SpringExpressionParser implements ExpressionParser {
+public class SpringExpressionParser implements ExpressionParser, ApplicationContextAware {
 
     private final SpelExpressionParser spelExpressionParser;
+    private ApplicationContext applicationContext;
     private final Map<ExpressionKey, Expression> conditionCache = new ConcurrentHashMap<>(64);
 
     public SpringExpressionParser(SpelExpressionParser spelExpressionParser) {
@@ -27,7 +32,7 @@ public class SpringExpressionParser implements ExpressionParser {
     @Override
     public boolean parse(String expression, Object event, Method targetMethod, Class<?> targetClass) {
 
-        EventSubscriberRootObject root = new EventSubscriberRootObject(event, new Object[]{event});
+        EventSubscriberRootObject root = new EventSubscriberRootObject(event, applicationContext, new Object[]{event});
         StandardEvaluationContext standardEvaluationContext = new StandardEvaluationContext(root);
         AnnotatedElementKey methodKey = new AnnotatedElementKey(targetMethod, targetClass);
 
@@ -47,5 +52,11 @@ public class SpringExpressionParser implements ExpressionParser {
 
     private ExpressionKey createKey(AnnotatedElementKey elementKey, String expression) {
         return new ExpressionKey(elementKey, expression);
+    }
+
+
+    @Override
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

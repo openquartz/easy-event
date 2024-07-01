@@ -11,6 +11,7 @@ import com.openquartz.easyevent.common.utils.CollectionUtils;
  * @author svnee
  **/
 @Slf4j
+@SuppressWarnings("all")
 public class HandlerInterceptorChain {
 
     /**

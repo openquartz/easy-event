@@ -41,7 +41,6 @@ public class EventBus {
     private final String identifier;
     private final ExecutorService executor;
     private final SubscriberExceptionHandler exceptionHandler;
-
     private final SubscriberRegistry subscribers = new SubscriberRegistry(this);
     private final Dispatcher dispatcher;
 
@@ -160,9 +159,9 @@ public class EventBus {
      * @param event event to post.
      */
     public DispatchInvokeResult post(Object event, boolean joinTransaction) {
-        Iterator<Subscriber> eventSubscribers = subscribers.getSubscribers(event);
+        Iterator<Subscriber> eventSubscribers = this.getSubscribers(event);
         if (eventSubscribers.hasNext()) {
-            return dispatcher.dispatch(event, eventSubscribers,joinTransaction);
+            return dispatcher.dispatch(event, eventSubscribers, joinTransaction);
         } else if (!(event instanceof DeadEvent)) {
             // the event had no subscribers and was not itself a DeadEvent
             return post(new DeadEvent(this, event), joinTransaction);
@@ -191,7 +190,7 @@ public class EventBus {
      * @return 执行结果
      */
     public DispatchInvokeResult post(Object event, List<String> excludeIdentifySubscribers, boolean joinTransaction) {
-        Iterator<Subscriber> eventSubscribers = this.subscribers.getSubscribers(event);
+        Iterator<Subscriber> eventSubscribers = this.getSubscribers(event);
         if (eventSubscribers.hasNext()) {
             List<Subscriber> specSubscriberList = new ArrayList<>();
             eventSubscribers.forEachRemaining(k -> {
@@ -207,6 +206,16 @@ public class EventBus {
             return post(new DeadEvent(this, event), joinTransaction);
         }
         return new DispatchInvokeResult(event);
+    }
+
+    /**
+     * 获取订阅者
+     *
+     * @param event event
+     * @return Iterator<Subscriber>
+     */
+    public Iterator<Subscriber> getSubscribers(Object event) {
+        return this.subscribers.getSubscribers(event);
     }
 
     @Override

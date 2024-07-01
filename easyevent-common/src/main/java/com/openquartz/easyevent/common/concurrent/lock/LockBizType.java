@@ -11,6 +11,8 @@ public enum LockBizType implements EnumInterface<String> {
 
     EVENT_HANDLE("event_handle", "event handler"),
     EVENT_HANDLE_FAIL_NOTIFIER("event_handle_fail_notifier", "event handle fail notifier"),
+
+    SOA_EVENT_HANDLE("soa_event_handle", "soa event handle"),
     ;
 
     private final String code;

@@ -38,7 +38,7 @@ import java.lang.annotation.Target;
 public @interface Subscribe {
 
     /**
-     * 条件
+     * 符合条件
      */
     String condition() default "";
 
