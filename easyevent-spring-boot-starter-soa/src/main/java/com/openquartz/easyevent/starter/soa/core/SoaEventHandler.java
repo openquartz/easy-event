@@ -15,7 +15,7 @@ public class SoaEventHandler {
         this.soaEventCenter = soaEventCenter;
     }
 
-    @Subscribe(condition = "#event.soaIdentify!=@easyEventProperties.getAppId()")
+    @Subscribe(condition = "#event.soaIdentify==@easyEventProperties.getAppId()")
     public void handle(SoaEvent event) {
         soaEventCenter.produce(event);
     }
