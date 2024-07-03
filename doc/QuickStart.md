@@ -220,7 +220,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import org.springframework.stereotype.Component;
 import com.openquartz.easyevent.core.publisher.EventPublisher;
-import com.openquartz.easyevent.example.event.TestEvent;
+import com.openquartz.easyevent.example.event.OrderCompletedEvent;
 
 /**
  * @author svnee
@@ -267,7 +267,7 @@ public class TestEventPublisher {
 ```java
 import com.openquartz.easyevent.core.annotation.AllowConcurrentEvents;
 import com.openquartz.easyevent.core.annotation.Subscribe;
-import com.openquartz.easyevent.example.event.TestEvent;
+import com.openquartz.easyevent.example.event.OrderCompletedEvent;
 import com.openquartz.easyevent.starter.annotation.EventHandler;
 
 /**

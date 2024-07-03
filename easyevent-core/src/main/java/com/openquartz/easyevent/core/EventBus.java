@@ -1,5 +1,3 @@
-
-
 package com.openquartz.easyevent.core;
 
 

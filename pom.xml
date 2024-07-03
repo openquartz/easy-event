@@ -15,8 +15,8 @@
     <module>easyevent-storage</module>
     <module>easyevent-transfer</module>
     <module>easyevent-spring-boot-starter</module>
-    <module>easyevent-example</module>
     <module>easyevent-spring-boot-starter-soa</module>
+    <module>easyevent-example</module>
   </modules>
 
   <name>${project.artifactId}</name>
@@ -154,6 +154,30 @@
       <dependency>
         <groupId>com.openquartz</groupId>
         <artifactId>easyevent-spring-boot-starter-rocketmq</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.openquartz</groupId>
+        <artifactId>easyevent-spring-boot-starter-soa</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.openquartz</groupId>
+        <artifactId>easyevent-spring-boot-starter-soa-api</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.openquartz</groupId>
+        <artifactId>easyevent-spring-boot-starter-soa-parent</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.openquartz</groupId>
+        <artifactId>easyevent-spring-boot-starter-soa-rocketmq</artifactId>
         <version>${revision}</version>
       </dependency>
 
