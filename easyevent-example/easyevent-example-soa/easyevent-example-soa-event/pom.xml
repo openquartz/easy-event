@@ -22,6 +22,11 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.openquartz</groupId>
+            <artifactId>easyevent-spring-boot-starter-soa-api</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

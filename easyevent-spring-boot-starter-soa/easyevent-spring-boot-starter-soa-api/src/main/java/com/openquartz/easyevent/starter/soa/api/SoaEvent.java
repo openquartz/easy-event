@@ -12,6 +12,6 @@ public interface SoaEvent {
      *
      * @return soa Identify
      */
-    String soaIdentify();
+    String getSoaIdentify();
 
 }
