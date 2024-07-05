@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.openquartz</groupId>
         <artifactId>easyevent-spring-boot-starter-soa</artifactId>
-        <version>1.4.0-beta</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>easyevent-spring-boot-starter-soa-parent</artifactId>
