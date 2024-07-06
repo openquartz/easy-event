@@ -17,4 +17,7 @@ import org.springframework.core.Ordered;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 100)
 public class EasyEventStorageAutoConfiguration {
 
+    public EasyEventStorageAutoConfiguration() {
+        log.info("EasyEventStorageAutoConfiguration init>>>>>>>>>>---------");
+    }
 }

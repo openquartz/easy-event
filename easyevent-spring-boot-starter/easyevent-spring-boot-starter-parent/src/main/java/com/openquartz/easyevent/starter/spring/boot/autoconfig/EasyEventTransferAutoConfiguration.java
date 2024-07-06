@@ -10,9 +10,11 @@ import com.openquartz.easyevent.transfer.api.limiting.impl.DefaultEventTransferS
 import com.openquartz.easyevent.transfer.api.limiting.impl.DefaultEventTransferTriggerLimitingControl;
 import com.openquartz.easyevent.transfer.api.route.DefaultEventRouter;
 import com.openquartz.easyevent.transfer.api.route.EventRouter;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
@@ -32,18 +34,22 @@ import org.springframework.core.Ordered;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10000)
 public class EasyEventTransferAutoConfiguration {
 
+    public EasyEventTransferAutoConfiguration() {
+        log.info("EasyEventTransferAutoConfiguration init>>>>>>>>-----------");
+    }
+
     @Bean(name = "asyncSendExecutor")
     @ConditionalOnMissingBean(name = "asyncSendExecutor")
     public ExecutorService asyncSendExecutor(DefaultTransferSenderProperties properties) {
         return new TraceThreadPoolExecutor(
-            properties.getThreadPool().getCorePoolSize(),
-            properties.getThreadPool().getMaximumPoolSize(),
-            properties.getThreadPool().getKeepAliveTime(),
-            TimeUnit.SECONDS,
-            new LinkedBlockingDeque<>(properties.getThreadPool().getMaxBlockingQueueSize()),
-            new ThreadFactoryBuilder()
-                .setNameFormat(properties.getThreadPool().getThreadPrefix() + "-thread-%d")
-                .build());
+                properties.getThreadPool().getCorePoolSize(),
+                properties.getThreadPool().getMaximumPoolSize(),
+                properties.getThreadPool().getKeepAliveTime(),
+                TimeUnit.SECONDS,
+                new LinkedBlockingDeque<>(properties.getThreadPool().getMaxBlockingQueueSize()),
+                new ThreadFactoryBuilder()
+                        .setNameFormat(properties.getThreadPool().getThreadPrefix() + "-thread-%d")
+                        .build());
     }
 
     @Bean

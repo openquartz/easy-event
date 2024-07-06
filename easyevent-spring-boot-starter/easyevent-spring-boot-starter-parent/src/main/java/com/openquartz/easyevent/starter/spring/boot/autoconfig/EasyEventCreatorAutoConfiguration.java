@@ -53,6 +53,10 @@ import java.util.concurrent.TimeUnit;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 1000)
 public class EasyEventCreatorAutoConfiguration {
 
+    public EasyEventCreatorAutoConfiguration(){
+        log.info("EasyEventCreatorAutoConfiguration init>>>>>>>>>---------------");
+    }
+
     @Bean
     @ConditionalOnMissingBean(EventBus.class)
     public EventBus handleEventBus(@Qualifier("defaultEventBusThreadPool") ExecutorService defaultEventBusThreadPool,

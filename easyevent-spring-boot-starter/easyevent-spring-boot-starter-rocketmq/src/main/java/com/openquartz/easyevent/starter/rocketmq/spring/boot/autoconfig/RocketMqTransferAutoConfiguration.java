@@ -55,6 +55,10 @@ import org.springframework.core.Ordered;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10040)
 public class RocketMqTransferAutoConfiguration {
 
+    public RocketMqTransferAutoConfiguration() {
+        log.info("RocketMqTransferAutoConfiguration init >>>>>>>>>>>-------------");
+    }
+
     @Bean(initMethod = "init", destroyMethod = "destroy")
     @ConditionalOnMissingBean
     public EventSender eventSender(EventStorageService eventStorageService,

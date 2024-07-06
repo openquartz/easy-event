@@ -32,6 +32,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10)
 public class EasyEventCommonAutoConfiguration {
 
+    public EasyEventCommonAutoConfiguration() {
+        log.info("EasyEventAfterAutoConfiguration init >>>>>>>>>>>-------------");
+    }
+
+
     @Bean(initMethod = "init", destroyMethod = "destroy")
     public EasyEventInitializingEntrance easyEventInitializingEntrance(
         EasyEventCommonProperties easyEventCommonProperties) {

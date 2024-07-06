@@ -22,6 +22,10 @@ import org.springframework.core.Ordered;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 100000)
 public class EasyEventAfterAutoConfiguration {
 
+    public EasyEventAfterAutoConfiguration() {
+        log.info("EasyEventAfterAutoConfiguration init >>>>>>>>>>>-------------");
+    }
+
     @Bean
     @ConditionalOnMissingBean
     public EventPublisher defaultEventPublisher(EventBus eventBus, EventSender eventSender) {

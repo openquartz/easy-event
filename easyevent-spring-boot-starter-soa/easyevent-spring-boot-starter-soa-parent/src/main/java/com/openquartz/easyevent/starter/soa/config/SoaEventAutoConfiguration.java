@@ -25,6 +25,10 @@ import java.util.List;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10050)
 public class SoaEventAutoConfiguration {
 
+    public SoaEventAutoConfiguration() {
+        log.info("SoaEventAutoConfiguration init >>>>>>>>>>>>>----------------");
+    }
+
     @Bean
     public SoaEventHandler soaEventHandler(SoaEventCenter soaEventCenter, List<EventBus> eventBusList) {
         SoaEventHandler soaEventHandler = new SoaEventHandler(soaEventCenter);

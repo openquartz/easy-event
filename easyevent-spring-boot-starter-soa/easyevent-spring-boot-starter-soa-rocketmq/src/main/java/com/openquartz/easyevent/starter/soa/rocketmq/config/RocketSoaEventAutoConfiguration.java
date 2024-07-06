@@ -36,6 +36,9 @@ import java.util.List;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10050)
 public class RocketSoaEventAutoConfiguration {
 
+    public RocketSoaEventAutoConfiguration() {
+        log.info("RocketSoaEventAutoConfiguration init >>>>>>>>>>>>------------------");
+    }
 
     @Bean
     @ConditionalOnMissingBean(SoaEventCenter.class)

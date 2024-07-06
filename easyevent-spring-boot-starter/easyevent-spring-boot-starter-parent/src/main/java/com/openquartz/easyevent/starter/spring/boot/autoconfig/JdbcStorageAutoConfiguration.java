@@ -40,6 +40,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 120)
 public class JdbcStorageAutoConfiguration {
 
+    public JdbcStorageAutoConfiguration(){
+        log.info("JdbcStorageAutoConfiguration init >>>>>>>>>--------------------");
+    }
+
     @Bean
     @ConditionalOnMissingBean(type = "jdbcStorageJdbcTemplate", value = JdbcTemplate.class)
     public JdbcTemplate jdbcStorageJdbcTemplate(JdbcStorageProperties jdbcStorageProperties,
