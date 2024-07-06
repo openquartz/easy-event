@@ -158,7 +158,10 @@ public class EasyEventCreatorAutoConfiguration {
                                                                EventStorageService eventStorageService,
                                                                EventNotifier eventNotifier,
                                                                LockSupport lockSupport) {
-        return new DefaultEventHandleFailedNotifier(eventStorageService, easyEventCommonProperties.getMaxRetryCount(),
+        return new DefaultEventHandleFailedNotifier(
+                easyEventCommonProperties,
+                eventStorageService,
+                easyEventCommonProperties.getMaxRetryCount(),
                 eventNotifier,
                 easyEventCommonProperties.getNotify(),
                 lockSupport);

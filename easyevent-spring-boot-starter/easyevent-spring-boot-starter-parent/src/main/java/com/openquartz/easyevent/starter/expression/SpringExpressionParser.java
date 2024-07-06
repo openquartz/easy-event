@@ -5,6 +5,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.AnnotatedElementKey;
+import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -31,11 +32,10 @@ public class SpringExpressionParser implements ExpressionParser, ApplicationCont
 
     @Override
     public boolean parse(String expression, Object event, Method targetMethod, Class<?> targetClass) {
-
         EventSubscriberRootObject root = new EventSubscriberRootObject(event, applicationContext, new Object[]{event});
         StandardEvaluationContext standardEvaluationContext = new StandardEvaluationContext(root);
+        standardEvaluationContext.setBeanResolver(new BeanFactoryResolver(applicationContext));
         AnnotatedElementKey methodKey = new AnnotatedElementKey(targetMethod, targetClass);
-
         return (Boolean.TRUE.equals(getExpression(methodKey, expression).getValue(standardEvaluationContext, Boolean.class)));
     }
 

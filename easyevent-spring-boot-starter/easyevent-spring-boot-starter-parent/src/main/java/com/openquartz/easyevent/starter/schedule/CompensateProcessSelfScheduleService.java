@@ -47,7 +47,7 @@ public class CompensateProcessSelfScheduleService implements InitializingBean {
 
     private void doSelfProcess() {
         Date now = new Date();
-        EventCompensateParam param = EventCompensateParam.builder()
+        EventCompensateParam param = EventCompensateParam.builder(easyEventCommonProperties.getAppId())
             .compensateState(easyEventCommonProperties.getCompensate().getSelf().getCompensateState())
             .offset(easyEventCommonProperties.getCompensate().getSelf().getOffset())
             .startTime(DateUtils.addSeconds(new Date(),

@@ -46,7 +46,7 @@ public class CompensateProcessGlobalScheduleService implements InitializingBean 
 
     private void doGlobalProcess() {
         Date now = new Date();
-        EventCompensateParam param = EventCompensateParam.builder()
+        EventCompensateParam param = EventCompensateParam.builder(easyEventCommonProperties.getAppId())
             .compensateState(easyEventCommonProperties.getCompensate().getGlobal().getCompensateState())
             .offset(easyEventCommonProperties.getCompensate().getGlobal().getOffset())
             .startTime(DateUtils.addSeconds(new Date(),

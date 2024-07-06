@@ -16,12 +16,14 @@ import java.util.concurrent.Future;
 import com.openquartz.easyevent.core.annotation.AllowConcurrentEvents;
 import com.openquartz.easyevent.core.annotation.Order;
 import com.openquartz.easyevent.core.intreceptor.HandlerInterceptorChain;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 服务订阅者
  *
  * @author svnee
  */
+@Slf4j
 public class Subscriber {
 
     /**
@@ -221,7 +223,12 @@ public class Subscriber {
         if (annotation == null || StringUtils.isBlank(annotation.condition())) {
             return true;
         }
-        return expressionParser.parse(annotation.condition(), event, method, targetClass);
+        boolean match = expressionParser.parse(annotation.condition(), event, method, targetClass);
+        if (!match && log.isDebugEnabled()) {
+            log.debug("[Subscriber#shouldSubscribe]event:{},is not match subscriber:{} condition:{}!",
+                    event, getTargetIdentify(), annotation.condition());
+        }
+        return match;
     }
 
     /**

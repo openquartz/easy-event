@@ -14,6 +14,11 @@ import com.openquartz.easyevent.storage.model.EventLifecycleState;
 public class EventCompensateParam {
 
     /**
+     * appId
+     */
+    private final String appId;
+
+    /**
      * 状态
      */
     private List<EventLifecycleState> compensateState;
@@ -43,11 +48,12 @@ public class EventCompensateParam {
      */
     private Integer offset;
 
-    private EventCompensateParam() {
+    private EventCompensateParam(String appId) {
+        this.appId = appId;
     }
 
-    public static EventCompensateParam builder() {
-        return new EventCompensateParam();
+    public static EventCompensateParam builder(String appId) {
+        return new EventCompensateParam(appId);
     }
 
     public EventCompensateParam compensateState(List<EventLifecycleState> compensateState) {

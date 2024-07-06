@@ -1,5 +1,6 @@
 package com.openquartz.easyevent.starter.expression;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -7,6 +8,7 @@ import org.springframework.context.ApplicationContext;
  *
  * @author svnee
  */
+@Slf4j
 public class EventSubscriberRootObject {
 
     /**
@@ -24,10 +26,10 @@ public class EventSubscriberRootObject {
      */
     private final Object[] args;
 
-    public EventSubscriberRootObject(Object event, ApplicationContext context, Object[] args) {
+    public EventSubscriberRootObject(Object event,ApplicationContext context, Object[] args) {
         this.event = event;
-        this.args = args;
         this.context = context;
+        this.args = args;
     }
 
     public ApplicationContext getContext() {

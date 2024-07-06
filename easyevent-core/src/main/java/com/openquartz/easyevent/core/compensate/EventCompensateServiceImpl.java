@@ -3,11 +3,13 @@ package com.openquartz.easyevent.core.compensate;
 import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
 import com.openquartz.easyevent.core.compensate.translator.EventCompensateParamTranslator;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import com.openquartz.easyevent.common.concurrent.lock.LockBizType;
 import com.openquartz.easyevent.common.concurrent.lock.LockSupport;
@@ -40,11 +42,11 @@ public class EventCompensateServiceImpl implements EventCompensateService {
     private final Serializer serializer;
 
     public EventCompensateServiceImpl(EventStorageService storageService,
-        AsyncEventHandler asyncEventHandler,
-        Executor compensateExecutor,
-        LockSupport lockSupport,
-        EventSender eventSender,
-        Serializer serializer) {
+                                      AsyncEventHandler asyncEventHandler,
+                                      Executor compensateExecutor,
+                                      LockSupport lockSupport,
+                                      EventSender eventSender,
+                                      Serializer serializer) {
 
         checkNotNull(storageService);
         checkNotNull(asyncEventHandler);
@@ -64,18 +66,22 @@ public class EventCompensateServiceImpl implements EventCompensateService {
     @Override
     public void compensate(EventCompensateParam param) {
 
-        log.info("[EventCompensateServiceAdapter#compensate] start!param:{}", param);
+        if (log.isDebugEnabled()) {
+            log.info("[EventCompensateServiceAdapter#compensate] start!param:{}", param);
+        }
 
         BusEventSelectorCondition condition = EventCompensateParamTranslator.translate(param);
         List<BusEventEntity> busEventEntityList = storageService.get(condition);
         List<BusEventEntity> entityList = busEventEntityList.stream()
-            .filter(e -> !e.isProcessComplete())
-            .sorted((Comparator.comparing(BaseEventEntity::getEntityId)))
-            .collect(Collectors.toList());
+                .filter(e -> !e.isProcessComplete())
+                .sorted((Comparator.comparing(BaseEventEntity::getEntityId)))
+                .collect(Collectors.toList());
 
         doCompensate(entityList);
 
-        log.info("[EventCompensateServiceAdapter#compensate] end!param:{}", param);
+        if (log.isDebugEnabled()) {
+            log.info("[EventCompensateServiceAdapter#compensate] end!param:{}", param);
+        }
     }
 
     public void doCompensate(List<BusEventEntity> entityList) {
@@ -97,7 +103,7 @@ public class EventCompensateServiceImpl implements EventCompensateService {
                 try {
                     // lock key
                     Pair<String, LockBizType> lockKey = Pair
-                        .of(String.valueOf(entity.getEntityId()), LockBizType.EVENT_HANDLE);
+                            .of(String.valueOf(entity.getEntityId()), LockBizType.EVENT_HANDLE);
                     // consume if try-lock
                     boolean lock = lockSupport.consumeIfTryLock(lockKey, () -> {
                         if (entity.getProcessingState() != EventLifecycleState.AVAILABLE) {
@@ -106,17 +112,17 @@ public class EventCompensateServiceImpl implements EventCompensateService {
                             Object event = null;
                             try {
                                 event = serializer
-                                    .deserialize(Class.forName(entity.getClassName()), entity.getEventData());
+                                        .deserialize(Class.forName(entity.getClassName()), entity.getEventData());
                             } catch (Exception e) {
                                 log.error("[EventCompensateService#compensate]deserialize error!eventId:{}",
-                                    entity.getEventId(), e);
+                                        entity.getEventId(), e);
                                 ExceptionUtils.rethrow(e);
                             }
                             eventSender.retrySend(entity.getEventId(), event);
                         }
                     });
                     log.info("[EventCompensateService#compensate]try-lock!lock:{},eventId:{}", lock,
-                        entity.getEventId());
+                            entity.getEventId());
                 } catch (Exception ex) {
                     log.error("[EventCompensateService#compensate]doHandle-error!eventMessage:{}", eventMessage, ex);
                 } finally {

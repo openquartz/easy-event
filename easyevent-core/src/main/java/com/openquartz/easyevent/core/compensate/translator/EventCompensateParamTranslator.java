@@ -17,11 +17,11 @@ public final class EventCompensateParamTranslator {
 
     public static BusEventSelectorCondition translate(EventCompensateParam compensateParam) {
         BusEventSelectorCondition condition = BusEventSelectorCondition
-            .builder(compensateParam.getOffset())
-            .lifecycleState(compensateParam.getCompensateState())
-            .start(compensateParam.getStartTime())
-            .end(compensateParam.getEndTime())
-            .maxErrorCount(compensateParam.getMaxErrorCount());
+                .builder(compensateParam.getAppId(), compensateParam.getOffset())
+                .lifecycleState(compensateParam.getCompensateState())
+                .start(compensateParam.getStartTime())
+                .end(compensateParam.getEndTime())
+                .maxErrorCount(compensateParam.getMaxErrorCount());
         if (StringUtils.isNotBlank(compensateParam.getIpAddr())) {
             condition.creatingOwner(CollectionUtils.newArrayList(compensateParam.getIpAddr()));
         }

@@ -4,6 +4,7 @@ import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotEmpty;
 import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
 import com.openquartz.easyevent.storage.jdbc.table.EasyEventTableGeneratorSupplier;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -51,7 +53,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     private final EasyEventTableGeneratorSupplier supplier;
 
     public BusEventEntityMapperImpl(JdbcTemplate jdbcTemplate,
-        EasyEventTableGeneratorSupplier supplier) {
+                                    EasyEventTableGeneratorSupplier supplier) {
 
         checkNotNull(jdbcTemplate);
         checkNotNull(supplier);
@@ -98,7 +100,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         paramMap.put("entityId", entityId);
 
         String sql = MessageFormat
-            .format(REFRESH_SOURCE_SQL, supplier.genBusEventEntityTable(entityId));
+                .format(REFRESH_SOURCE_SQL, supplier.genBusEventEntityTable(entityId));
 
         int actual = new NamedParameterJdbcTemplate(jdbcTemplate).update(sql, paramMap);
         DataUtils.checkUpdateOne(actual);
@@ -125,14 +127,14 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 ps.setString(9, entity.getCreatingOwner());
                 ps.setString(10, entity.getProcessingOwner());
                 ps.setDate(11, Objects.nonNull(entity.getProcessingAvailableDate()) ? new java.sql.Date(
-                    entity.getProcessingAvailableDate().getTime()) : null);
+                        entity.getProcessingAvailableDate().getTime()) : null);
                 ps.setString(12, entity.getProcessingFailedReason());
                 ps.setTimestamp(13,
-                    Objects.nonNull(entity.getCreatedTime()) ? new Timestamp(entity.getCreatedTime().getTime())
-                        : null);
+                        Objects.nonNull(entity.getCreatedTime()) ? new Timestamp(entity.getCreatedTime().getTime())
+                                : null);
                 ps.setTimestamp(14,
-                    Objects.nonNull(entity.getUpdatedTime()) ? new Timestamp(entity.getUpdatedTime().getTime())
-                        : null);
+                        Objects.nonNull(entity.getUpdatedTime()) ? new Timestamp(entity.getUpdatedTime().getTime())
+                                : null);
             }
 
             @Override
@@ -153,8 +155,8 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     public void insertListWithSupplierId(List<BusEventEntity> entityList) {
 
         Map<String, List<BusEventEntity>> shardingTable2EntityMap = entityList.stream().collect(Collectors
-            .groupingBy(e -> supplier.genBusEventEntityTable(e.getEntityId()),
-                Collectors.toList()));
+                .groupingBy(e -> supplier.genBusEventEntityTable(e.getEntityId()),
+                        Collectors.toList()));
 
         shardingTable2EntityMap.forEach((table, data) -> {
 
@@ -175,14 +177,14 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                     ps.setString(9, entity.getCreatingOwner());
                     ps.setString(10, entity.getProcessingOwner());
                     ps.setTimestamp(11, Objects.nonNull(entity.getProcessingAvailableDate()) ?
-                        new Timestamp(entity.getProcessingAvailableDate().getTime()) : null);
+                            new Timestamp(entity.getProcessingAvailableDate().getTime()) : null);
                     ps.setString(12, entity.getProcessingFailedReason());
                     ps.setTimestamp(13,
-                        Objects.nonNull(entity.getCreatedTime()) ? new Timestamp(entity.getCreatedTime().getTime())
-                            : null);
+                            Objects.nonNull(entity.getCreatedTime()) ? new Timestamp(entity.getCreatedTime().getTime())
+                                    : null);
                     ps.setTimestamp(14,
-                        Objects.nonNull(entity.getUpdatedTime()) ? new Timestamp(entity.getUpdatedTime().getTime())
-                            : null);
+                            Objects.nonNull(entity.getUpdatedTime()) ? new Timestamp(entity.getUpdatedTime().getTime())
+                                    : null);
                     ps.setLong(15, entity.getEntityId());
                 }
 
@@ -210,8 +212,8 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         checkNotNull(transferSuccess);
 
         Map<String, List<Long>> shardingTable2EntityIdMap = eventIdList.stream()
-            .collect(Collectors.groupingBy(e -> supplier.genBusEventEntityTable(e.getId()),
-                Collectors.mapping(EventId::getId, Collectors.toList())));
+                .collect(Collectors.groupingBy(e -> supplier.genBusEventEntityTable(e.getId()),
+                        Collectors.mapping(EventId::getId, Collectors.toList())));
 
         shardingTable2EntityIdMap.forEach((k, v) -> {
             String sql = MessageFormat.format(BATCH_REFRESH_PROCESS_STATE_SQL, k);
@@ -232,22 +234,22 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         checkNotNull(transferFailed);
 
         String sql = MessageFormat
-            .format(REFRESH_SEND_FAILED_SQL, supplier.genBusEventEntityTable(eventId.getId()));
+                .format(REFRESH_SEND_FAILED_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
         String processFailedReason = Objects.nonNull(ex) ? ex.getMessage() : StringUtils.EMPTY;
         processFailedReason = StringUtils.splitPrefix(processFailedReason, PROCESS_FAIL_REASON_LENGTH);
         int actual = jdbcTemplate
-            .update(sql, transferFailed.getCode(), processFailedReason, IpUtil.getIp(), eventId.getId());
+                .update(sql, transferFailed.getCode(), processFailedReason, IpUtil.getIp(), eventId.getId());
         DataUtils.checkUpdateOne(actual);
     }
 
     private void refreshProcessState(EventId eventId, EventLifecycleState state, String processFailedReason) {
 
         String sql = MessageFormat
-            .format(REFRESH_PROCESS_STATE_SQL, supplier.genBusEventEntityTable(eventId.getId()));
+                .format(REFRESH_PROCESS_STATE_SQL, supplier.genBusEventEntityTable(eventId.getId()));
         int actual = jdbcTemplate
-            .update(sql, state.getCode(), StringUtils.splitPrefix(processFailedReason, PROCESS_FAIL_REASON_LENGTH),
-                eventId.getId());
+                .update(sql, state.getCode(), StringUtils.splitPrefix(processFailedReason, PROCESS_FAIL_REASON_LENGTH),
+                        eventId.getId());
         DataUtils.checkUpdateOne(actual);
     }
 
@@ -258,10 +260,10 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         checkNotNull(startProcessing);
 
         String sql = MessageFormat
-            .format(REFRESH_START_PROCESSING_SQL, supplier.genBusEventEntityTable(eventId.getId()));
+                .format(REFRESH_START_PROCESSING_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
         int actual = jdbcTemplate
-            .update(sql, startProcessing.getCode(), StringUtils.EMPTY, IpUtil.getIp(), eventId.getId());
+                .update(sql, startProcessing.getCode(), StringUtils.EMPTY, IpUtil.getIp(), eventId.getId());
         DataUtils.checkUpdateOne(actual);
     }
 
@@ -276,20 +278,20 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
     @Override
     public void processingFailed(EventId eventId, EventLifecycleState processFailed,
-        List<String> successSubscriberIdentifyList, Throwable invokeError) {
+                                 List<String> successSubscriberIdentifyList, Throwable invokeError) {
 
         checkNotNull(eventId);
 
         String successfulSubscriber = Joiner.join(successSubscriberIdentifyList, CommonConstants.COMMA);
         String sql = MessageFormat
-            .format(REFRESH_PROCESSING_FAILED_SQL, supplier.genBusEventEntityTable(eventId.getId()));
+                .format(REFRESH_PROCESSING_FAILED_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
         String failReason = Objects.nonNull(invokeError) ? invokeError.getMessage() : StringUtils.EMPTY;
         failReason = StringUtils.splitPrefix(failReason, PROCESS_FAIL_REASON_LENGTH);
         int affect = jdbcTemplate.update(sql, processFailed.getCode(),
-            failReason,
-            successfulSubscriber,
-            eventId.getId());
+                failReason,
+                successfulSubscriber,
+                eventId.getId());
         DataUtils.checkUpdateOne(affect);
     }
 
@@ -297,7 +299,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     public List<String> getSuccessfulSubscriberIdentify(EventId eventId) {
         // SQL
         String sql = MessageFormat
-            .format(GET_SUCCESS_SUBSCRIBER_SQL, supplier.genBusEventEntityTable(eventId.getId()));
+                .format(GET_SUCCESS_SUBSCRIBER_SQL, supplier.genBusEventEntityTable(eventId.getId()));
 
         String successfulSubscriber = jdbcTemplate.queryForObject(sql, String.class, eventId.getId());
         return Joiner.split(successfulSubscriber, CommonConstants.COMMA);
@@ -317,7 +319,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             baseEventEntity.setClassName(rs.getString("class_name"));
             baseEventEntity.setErrorCount(rs.getInt("error_count"));
             baseEventEntity.setSuccessfulSubscriberList(
-                Joiner.split(rs.getString("successful_subscriber"), CommonConstants.COMMA));
+                    Joiner.split(rs.getString("successful_subscriber"), CommonConstants.COMMA));
             baseEventEntity.setProcessingState(EventLifecycleState.of(rs.getString("processing_state")));
             return baseEventEntity;
         }, eventId.getId());
@@ -343,8 +345,8 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             Map<String, Object> paramMap = MapUtils.newHashMap();
             if (CollectionUtils.isNotEmpty(condition.getLifecycleStateList())) {
                 List<String> lifecycleStateList = condition.getLifecycleStateList().stream()
-                    .map(EventLifecycleState::getCode)
-                    .collect(Collectors.toList());
+                        .map(EventLifecycleState::getCode)
+                        .collect(Collectors.toList());
 
                 joiner.add("processing_state in (:processingState)");
                 paramMap.put("processingState", lifecycleStateList);
@@ -371,6 +373,10 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 joiner.add("error_count >= :minErrorCount");
                 paramMap.put("minErrorCount", condition.getMinErrorCount());
             }
+            if (StringUtils.isNotBlank(condition.getAppId())) {
+                joiner.add("app_id = :appId");
+                paramMap.put("appId", condition.getAppId());
+            }
             if (joiner.length() > 0) {
                 sql = sql + " where " + joiner;
             }
@@ -380,7 +386,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             }
 
             List<BusEventEntity> entityList = new NamedParameterJdbcTemplate(jdbcTemplate)
-                .query(sql, paramMap, new BusEventEntityRowMapper());
+                    .query(sql, paramMap, new BusEventEntityRowMapper());
             resultList.addAll(entityList);
         }
         return resultList;
@@ -405,7 +411,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             busEventEntity.setClassName(rs.getString("class_name"));
             busEventEntity.setErrorCount(rs.getInt("error_count"));
             busEventEntity.setSuccessfulSubscriberList(
-                Joiner.split(rs.getString("successful_subscriber"), CommonConstants.COMMA));
+                    Joiner.split(rs.getString("successful_subscriber"), CommonConstants.COMMA));
             busEventEntity.setProcessingState(EventLifecycleState.of(rs.getString("processing_state")));
             return busEventEntity;
         }

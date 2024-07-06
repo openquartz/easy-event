@@ -7,6 +7,8 @@ import static com.openquartz.easyevent.storage.model.EventLifecycleState.TRANSFE
 
 import java.util.Date;
 import java.util.List;
+
+import com.openquartz.easyevent.common.property.EasyEventProperties;
 import com.openquartz.easyevent.common.utils.CollectionUtils;
 import com.openquartz.easyevent.common.utils.DateUtils;
 import com.openquartz.easyevent.storage.api.EventStorageService;
@@ -20,12 +22,16 @@ import com.openquartz.easyevent.storage.model.BusEventSelectorCondition;
  **/
 public abstract class EventHandleFailedNotifierAdapter implements EventHandleFailedNotifier {
 
+    private final EasyEventProperties easyEventProperties;
     private final EventStorageService eventStorageService;
     private final Integer maxErrorCount;
     private final EventNotifier notifier;
 
-    public EventHandleFailedNotifierAdapter(EventStorageService eventStorageService, Integer maxErrorCount,
-        EventNotifier notifier) {
+    public EventHandleFailedNotifierAdapter(EasyEventProperties easyEventProperties,
+                                            EventStorageService eventStorageService,
+                                            Integer maxErrorCount,
+                                            EventNotifier notifier) {
+        this.easyEventProperties = easyEventProperties;
         this.eventStorageService = eventStorageService;
         this.maxErrorCount = maxErrorCount;
         this.notifier = notifier;
@@ -36,11 +42,11 @@ public abstract class EventHandleFailedNotifierAdapter implements EventHandleFai
 
         Date now = new Date();
 
-        BusEventSelectorCondition condition = BusEventSelectorCondition.builder(50)
-            .minErrorCount(maxErrorCount)
-            .lifecycleState(CollectionUtils.newArrayList(AVAILABLE, PROCESS_FAILED, IN_PROCESSING, TRANSFER_FAILED))
-            .start(DateUtils.addHours(now, -2))
-            .end(DateUtils.addMinutes(now, -10));
+        BusEventSelectorCondition condition = BusEventSelectorCondition.builder(easyEventProperties.getAppId(), 50)
+                .minErrorCount(maxErrorCount)
+                .lifecycleState(CollectionUtils.newArrayList(AVAILABLE, PROCESS_FAILED, IN_PROCESSING, TRANSFER_FAILED))
+                .start(DateUtils.addHours(now, -2))
+                .end(DateUtils.addMinutes(now, -10));
         List<BusEventEntity> entityList = eventStorageService.get(condition);
         if (CollectionUtils.isEmpty(entityList)) {
             return;

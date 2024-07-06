@@ -2,6 +2,7 @@ package com.openquartz.easyevent.storage.model;
 
 import java.util.Date;
 import java.util.List;
+
 import lombok.Getter;
 import com.openquartz.easyevent.common.model.Range;
 
@@ -13,6 +14,7 @@ import com.openquartz.easyevent.common.model.Range;
 @Getter
 public final class BusEventSelectorCondition {
 
+    private String appId;
     private List<EventLifecycleState> lifecycleStateList;
     private List<String> creatingOwnerList;
     private Range<Date> createTimeRange;
@@ -20,12 +22,13 @@ public final class BusEventSelectorCondition {
     private Integer minErrorCount;
     private final Integer offset;
 
-    private BusEventSelectorCondition(Integer offset) {
+    private BusEventSelectorCondition(String appId, Integer offset) {
         this.offset = offset;
+        this.appId = appId;
     }
 
-    public static BusEventSelectorCondition builder(Integer offset) {
-        return new BusEventSelectorCondition(offset);
+    public static BusEventSelectorCondition builder(String appId, Integer offset) {
+        return new BusEventSelectorCondition(appId, offset);
     }
 
     public BusEventSelectorCondition lifecycleState(List<EventLifecycleState> lifecycleStateList) {
