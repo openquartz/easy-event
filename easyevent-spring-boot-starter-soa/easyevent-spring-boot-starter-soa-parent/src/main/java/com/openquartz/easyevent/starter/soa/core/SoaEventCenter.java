@@ -14,13 +14,13 @@ public interface SoaEventCenter {
      *
      * @param event event
      */
-    void produce(SoaEvent event);
+    void publish(SoaEvent event);
 
     /**
      * 消费SoaEvent
      *
      * @param event event
      */
-    void consume(SoaEvent event);
+    void subscribe(SoaEvent event);
 
 }

@@ -59,7 +59,7 @@ public class RocketSoaEventAutoConfiguration {
     public SoaRocketMqEventTrigger soaRocketMqEventTrigger(SoaEventRocketMqCommonProperty soaEventRocketMqCommonProperty,
                                                            SoaEventCenter soaEventCenter,
                                                            EasyEventProperties easyEventProperties) {
-        return new SoaRocketMqEventTrigger(soaEventRocketMqCommonProperty, soaEventCenter::consume, easyEventProperties);
+        return new SoaRocketMqEventTrigger(soaEventRocketMqCommonProperty, soaEventCenter::subscribe, easyEventProperties);
     }
 
 

@@ -35,7 +35,7 @@ public class RocketSoaEventCenter implements SoaEventCenter {
 
 
     @Override
-    public void produce(SoaEvent event) {
+    public void publish(SoaEvent event) {
         soaEventRocketMqProducer.sendMessage(event);
     }
 
@@ -45,7 +45,7 @@ public class RocketSoaEventCenter implements SoaEventCenter {
      * @param event event
      */
     @Override
-    public void consume(SoaEvent event) {
+    public void subscribe(SoaEvent event) {
 
         if (CollectionUtils.isEmpty(eventBusList)) {
             return;
