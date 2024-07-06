@@ -49,13 +49,13 @@ public class RocketSoaEventAutoConfiguration {
         return new RocketSoaEventCenter(eventBusList, expressionParser, eventPublisher, soaEventRocketMqProducer);
     }
 
-    @Bean
+    @Bean(initMethod = "init", destroyMethod = "destroy")
     public SoaEventRocketMqProducer rocketMqProducer(MQProducer producer,
                                                      SoaEventRocketMqCommonProperty soaEventRocketMqCommonProperty) {
         return new SoaEventRocketMqProducer(producer, soaEventRocketMqCommonProperty);
     }
 
-    @Bean
+    @Bean(initMethod = "init", destroyMethod = "destroy")
     public SoaRocketMqEventTrigger soaRocketMqEventTrigger(SoaEventRocketMqCommonProperty soaEventRocketMqCommonProperty,
                                                            SoaEventCenter soaEventCenter,
                                                            EasyEventProperties easyEventProperties) {

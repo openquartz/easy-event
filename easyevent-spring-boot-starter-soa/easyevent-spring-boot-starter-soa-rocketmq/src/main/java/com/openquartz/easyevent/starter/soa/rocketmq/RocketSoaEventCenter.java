@@ -7,6 +7,7 @@ import com.openquartz.easyevent.core.expression.ExpressionParser;
 import com.openquartz.easyevent.core.publisher.EventPublisher;
 import com.openquartz.easyevent.starter.soa.api.SoaEvent;
 import com.openquartz.easyevent.starter.soa.core.SoaEventCenter;
+import com.openquartz.easyevent.starter.soa.core.SoaEventHandler;
 
 import java.util.Iterator;
 import java.util.List;
@@ -58,8 +59,16 @@ public class RocketSoaEventCenter implements SoaEventCenter {
                     Iterator<Subscriber> subscribers = eventBus.getSubscribers(event);
 
                     if (subscribers.hasNext()) {
+
                         while (subscribers.hasNext()) {
+
                             Subscriber subscriber = subscribers.next();
+
+                            // skip SoaEventHandler
+                            if (subscriber.getTargetIdentify().equals(SoaEventHandler.getSubscriberIdentify())) {
+                                return false;
+                            }
+
                             if (subscriber.shouldSubscribe(expressionParser, event)) {
                                 return true;
                             }

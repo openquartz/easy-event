@@ -2,6 +2,7 @@ package com.openquartz.easyevent.core;
 
 import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
+import com.openquartz.easyevent.common.utils.ClassUtils;
 import com.openquartz.easyevent.common.utils.StringUtils;
 import com.openquartz.easyevent.core.annotation.Subscribe;
 import com.openquartz.easyevent.core.expression.ExpressionParser;
@@ -190,7 +191,7 @@ public class Subscriber {
      * @return 标识符号
      */
     public String getTargetIdentify() {
-        return target.getClass().getName() + "#" + method.getName();
+        return ClassUtils.getRealClass(target).getName() + "#" + method.getName();
     }
 
     /**
@@ -220,7 +221,10 @@ public class Subscriber {
 
         Class<?> targetClass = this.target.getClass();
         Subscribe annotation = this.method.getDeclaredAnnotation(Subscribe.class);
-        if (annotation == null || StringUtils.isBlank(annotation.condition())) {
+        if (Objects.isNull(annotation)) {
+            return false;
+        }
+        if (StringUtils.isBlank(annotation.condition())) {
             return true;
         }
         boolean match = expressionParser.parse(annotation.condition(), event, method, targetClass);

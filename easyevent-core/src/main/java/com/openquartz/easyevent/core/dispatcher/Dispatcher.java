@@ -74,7 +74,7 @@ public abstract class Dispatcher {
         List<Pair<Future<Boolean>, Subscriber>> dispatchFutureList = new ArrayList<>();
         for (Subscriber subscriber : concurrentSubscriberList) {
 
-            if (subscriber.shouldSubscribe(expressionParser, event)) {
+            if (!subscriber.shouldSubscribe(expressionParser, event)) {
                 continue;
             }
 
@@ -111,7 +111,7 @@ public abstract class Dispatcher {
         for (Subscriber subscriber : syncSubscriberList) {
             try {
 
-                if (subscriber.shouldSubscribe(expressionParser, event)) {
+                if (!subscriber.shouldSubscribe(expressionParser, event)) {
                     continue;
                 }
 
