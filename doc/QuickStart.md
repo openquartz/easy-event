@@ -385,3 +385,63 @@ public interface EventNotifier {
 
 如果需要支持分布式预警通知,需要用于提供实现接口`com.openquartz.easyevent.common.concurrent.lock.DistributedLockFactory`
 并注入到Spring工厂中。
+
+### SOA Event支持
+
+Easy-Event提供了SOA 微服务下的事件中心的支持.
+
+#### 1、引入依赖
+
+在正常使用单服务的事件的基础上引入.目前提供了基于RocketMQ作为SOA事件传递的中心。开发者也可以自定扩展其他中间件的事件中心。
+
+```xml
+
+<dependency>
+    <groupId>com.openquartz</groupId>
+    <artifactId>easyevent-spring-boot-starter-soa-rocketmq</artifactId>
+    <version>${revesion}</version>
+</dependency>
+```
+
+#### 2、定义SOA事件
+
+建议将SOA的服务事件类，定义到一个公共的module中，发布到仓库中，各个服务依赖使用。
+SOA 事件需要依赖pom
+
+```xml
+
+<dependency>
+    <groupId>com.openquartz</groupId>
+    <artifactId>easyevent-spring-boot-starter-soa-api</artifactId>
+    <version>${revesion}</version>
+</dependency>
+```
+
+SOA 事件需要实现`com.openquartz.easyevent.starter.soa.api.SoaEvent`接口。
+并重写方法
+```java
+    @Override
+    public String getSoaIdentify() {
+      // 应用 event appId
+    }
+
+    // 可选
+    @Override
+    public String getEventKey() {
+        // 方便检索的事件key
+    }
+```
+#### 3、配置
+需要提供配置：
+```properties
+easyevent.soa.event-center.rocketmq.host=localhost:9876
+easyevent.soa.event-center.rocketmq.topic=event_center
+easyevent.soa.event-center.rocketmq.produce-group=easyevent-soa-publisher-produce-group
+easyevent.soa.event-center.rocketmq.consume-group=easyevent-soa-publisher-consume-group
+```
+
+#### 4、发布&订阅
+SOA事件的发布仅支持异步发布事件， 不支持同步发布事件。
+可以使用接口发布：`com.openquartz.easyevent.core.publisher.EventPublisher.asyncPublish`、`com.openquartz.easyevent.core.publisher.EventPublisher.asyncPublishList`
+
+订阅事件。同之前的订阅消费一致。
