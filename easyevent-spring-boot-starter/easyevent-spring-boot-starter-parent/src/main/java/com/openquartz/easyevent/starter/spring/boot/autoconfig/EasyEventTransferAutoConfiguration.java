@@ -1,5 +1,6 @@
 package com.openquartz.easyevent.starter.spring.boot.autoconfig;
 
+import com.alibaba.ttl.threadpool.TtlExecutors;
 import com.openquartz.easyevent.common.concurrent.ThreadFactoryBuilder;
 import com.openquartz.easyevent.common.concurrent.TraceThreadPoolExecutor;
 import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.DefaultTransferProperties;
@@ -41,7 +42,8 @@ public class EasyEventTransferAutoConfiguration {
     @Bean(name = "asyncSendExecutor")
     @ConditionalOnMissingBean(name = "asyncSendExecutor")
     public ExecutorService asyncSendExecutor(DefaultTransferSenderProperties properties) {
-        return new TraceThreadPoolExecutor(
+
+        return TtlExecutors.getTtlExecutorService(new TraceThreadPoolExecutor(
                 properties.getThreadPool().getCorePoolSize(),
                 properties.getThreadPool().getMaximumPoolSize(),
                 properties.getThreadPool().getKeepAliveTime(),
@@ -49,7 +51,7 @@ public class EasyEventTransferAutoConfiguration {
                 new LinkedBlockingDeque<>(properties.getThreadPool().getMaxBlockingQueueSize()),
                 new ThreadFactoryBuilder()
                         .setNameFormat(properties.getThreadPool().getThreadPrefix() + "-thread-%d")
-                        .build());
+                        .build()));
     }
 
     @Bean

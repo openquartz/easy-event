@@ -14,7 +14,7 @@ import com.openquartz.easyevent.common.model.Range;
 @Getter
 public final class BusEventSelectorCondition {
 
-    private String appId;
+    private final String appId;
     private List<EventLifecycleState> lifecycleStateList;
     private List<String> creatingOwnerList;
     private Range<Date> createTimeRange;

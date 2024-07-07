@@ -1,5 +1,6 @@
 package com.openquartz.easyevent.starter.spring.boot.autoconfig;
 
+import com.alibaba.ttl.threadpool.TtlExecutors;
 import com.openquartz.easyevent.common.concurrent.ThreadFactoryBuilder;
 import com.openquartz.easyevent.common.concurrent.TraceThreadPoolExecutor;
 import com.openquartz.easyevent.common.concurrent.lock.LockSupport;
@@ -79,7 +80,7 @@ public class EasyEventCreatorAutoConfiguration {
     @Bean(name = "defaultEventBusThreadPool")
     @ConditionalOnMissingBean(name = "defaultEventBusThreadPool")
     public ExecutorService defaultEventBusThreadPool(DefaultEventBusProperties defaultEventBusProperties) {
-        return new TraceThreadPoolExecutor(
+        return TtlExecutors.getTtlExecutorService(new TraceThreadPoolExecutor(
                 defaultEventBusProperties.getThreadPool().getCorePoolSize(),
                 defaultEventBusProperties.getThreadPool().getMaximumPoolSize(),
                 defaultEventBusProperties.getThreadPool().getKeepAliveTime(),
@@ -87,7 +88,7 @@ public class EasyEventCreatorAutoConfiguration {
                 new LinkedBlockingDeque<>(defaultEventBusProperties.getThreadPool().getMaxBlockingQueueSize()),
                 new ThreadFactoryBuilder()
                         .setNameFormat(defaultEventBusProperties.getThreadPool().getThreadPrefix() + "-thread-%d")
-                        .build());
+                        .build()));
     }
 
     @Bean

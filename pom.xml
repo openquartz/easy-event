@@ -33,6 +33,7 @@
     <kafka.version>0.11.0.2</kafka.version>
     <slf4j.version>1.7.30</slf4j.version>
     <sentinel.version>1.8.4</sentinel.version>
+    <transmittable.version>2.14.4</transmittable.version>
 
     <spring-boot.version>2.3.2.RELEASE</spring-boot.version>
 
@@ -215,6 +216,12 @@
         <groupId>com.alibaba.csp</groupId>
         <artifactId>sentinel-core</artifactId>
         <version>${sentinel.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>transmittable-thread-local</artifactId>
+        <version>${transmittable.version}</version>
       </dependency>
 
     </dependencies>

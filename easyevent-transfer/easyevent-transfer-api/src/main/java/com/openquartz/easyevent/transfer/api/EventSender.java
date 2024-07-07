@@ -3,6 +3,7 @@ package com.openquartz.easyevent.transfer.api;
 import java.util.List;
 import com.openquartz.easyevent.common.model.LifecycleBean;
 import com.openquartz.easyevent.storage.identify.EventId;
+import com.openquartz.easyevent.storage.model.EventBody;
 
 /**
  * Event Sender
@@ -31,8 +32,8 @@ public interface EventSender extends LifecycleBean {
      * 重试发送
      *
      * @param eventId 事件消息
-     * @param event event
+     * @param eventBody event-body
      * @return 是否成功发送
      */
-    <T> boolean retrySend(EventId eventId, T event);
+    <T> boolean retrySend(EventId eventId, EventBody<T> eventBody);
 }

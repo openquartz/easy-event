@@ -10,6 +10,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
+import com.openquartz.easyevent.storage.model.*;
 import lombok.extern.slf4j.Slf4j;
 import com.openquartz.easyevent.common.concurrent.lock.LockBizType;
 import com.openquartz.easyevent.common.concurrent.lock.LockSupport;
@@ -19,10 +20,6 @@ import com.openquartz.easyevent.common.utils.CollectionUtils;
 import com.openquartz.easyevent.common.utils.ExceptionUtils;
 import com.openquartz.easyevent.core.trigger.AsyncEventHandler;
 import com.openquartz.easyevent.storage.api.EventStorageService;
-import com.openquartz.easyevent.storage.model.BaseEventEntity;
-import com.openquartz.easyevent.storage.model.BusEventEntity;
-import com.openquartz.easyevent.storage.model.BusEventSelectorCondition;
-import com.openquartz.easyevent.storage.model.EventLifecycleState;
 import com.openquartz.easyevent.transfer.api.EventSender;
 import com.openquartz.easyevent.transfer.api.message.EventMessage;
 
@@ -109,10 +106,9 @@ public class EventCompensateServiceImpl implements EventCompensateService {
                         if (entity.getProcessingState() != EventLifecycleState.AVAILABLE) {
                             asyncEventHandler.handle(eventMessage);
                         } else {
-                            Object event = null;
+                            EventBody<?> event = null;
                             try {
-                                event = serializer
-                                        .deserialize(Class.forName(entity.getClassName()), entity.getEventData());
+                                event = serializer.deserialize(EventBody.class, entity.getEventData());
                             } catch (Exception e) {
                                 log.error("[EventCompensateService#compensate]deserialize error!eventId:{}",
                                         entity.getEventId(), e);

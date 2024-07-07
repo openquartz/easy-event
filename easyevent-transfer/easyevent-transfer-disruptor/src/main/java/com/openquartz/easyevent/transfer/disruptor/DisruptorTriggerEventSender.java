@@ -5,6 +5,7 @@ import com.lmax.disruptor.IgnoreExceptionHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
+
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -12,6 +13,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import com.openquartz.easyevent.storage.model.EventBody;
+import com.openquartz.easyevent.storage.model.EventContext;
 import lombok.extern.slf4j.Slf4j;
 import com.openquartz.easyevent.common.concurrent.TraceThreadPoolExecutor;
 import com.openquartz.easyevent.common.concurrent.lock.LockSupport;
@@ -44,32 +49,32 @@ public class DisruptorTriggerEventSender implements EventSender {
     private final EventStorageService eventStorageService;
 
     public DisruptorTriggerEventSender(DisruptorTriggerProperty property,
-        Consumer<EventMessage> eventHandler,
-        Serializer serializer,
-        TransactionSupport transactionSupport,
-        EventStorageService eventStorageService,
-        LockSupport lockSupport) {
+                                       Consumer<EventMessage> eventHandler,
+                                       Serializer serializer,
+                                       TransactionSupport transactionSupport,
+                                       EventStorageService eventStorageService,
+                                       LockSupport lockSupport) {
 
         this.serializer = serializer;
         this.transactionSupport = transactionSupport;
         this.eventStorageService = eventStorageService;
 
         this.disruptor = new Disruptor<>(new DisruptorTriggerEventFactory(),
-            property.getConsumerProperty().getBufferSize(), runnable -> {
+                property.getConsumerProperty().getBufferSize(), runnable -> {
             return new Thread(new ThreadGroup(property.getDisruptorThreadGroup()), runnable,
-                property.getDisruptorThreadPrefix() + INDEX.getAndIncrement());
+                    property.getDisruptorThreadPrefix() + INDEX.getAndIncrement());
         }, ProducerType.MULTI, new BlockingWaitStrategy());
 
         final ExecutorService executor = new TraceThreadPoolExecutor(property.getConsumerProperty().getCorePoolSize(),
-            property.getConsumerProperty().getMaximumPoolSize(),
-            property.getConsumerProperty().getKeepAliveTime(),
-            TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(property.getConsumerProperty().getBufferSize()),
-            DisruptorTriggerThreadFactory.create(property.getConsumerProperty().getThreadPrefix(), false),
-            new ThreadPoolExecutor.AbortPolicy());
+                property.getConsumerProperty().getMaximumPoolSize(),
+                property.getConsumerProperty().getKeepAliveTime(),
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(property.getConsumerProperty().getBufferSize()),
+                DisruptorTriggerThreadFactory.create(property.getConsumerProperty().getThreadPrefix(), false),
+                new ThreadPoolExecutor.AbortPolicy());
 
         DisruptorTriggerEventHandler[] consumers = new DisruptorTriggerEventHandler[property.getConsumerProperty()
-            .getMaximumPoolSize()];
+                .getMaximumPoolSize()];
         for (int i = 0; i < property.getConsumerProperty().getMaximumPoolSize(); i++) {
             consumers[i] = new DisruptorTriggerEventHandler(eventHandler, executor, lockSupport);
         }
@@ -82,7 +87,7 @@ public class DisruptorTriggerEventSender implements EventSender {
     /**
      * publish disruptor event.
      */
-    public <T> void publishEvent(T event, EventId eventId) {
+    public <T> void publishEvent(EventBody<T> event, EventId eventId) {
         final RingBuffer<DisruptorTriggerEvent> ringBuffer = disruptor.getRingBuffer();
         Class<?> eventType = event.getClass();
 
@@ -98,12 +103,14 @@ public class DisruptorTriggerEventSender implements EventSender {
     @Override
     public <T> boolean send(T event) {
 
-        EventId eventId = transactionSupport.execute(() -> eventStorageService.save(event));
+        EventBody<T> eventBody = new EventBody<>(event, EventContext.get());
+
+        EventId eventId = transactionSupport.execute(() -> eventStorageService.save(eventBody));
 
         // 事务后触发发送
         transactionSupport.executeAfterCommit(() -> {
             try {
-                publishEvent(event, eventId);
+                publishEvent(eventBody, eventId);
                 // 存储执行
                 transactionSupport.execute(() -> {
                     eventStorageService.sendComplete(eventId);
@@ -119,13 +126,19 @@ public class DisruptorTriggerEventSender implements EventSender {
 
     @Override
     public <T> boolean sendList(List<T> eventList) {
-        List<EventId> eventIdList = transactionSupport.execute(() -> eventStorageService.saveList(eventList));
+
+        List<EventBody<T>> eventBodyList = eventList
+                .stream()
+                .map(e -> new EventBody<>(e, EventContext.get()))
+                .collect(Collectors.toList());
+
+        List<EventId> eventIdList = transactionSupport.execute(() -> eventStorageService.saveList(eventBodyList));
 
         // 事务后触发发送
         transactionSupport.executeAfterCommit(() -> {
 
-            for (int i = 0; i < eventList.size(); i++) {
-                T event = eventList.get(i);
+            for (int i = 0; i < eventBodyList.size(); i++) {
+                EventBody<T> event = eventBodyList.get(i);
                 EventId eventId = eventIdList.get(i);
                 try {
                     publishEvent(event, eventId);
@@ -135,9 +148,7 @@ public class DisruptorTriggerEventSender implements EventSender {
                         return true;
                     });
                 } catch (Exception ex) {
-                    log.error("[DisruptorTriggerEventSender#sendList] publish-error!eventId:{},event:{}", eventId,
-                        event,
-                        ex);
+                    log.error("[DisruptorTriggerEventSender#sendList] publish-error!eventId:{},event:{}", eventId, event, ex);
                 }
             }
         });
@@ -146,7 +157,7 @@ public class DisruptorTriggerEventSender implements EventSender {
     }
 
     @Override
-    public <T> boolean retrySend(EventId eventId, T event) {
+    public <T> boolean retrySend(EventId eventId, EventBody<T> eventBody) {
         BaseEventEntity eventEntity = eventStorageService.getBaseEntity(eventId);
 
         if (eventStorageService.isMoreThanMustTrigger(eventEntity)) {
@@ -155,7 +166,7 @@ public class DisruptorTriggerEventSender implements EventSender {
         }
         // 发送消息
         try {
-            publishEvent(event, eventId);
+            publishEvent(eventBody, eventId);
         } catch (Exception ex) {
             eventStorageService.sendFailed(eventId, ex);
             return false;

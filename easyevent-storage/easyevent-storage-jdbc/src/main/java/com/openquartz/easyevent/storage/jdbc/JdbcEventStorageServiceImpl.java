@@ -4,12 +4,14 @@ import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotEmpty;
 import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
 import com.openquartz.easyevent.storage.jdbc.mapper.BusEventEntityMapper;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 import com.openquartz.easyevent.common.concurrent.TraceContext;
 import com.openquartz.easyevent.common.constant.CommonConstants;
 import com.openquartz.easyevent.common.property.EasyEventProperties;
@@ -20,10 +22,7 @@ import com.openquartz.easyevent.common.utils.StringUtils;
 import com.openquartz.easyevent.storage.api.EventStorageService;
 import com.openquartz.easyevent.storage.identify.EventId;
 import com.openquartz.easyevent.storage.identify.IdGenerator;
-import com.openquartz.easyevent.storage.model.BaseEventEntity;
-import com.openquartz.easyevent.storage.model.BusEventEntity;
-import com.openquartz.easyevent.storage.model.BusEventSelectorCondition;
-import com.openquartz.easyevent.storage.model.EventLifecycleState;
+import com.openquartz.easyevent.storage.model.*;
 
 /**
  * @author svnee
@@ -36,9 +35,9 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
     private final EasyEventProperties easyEventProperties;
 
     public JdbcEventStorageServiceImpl(BusEventEntityMapper busEventEntityMapper,
-        Serializer serializer,
-        IdGenerator idGenerator,
-        EasyEventProperties easyEventProperties) {
+                                       Serializer serializer,
+                                       IdGenerator idGenerator,
+                                       EasyEventProperties easyEventProperties) {
 
         checkNotNull(busEventEntityMapper);
         checkNotNull(serializer);
@@ -51,10 +50,10 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
     }
 
     @Override
-    public EventId save(Object event) {
-        BusEventEntity busEventEntity = buildInitBusEventEntity(event);
+    public <T> EventId save(EventBody<T> eventBody) {
+        BusEventEntity busEventEntity = buildInitBusEventEntity(eventBody);
         if (Objects.nonNull(idGenerator)) {
-            long eventEntityId = idGenerator.generateId(event);
+            long eventEntityId = idGenerator.generateId(eventBody.getEvent());
             busEventEntity.setEntityId(eventEntityId);
         }
         Long sourceId = TraceContext.getSourceEventId();
@@ -63,21 +62,21 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
         return busEventEntity.getEventId();
     }
 
-    private BusEventEntity buildInitBusEventEntity(Object event) {
+    private <T> BusEventEntity buildInitBusEventEntity(EventBody<T> eventBody) {
 
         Date now = new Date();
 
         String traceId = TraceContext.getTraceId();
         BusEventEntity busEventEntity = new BusEventEntity();
         busEventEntity.setTraceId(StringUtils.isNotBlank(traceId) ? traceId : CommonConstants.EMPTY_STRING);
-        busEventEntity.setEventData(serializer.serialize(event));
+        busEventEntity.setEventData(serializer.serialize(eventBody));
         busEventEntity.setCreatingOwner(IpUtil.getIp());
         busEventEntity.setProcessingOwner(CommonConstants.EMPTY_STRING);
         busEventEntity.setProcessingAvailableDate(null);
         busEventEntity.setProcessingFailedReason(CommonConstants.EMPTY_STRING);
         busEventEntity.setCreatedTime(now);
         busEventEntity.setUpdatedTime(now);
-        busEventEntity.setClassName(event.getClass().getName());
+        busEventEntity.setClassName(eventBody.getEvent().getClass().getName());
         busEventEntity.setErrorCount(0);
         busEventEntity.setSuccessfulSubscriberList(Collections.emptyList());
         busEventEntity.setProcessingState(EventLifecycleState.AVAILABLE);
@@ -86,21 +85,21 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
     }
 
     @Override
-    public <T> List<EventId> saveList(List<T> eventList) {
+    public <T> List<EventId> saveList(List<EventBody<T>> eventList) {
         if (CollectionUtils.isEmpty(eventList)) {
             return Collections.emptyList();
         }
         Long sourceId = TraceContext.getSourceEventId();
 
         List<BusEventEntity> entityList = eventList.stream()
-            .map(this::buildInitBusEventEntity)
-            .peek(k -> k.setSourceId(sourceId))
-            .collect(Collectors.toList());
+                .map(this::buildInitBusEventEntity)
+                .peek(k -> k.setSourceId(sourceId))
+                .collect(Collectors.toList());
 
         if (Objects.nonNull(idGenerator)) {
             for (int i = 0; i < entityList.size(); i++) {
                 BusEventEntity busEventEntity = entityList.get(i);
-                busEventEntity.setEntityId(idGenerator.generateId(eventList.get(i)));
+                busEventEntity.setEntityId(idGenerator.generateId(eventList.get(i).getEvent()));
             }
             busEventEntityMapper.insertListWithSupplierId(entityList);
         } else {
@@ -133,8 +132,8 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
         checkNotEmpty(eventIdList);
 
         eventIdList.stream()
-            .sorted((Comparator.comparing(EventId::getId)))
-            .forEach(k -> sendFailed(k, ex));
+                .sorted((Comparator.comparing(EventId::getId)))
+                .forEach(k -> sendFailed(k, ex));
     }
 
     @Override
@@ -152,10 +151,10 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
 
         List<String> subscriberIdentifyList = busEventEntityMapper.getSuccessfulSubscriberIdentify(eventId);
         List<String> successfulSubscriberList = CollectionUtils
-            .mergeNoRepeat(subscriberIdentifyList, successSubscriberList);
+                .mergeNoRepeat(subscriberIdentifyList, successSubscriberList);
 
         busEventEntityMapper
-            .processingFailed(eventId, EventLifecycleState.PROCESS_FAILED, successfulSubscriberList, invokeError);
+                .processingFailed(eventId, EventLifecycleState.PROCESS_FAILED, successfulSubscriberList, invokeError);
     }
 
     @Override

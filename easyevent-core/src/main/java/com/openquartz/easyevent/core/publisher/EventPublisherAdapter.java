@@ -5,6 +5,7 @@ import com.openquartz.easyevent.core.EventBus;
 import com.openquartz.easyevent.core.dispatcher.DispatchInvokeResult;
 import com.openquartz.easyevent.core.intreceptor.PublisherInterceptorChain;
 import com.openquartz.easyevent.core.intreceptor.PublisherInterceptorContext;
+import com.openquartz.easyevent.storage.model.EventContext;
 import com.openquartz.easyevent.transfer.api.EventSender;
 
 import java.util.List;
@@ -54,46 +55,54 @@ public abstract class EventPublisherAdapter implements EventPublisher {
     @Override
     public <T> boolean asyncPublish(T event) {
 
-        PublisherInterceptorContext publishContext = new PublisherInterceptorContext();
-        boolean publish = PublisherInterceptorChain.applyPrePublish(event, publishContext);
-        if (!publish) {
-            return true;
-        }
-        boolean sendResult;
         try {
-            sendResult = getEventSender().send(event);
-        } catch (Exception ex) {
-            PublisherInterceptorChain.triggerAfterCompletion(event, publishContext, ex);
-            throw ex;
+            PublisherInterceptorContext publishContext = new PublisherInterceptorContext();
+            boolean publish = PublisherInterceptorChain.applyPrePublish(event, publishContext);
+            if (!publish) {
+                return true;
+            }
+            boolean sendResult;
+            try {
+                sendResult = getEventSender().send(event);
+            } catch (Exception ex) {
+                PublisherInterceptorChain.triggerAfterCompletion(event, publishContext, ex);
+                throw ex;
+            }
+            PublisherInterceptorChain.triggerAfterCompletion(event, publishContext, null);
+            return sendResult;
+        } finally {
+            EventContext.remove();
         }
-        PublisherInterceptorChain.triggerAfterCompletion(event, publishContext, null);
-        return sendResult;
     }
 
     @Override
     public <T> boolean asyncPublishList(List<T> eventList) {
 
-        PublisherInterceptorContext publishContext = new PublisherInterceptorContext();
-
-        List<Object> filterEventList = eventList.stream()
-            .filter(event -> PublisherInterceptorChain.applyPrePublish(event, publishContext))
-            .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(filterEventList)) {
-            return true;
-        }
-
-        boolean sendResult;
         try {
-            sendResult = getEventSender().sendList(filterEventList);
-        } catch (Exception ex) {
-            for (Object event : filterEventList) {
-                PublisherInterceptorChain.triggerAfterCompletion(event, publishContext, ex);
+            PublisherInterceptorContext publishContext = new PublisherInterceptorContext();
+
+            List<Object> filterEventList = eventList.stream()
+                    .filter(event -> PublisherInterceptorChain.applyPrePublish(event, publishContext))
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(filterEventList)) {
+                return true;
             }
-            throw ex;
+
+            boolean sendResult;
+            try {
+                sendResult = getEventSender().sendList(filterEventList);
+            } catch (Exception ex) {
+                for (Object event : filterEventList) {
+                    PublisherInterceptorChain.triggerAfterCompletion(event, publishContext, ex);
+                }
+                throw ex;
+            }
+            for (Object event : filterEventList) {
+                PublisherInterceptorChain.triggerAfterCompletion(event, publishContext, null);
+            }
+            return sendResult;
+        } finally {
+            EventContext.remove();
         }
-        for (Object event : filterEventList) {
-            PublisherInterceptorChain.triggerAfterCompletion(event, publishContext, null);
-        }
-        return sendResult;
     }
 }

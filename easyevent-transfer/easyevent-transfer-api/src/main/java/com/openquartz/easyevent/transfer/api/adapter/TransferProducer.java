@@ -2,6 +2,7 @@ package com.openquartz.easyevent.transfer.api.adapter;
 
 import java.util.List;
 import com.openquartz.easyevent.storage.identify.EventId;
+import com.openquartz.easyevent.storage.model.EventBody;
 import com.openquartz.easyevent.transfer.api.common.BatchSendResult;
 
 /**
@@ -18,7 +19,7 @@ public interface TransferProducer {
      * @param eventId eventId
      * @param <T> T
      */
-    <T> void sendMessage(T event, EventId eventId);
+    <T> void sendMessage(EventBody<T> event, EventId eventId);
 
     /**
      * send message list
@@ -28,6 +29,6 @@ public interface TransferProducer {
      * @param <T> T
      * @return send result
      */
-    <T> BatchSendResult sendMessageList(List<T> eventList, List<EventId> eventIdList);
+    <T> BatchSendResult sendMessageList(List<EventBody<T>> eventList, List<EventId> eventIdList);
 
 }

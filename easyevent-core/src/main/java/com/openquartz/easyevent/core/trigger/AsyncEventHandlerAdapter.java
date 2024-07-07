@@ -7,6 +7,8 @@ import com.openquartz.easyevent.core.dispatcher.DispatchInvokeResult;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.openquartz.easyevent.storage.model.EventBody;
+import com.openquartz.easyevent.storage.model.EventContext;
 import lombok.extern.slf4j.Slf4j;
 import com.openquartz.easyevent.common.concurrent.TraceContext;
 import com.openquartz.easyevent.common.exception.EasyEventException;
@@ -84,9 +86,9 @@ public abstract class AsyncEventHandlerAdapter implements AsyncEventHandler {
 
             // 开启处理
             String eventData = eventMessage.getEventData();
-            Object event = null;
+            EventBody<?> eventBody = null;
             try {
-                event = getSerializer().deserialize(Class.forName(eventMessage.getClassName()), eventData);
+                eventBody = getSerializer().deserialize(EventBody.class, eventData);
             } catch (Exception ex) {
                 log.error("[EventTriggerAdapter#trigger]deserialize-error!eventMessage:{}", eventMessage, ex);
                 getEventStorageService().processingFailed(eventMessage.getEventId(), ex);
@@ -102,16 +104,17 @@ public abstract class AsyncEventHandlerAdapter implements AsyncEventHandler {
                     log.error("[EventTriggerAdapter#trigger]start-process-failed!event:{}", eventMessage);
                     return;
                 }
-                Object finalEvent = event;
+                EventBody<?> finalEventBody = eventBody;
+                EventContext.set(finalEventBody.getContext());
 
                 // execute the no join transaction subscribers
                 DispatchInvokeResult noJoinTransactionInvokeResult = getHandleEventBus()
-                        .postAll(finalEvent, entity.getSuccessfulSubscriberList(), false);
+                        .postAll(finalEventBody.getEvent(), entity.getSuccessfulSubscriberList(), false);
 
                 executeSuccess = getTransactionSupport().execute(() -> {
                     // execute the join transaction subscribers
                     DispatchInvokeResult joinTransactionInvokeResult = getHandleEventBus()
-                            .postAll(finalEvent, entity.getSuccessfulSubscriberList(), true);
+                            .postAll(finalEventBody.getEvent(), entity.getSuccessfulSubscriberList(), true);
 
                     DispatchInvokeResult invokeResult = noJoinTransactionInvokeResult.merge(joinTransactionInvokeResult);
                     List<String> successfulSubIdentifyList = invokeResult.getSuccessSubscriberList()
@@ -151,6 +154,7 @@ public abstract class AsyncEventHandlerAdapter implements AsyncEventHandler {
             }
         } finally {
             TraceContext.clearSourceEventId();
+            EventContext.remove();
         }
     }
 }

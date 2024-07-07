@@ -1,5 +1,6 @@
 package com.openquartz.easyevent.starter.soa.core;
 
+import com.openquartz.easyevent.storage.model.EventContext;
 import com.openquartz.easyevent.core.annotation.Subscribe;
 import com.openquartz.easyevent.starter.soa.api.SoaEvent;
 
@@ -18,7 +19,14 @@ public class SoaEventHandler {
 
     @Subscribe(condition = "event.getSoaIdentify().equals(context.getBean(T(com.openquartz.easyevent.common.property.EasyEventProperties)).getAppId())")
     public void handle(SoaEvent event) {
+
+        if (EventContext.get().isSoaFilter()){
+            return;
+        }
+
         soaEventCenter.publish(event);
+
+        EventContext.get().setSoaFilter(true);
     }
 
     public static String getSubscriberIdentify() {

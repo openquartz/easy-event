@@ -5,6 +5,7 @@ import com.openquartz.easyevent.storage.identify.EventId;
 import com.openquartz.easyevent.storage.model.BaseEventEntity;
 import com.openquartz.easyevent.storage.model.BusEventEntity;
 import com.openquartz.easyevent.storage.model.BusEventSelectorCondition;
+import com.openquartz.easyevent.storage.model.EventBody;
 
 /**
  * 事件存储器
@@ -19,7 +20,7 @@ public interface EventStorageService {
      * @param event 事件
      * @return eventId 事件ID
      */
-    EventId save(Object event);
+    <T>EventId save(EventBody<T> event);
 
     /**
      * 批量保存
@@ -27,7 +28,7 @@ public interface EventStorageService {
      * @param eventList eventList
      * @return eventId 事件ID
      */
-    <T> List<EventId> saveList(List<T> eventList);
+    <T>List<EventId> saveList(List<EventBody<T>> eventList);
 
     /**
      * 发送完成
