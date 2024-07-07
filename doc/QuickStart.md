@@ -386,7 +386,7 @@ public interface EventNotifier {
 如果需要支持分布式预警通知,需要用于提供实现接口`com.openquartz.easyevent.common.concurrent.lock.DistributedLockFactory`
 并注入到Spring工厂中。
 
-### SOA Event支持
+### 六、SOA Event支持
 
 Easy-Event提供了SOA 微服务下的事件中心的支持.
 
