@@ -6,6 +6,7 @@ import com.openquartz.easyevent.common.utils.ExceptionUtils;
 import com.openquartz.easyevent.common.utils.IpUtil;
 import com.openquartz.easyevent.common.utils.JSONUtil;
 import com.openquartz.easyevent.starter.soa.api.SoaEvent;
+import com.openquartz.easyevent.storage.model.EventBody;
 import com.openquartz.easyevent.transfer.api.EventTrigger;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -105,9 +106,11 @@ public class SoaRocketMqEventTrigger implements EventTrigger {
                 MessageExt message = messageExtList.get(0);
                 try {
                     // json parse
-                    SoaEvent soaEvent = JSONUtil.parseObject(message.getBody(), SoaEvent.class);
-                    checkNotNull(soaEvent);
-                    eventHandler.accept(soaEvent);
+                    @SuppressWarnings("unchecked")
+                    EventBody<? extends SoaEvent> eventBody = JSONUtil.parseObject(message.getBody(), EventBody.class);
+                    checkNotNull(eventBody);
+                    assert eventBody != null;
+                    eventHandler.accept(eventBody.getEvent());
                 } catch (Throwable ex) {
                     if (message.getReconsumeTimes() < commonProperty.getConsumeMaxRetry()) {
                         // 消费时间间隔

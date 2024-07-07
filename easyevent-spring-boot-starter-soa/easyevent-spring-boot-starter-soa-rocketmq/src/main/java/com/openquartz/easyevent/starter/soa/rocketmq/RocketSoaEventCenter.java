@@ -1,5 +1,6 @@
 package com.openquartz.easyevent.starter.soa.rocketmq;
 
+import com.openquartz.easyevent.common.property.EasyEventProperties;
 import com.openquartz.easyevent.common.utils.CollectionUtils;
 import com.openquartz.easyevent.core.EventBus;
 import com.openquartz.easyevent.core.Subscriber;
@@ -8,9 +9,12 @@ import com.openquartz.easyevent.core.publisher.EventPublisher;
 import com.openquartz.easyevent.starter.soa.api.SoaEvent;
 import com.openquartz.easyevent.starter.soa.core.SoaEventCenter;
 import com.openquartz.easyevent.starter.soa.core.SoaEventHandler;
+import com.openquartz.easyevent.storage.model.EventBody;
+import com.openquartz.easyevent.storage.model.EventContext;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * RocketMqEventCenter
@@ -19,15 +23,18 @@ import java.util.List;
  */
 public class RocketSoaEventCenter implements SoaEventCenter {
 
+    private final EasyEventProperties easyEventProperties;
     private final List<EventBus> eventBusList;
     private final ExpressionParser expressionParser;
     private final EventPublisher eventPublisher;
     private final SoaEventRocketMqProducer soaEventRocketMqProducer;
 
-    public RocketSoaEventCenter(List<EventBus> eventBusList,
+    public RocketSoaEventCenter(EasyEventProperties easyEventProperties,
+                                List<EventBus> eventBusList,
                                 ExpressionParser expressionParser,
                                 EventPublisher eventPublisher,
                                 SoaEventRocketMqProducer soaEventRocketMqProducer) {
+        this.easyEventProperties = easyEventProperties;
         this.eventBusList = eventBusList;
         this.expressionParser = expressionParser;
         this.eventPublisher = eventPublisher;
@@ -37,7 +44,8 @@ public class RocketSoaEventCenter implements SoaEventCenter {
 
     @Override
     public void publish(SoaEvent event) {
-        soaEventRocketMqProducer.sendMessage(event);
+        EventBody<SoaEvent> eventBody = new EventBody<>(event, EventContext.get());
+        soaEventRocketMqProducer.sendMessage(eventBody);
     }
 
     /**
@@ -52,6 +60,10 @@ public class RocketSoaEventCenter implements SoaEventCenter {
             return;
         }
 
+        if (Objects.equals(event.getSoaIdentify(), easyEventProperties.getAppId())) {
+            return;
+        }
+
         boolean anySubscribe = eventBusList
                 .stream()
                 .anyMatch(eventBus -> {
@@ -63,11 +75,6 @@ public class RocketSoaEventCenter implements SoaEventCenter {
                         while (subscribers.hasNext()) {
 
                             Subscriber subscriber = subscribers.next();
-
-                            // skip SoaEventHandler
-                            if (subscriber.getTargetIdentify().equals(SoaEventHandler.getSubscriberIdentify())) {
-                                return false;
-                            }
 
                             if (subscriber.shouldSubscribe(expressionParser, event)) {
                                 return true;

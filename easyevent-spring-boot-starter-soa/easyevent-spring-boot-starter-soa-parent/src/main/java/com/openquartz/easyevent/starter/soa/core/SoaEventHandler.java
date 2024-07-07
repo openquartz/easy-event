@@ -24,13 +24,9 @@ public class SoaEventHandler {
             return;
         }
 
-        soaEventCenter.publish(event);
-
         EventContext.get().setSoaFilter(true);
-    }
 
-    public static String getSubscriberIdentify() {
-        return SoaEventHandler.class.getName() + "#handle";
+        soaEventCenter.publish(event);
     }
 
 }

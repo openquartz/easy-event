@@ -6,6 +6,7 @@ import com.openquartz.easyevent.common.model.LifecycleBean;
 import com.openquartz.easyevent.common.utils.ExceptionUtils;
 import com.openquartz.easyevent.common.utils.JSONUtil;
 import com.openquartz.easyevent.starter.soa.api.SoaEvent;
+import com.openquartz.easyevent.storage.model.EventBody;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.MQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
@@ -46,25 +47,29 @@ public class SoaEventRocketMqProducer implements LifecycleBean {
         producer.shutdown();
     }
 
-    public void sendMessage(SoaEvent event) {
+    public <T extends SoaEvent> void sendMessage(EventBody<T> eventBody) {
 
         Message message = new Message();
-        message.setBody(JSONUtil.toJsonAsBytes(event));
+        message.setBody(JSONUtil.toJsonAsBytes(eventBody));
         message.setTopic(soaEventRocketMqCommonProperty.getTopic());
+        message.setTags(eventBody.getEvent().getClass().getName());
+        if (eventBody.getEvent().getEventKey() != null) {
+            message.setKeys(eventBody.getEvent().getEventKey());
+        }
         SendResult result = null;
         try {
-            log.info("[RocketMQ#sendMessage],data:{},topic:{}", event, soaEventRocketMqCommonProperty.getTopic());
+            log.info("[RocketMQ#sendMessage],data:{},topic:{}", eventBody, soaEventRocketMqCommonProperty.getTopic());
             result = producer.send(message, soaEventRocketMqCommonProperty.getProduceTimeout());
             log.info("[RocketMQ#sendMessage],sendResult:{},data:{},topic:{}",
-                    result, event, soaEventRocketMqCommonProperty.getTopic());
+                    result, eventBody, soaEventRocketMqCommonProperty.getTopic());
         } catch (InterruptedException ex) {
             log.error("[RocketMQ#sendMessage]exe-interrupt!,data:{},topic:{}",
-                    event, soaEventRocketMqCommonProperty.getTopic(), ex);
+                    eventBody, soaEventRocketMqCommonProperty.getTopic(), ex);
             Thread.currentThread().interrupt();
             ExceptionUtils.rethrow(ex);
         } catch (Exception ex) {
             log.error("[RocketMQ#sendMessage]exe-error!,data:{},topic:{}",
-                    event, soaEventRocketMqCommonProperty.getTopic(), ex);
+                    eventBody, soaEventRocketMqCommonProperty.getTopic(), ex);
             ExceptionUtils.rethrow(ex);
         }
         if (Objects.isNull(result) || !SendStatus.SEND_OK.equals(result.getSendStatus())) {

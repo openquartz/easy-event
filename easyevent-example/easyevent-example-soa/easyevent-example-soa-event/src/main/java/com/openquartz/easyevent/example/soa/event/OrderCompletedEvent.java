@@ -26,4 +26,9 @@ public class OrderCompletedEvent implements SoaEvent {
     public String getSoaIdentify() {
         return SoaIdentifyConstants.ORDER_SERVICE_APPID;
     }
+
+    @Override
+    public String getEventKey() {
+        return orderNo;
+    }
 }

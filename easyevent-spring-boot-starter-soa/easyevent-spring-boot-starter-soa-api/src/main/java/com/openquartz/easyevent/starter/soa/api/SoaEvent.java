@@ -14,4 +14,11 @@ public interface SoaEvent {
      */
     String getSoaIdentify();
 
+    /**
+     * 事件key 用于soa 检索
+     * @return eventKey
+     */
+    default String getEventKey() {
+        return null;
+    }
 }
