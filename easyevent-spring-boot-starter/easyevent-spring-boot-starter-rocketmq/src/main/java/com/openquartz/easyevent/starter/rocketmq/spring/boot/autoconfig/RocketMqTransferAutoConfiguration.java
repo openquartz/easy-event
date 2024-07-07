@@ -67,8 +67,7 @@ public class RocketMqTransferAutoConfiguration {
                                    RocketMqProducer rocketMqProducer,
                                    EventTransferSenderLimitingControl eventTransferSenderLimitingControl) {
 
-        return new RocketMqEventSender(eventStorageService, asyncSendExecutor, transactionSupport,
-                rocketMqProducer, eventTransferSenderLimitingControl);
+        return new RocketMqEventSender(eventStorageService, asyncSendExecutor, transactionSupport, rocketMqProducer, eventTransferSenderLimitingControl);
     }
 
     @Bean
