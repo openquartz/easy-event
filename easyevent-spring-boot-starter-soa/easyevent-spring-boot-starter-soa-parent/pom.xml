@@ -39,6 +39,16 @@
             <artifactId>easyevent-spring-boot-starter-parent</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.openquartz</groupId>
+            <artifactId>easyevent-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.openquartz</groupId>
+            <artifactId>easyevent-storage-api</artifactId>
+        </dependency>
+
         <!--第三方-->
         <dependency>
             <groupId>org.projectlombok</groupId>

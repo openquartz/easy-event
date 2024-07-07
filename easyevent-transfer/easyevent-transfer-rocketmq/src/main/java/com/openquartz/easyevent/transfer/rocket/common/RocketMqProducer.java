@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import com.openquartz.easyevent.storage.model.EventBody;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.MQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
@@ -68,14 +70,14 @@ public class RocketMqProducer implements TransferProducer, LifecycleBean {
     }
 
     @Override
-    public <T> void sendMessage(T event, EventId eventId) {
+    public <T> void sendMessage(EventBody<T> eventBody, EventId eventId) {
 
         EventMessage eventMessage = EventMessageBuilder.builder()
             .eventId(eventId)
-            .event(event)
+            .event(eventBody)
             .serializer(serializer)
             .build();
-        Pair<String, String> routeTopic = eventRouter.route(event);
+        Pair<String, String> routeTopic = eventRouter.route(eventBody.getEvent());
 
         Message message = new Message();
         message.setBody(JSONUtil.toJsonAsBytes(eventMessage));
@@ -84,19 +86,19 @@ public class RocketMqProducer implements TransferProducer, LifecycleBean {
         message.setKeys(String.valueOf(eventId.getId()));
         SendResult result = null;
         try {
-            log.info("[RocketMQ#sendMessage],data:{},tag:{},topic:{}", event, routeTopic.getRight(),
+            log.info("[RocketMQ#sendMessage],data:{},tag:{},topic:{}", eventBody, routeTopic.getRight(),
                 routeTopic.getLeft());
             result = producer.send(message, rocketMqCommonProperty.getProduceTimeout());
-            log.info("[RocketMQ#sendMessage],sendResult:{},data:{},tag:{},topic:{}", result, event,
+            log.info("[RocketMQ#sendMessage],sendResult:{},data:{},tag:{},topic:{}", result, eventBody,
                 routeTopic.getRight(), routeTopic.getLeft());
         } catch (InterruptedException ex) {
             log.error("[RocketMQ#sendMessage]exe-interrupt!,data:{},tag:{},topic:{}",
-                event, routeTopic.getRight(), routeTopic.getLeft(), ex);
+                eventBody, routeTopic.getRight(), routeTopic.getLeft(), ex);
             Thread.currentThread().interrupt();
             ExceptionUtils.rethrow(ex);
         } catch (Exception ex) {
             log.error("[RocketMQ#sendMessage]exe-error!,data:{},tag:{},topic:{}",
-                event, routeTopic.getRight(), routeTopic.getLeft(), ex);
+                eventBody, routeTopic.getRight(), routeTopic.getLeft(), ex);
             ExceptionUtils.rethrow(ex);
         }
         if (Objects.isNull(result) || !SendStatus.SEND_OK.equals(result.getSendStatus())) {
@@ -107,23 +109,23 @@ public class RocketMqProducer implements TransferProducer, LifecycleBean {
     }
 
     @Override
-    public <T> BatchSendResult sendMessageList(List<T> eventList, List<EventId> eventIdList) {
-        if (CollectionUtils.isEmpty(eventList)) {
+    public <T> BatchSendResult sendMessageList(List<EventBody<T>> eventBodyList, List<EventId> eventIdList) {
+        if (CollectionUtils.isEmpty(eventBodyList)) {
             return new BatchSendResult();
         }
-        List<Pair<Integer, Object>> index2EventList = new ArrayList<>(eventList.size());
-        for (int i = 0; i < eventList.size(); i++) {
-            index2EventList.add(Pair.of(i, eventList.get(i)));
+        List<Pair<Integer, EventBody<?>>> index2EventList = new ArrayList<>(eventBodyList.size());
+        for (int i = 0; i < eventBodyList.size(); i++) {
+            index2EventList.add(Pair.of(i, eventBodyList.get(i)));
         }
         // mapping routeInfo 2 index
-        Map<Pair<String, String>, List<Pair<Integer, Object>>> routeInfo2EventMap = index2EventList.stream()
-            .map(e -> Pair.of(eventRouter.route(e.getValue()), e))
+        Map<Pair<String, String>, List<Pair<Integer, EventBody<?>>>> routeInfo2EventMap = index2EventList.stream()
+            .map(e -> Pair.of(eventRouter.route(e.getValue().getEvent()), e))
             .collect(Collectors.groupingBy(Pair::getKey,
                 Collectors.mapping(Pair::getValue, Collectors.toList())));
 
         BatchSendResult batchSendResult = new BatchSendResult();
 
-        for (Entry<Pair<String, String>, List<Pair<Integer, Object>>> routeInfo2Event : routeInfo2EventMap.entrySet()) {
+        for (Entry<Pair<String, String>, List<Pair<Integer, EventBody<?>>>> routeInfo2Event : routeInfo2EventMap.entrySet()) {
             List<Message> messageList = routeInfo2Event.getValue()
                 .stream()
                 .map(e -> {

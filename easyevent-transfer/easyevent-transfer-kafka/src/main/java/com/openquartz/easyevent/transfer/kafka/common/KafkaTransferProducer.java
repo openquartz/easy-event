@@ -2,6 +2,7 @@ package com.openquartz.easyevent.transfer.kafka.common;
 
 import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
+import com.openquartz.easyevent.storage.model.EventBody;
 import com.openquartz.easyevent.transfer.kafka.exception.KafkaTransferErrorCode;
 import com.openquartz.easyevent.transfer.kafka.property.KafkaCommonProperty;
 import java.util.ArrayList;
@@ -78,14 +79,14 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
     }
 
     @Override
-    public <T> void sendMessage(T event, EventId eventId) {
+    public <T> void sendMessage(EventBody<T> eventBody, EventId eventId) {
 
         EventMessage eventMessage = EventMessageBuilder.builder()
             .eventId(eventId)
-            .event(event)
+            .event(eventBody)
             .serializer(serializer)
             .build();
-        Pair<String, String> routeTopic = eventRouter.route(event);
+        Pair<String, String> routeTopic = eventRouter.route(eventBody.getEvent());
 
         int partition = parseRoutePartition(routeTopic);
 
@@ -95,11 +96,11 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
             Future<RecordMetadata> sendFuture = producer.send(producerRecord);
             sendFuture.get();
         } catch (InterruptedException ex) {
-            log.error("[KafkaProducer#sendMessage] interrupted!event:{},eventId:{}", event, eventId, ex);
+            log.error("[KafkaProducer#sendMessage] interrupted!event:{},eventId:{}", eventBody, eventId, ex);
             Thread.currentThread().interrupt();
             ExceptionUtils.rethrow(ex);
         } catch (Exception ex) {
-            log.error("[KafkaProducer#sendMessage] do-send-error!event:{},eventId:{}", event, eventId, ex);
+            log.error("[KafkaProducer#sendMessage] do-send-error!event:{},eventId:{}", eventBody, eventId, ex);
             ExceptionUtils.rethrow(ex);
         }
     }
@@ -130,22 +131,22 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
      * @return result
      */
     @Override
-    public <T> BatchSendResult sendMessageList(List<T> eventList, List<EventId> eventIdList) {
+    public <T> BatchSendResult sendMessageList(List<EventBody<T>> eventList, List<EventId> eventIdList) {
         if (CollectionUtils.isEmpty(eventList)) {
             return new BatchSendResult();
         }
-        List<Pair<Integer, Object>> index2EventList = new ArrayList<>(eventList.size());
+        List<Pair<Integer, EventBody<?>>> index2EventList = new ArrayList<>(eventList.size());
         for (int i = 0; i < eventList.size(); i++) {
             index2EventList.add(Pair.of(i, eventList.get(i)));
         }
         // mapping routeInfo 2 index
-        Map<Pair<String, String>, List<Pair<Integer, Object>>> routeInfo2EventMap = index2EventList.stream()
+        Map<Pair<String, String>, List<Pair<Integer, EventBody<?>>>> routeInfo2EventMap = index2EventList.stream()
             .map(e -> Pair.of(eventRouter.route(e.getValue()), e))
             .collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
 
         BatchSendResult batchSendResult = new BatchSendResult();
 
-        for (Entry<Pair<String, String>, List<Pair<Integer, Object>>> routeInfo2Event : routeInfo2EventMap.entrySet()) {
+        for (Entry<Pair<String, String>, List<Pair<Integer, EventBody<?>>>> routeInfo2Event : routeInfo2EventMap.entrySet()) {
             List<ProducerRecord<String, String>> messageList = routeInfo2Event.getValue()
                 .stream()
                 .map(e -> {
@@ -165,7 +166,7 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
             }
 
             for (int i = 0; i < futureList.size(); i++) {
-                Pair<Integer, Object> eventIdPair = routeInfo2Event.getValue().get(i);
+                Pair<Integer, EventBody<?>> eventIdPair = routeInfo2Event.getValue().get(i);
                 try {
                     Future<RecordMetadata> future = futureList.get(i);
                     future.get();
