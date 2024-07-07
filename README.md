@@ -68,6 +68,7 @@
     - `easyevent-spring-boot-starter-rocketmq`: `rocketmq` 作为事件传输的实现的 springboot starter
 
 - `easyevent-spring-boot-starter-soa`: easyevent soa 支持starter 包
+    - `easyevent-spring-boot-starter-soa-api`: `easyevent soa event api`工程
     - `easyevent-spring-boot-starter-soa-parent`: `easyevent soa starter parent`工程
     - `easyevent-spring-boot-starter-soa-rocketmq`: `rocketmq` 作为事件传输的实现的 soa 的事件传输中心
 
