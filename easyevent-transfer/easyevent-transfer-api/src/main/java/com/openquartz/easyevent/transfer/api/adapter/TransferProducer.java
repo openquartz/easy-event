@@ -22,6 +22,14 @@ public interface TransferProducer {
     <T> void sendMessage(EventBody<T> event, EventId eventId);
 
     /**
+     * 异步发送
+     * @param eventBody event
+     * @param eventId eventId
+     * @param <T> T
+     */
+    <T> void asyncSendMessage(EventBody<T> eventBody, EventId eventId, SendResultCallback callback);
+
+    /**
      * send message list
      *
      * @param eventList event list

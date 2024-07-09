@@ -35,4 +35,9 @@ public class RocketMqCommonProperty {
      * 发送消息大小限制 单位：byte
      */
     private int produceMessageSize = 1000 * 1000;
+
+    /**
+     * 开启异步发送
+     */
+    private boolean produceAsync = true;
 }

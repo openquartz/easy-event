@@ -40,7 +40,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Role;
 import org.springframework.core.Ordered;
+
+import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE;
 
 /**
  * RocketMQ Transfer AutoConfiguration
@@ -61,13 +64,14 @@ public class RocketMqTransferAutoConfiguration {
 
     @Bean(initMethod = "init", destroyMethod = "destroy")
     @ConditionalOnMissingBean
-    public EventSender eventSender(EventStorageService eventStorageService,
+    public EventSender eventSender(RocketMqCommonProperty rocketMqCommonProperty,
+                                   EventStorageService eventStorageService,
                                    @Autowired @Qualifier("asyncSendExecutor") ExecutorService asyncSendExecutor,
                                    TransactionSupport transactionSupport,
                                    RocketMqProducer rocketMqProducer,
                                    EventTransferSenderLimitingControl eventTransferSenderLimitingControl) {
 
-        return new RocketMqEventSender(eventStorageService, asyncSendExecutor, transactionSupport, rocketMqProducer, eventTransferSenderLimitingControl);
+        return new RocketMqEventSender(rocketMqCommonProperty, eventStorageService, asyncSendExecutor, transactionSupport, rocketMqProducer, eventTransferSenderLimitingControl);
     }
 
     @Bean
@@ -100,6 +104,7 @@ public class RocketMqTransferAutoConfiguration {
     }
 
     @Bean
+    @Role(ROLE_INFRASTRUCTURE)
     public RocketMqCommonProperty rocketMqCommonProperty(RocketTransferProperties rocketTransferProperties) {
 
         RocketMqCommonProperty rocketMqCommonProperty = new RocketMqCommonProperty();

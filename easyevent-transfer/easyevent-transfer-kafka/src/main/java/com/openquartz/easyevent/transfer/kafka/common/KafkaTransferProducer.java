@@ -3,8 +3,10 @@ package com.openquartz.easyevent.transfer.kafka.common;
 import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
 import com.openquartz.easyevent.storage.model.EventBody;
+import com.openquartz.easyevent.transfer.api.adapter.SendResultCallback;
 import com.openquartz.easyevent.transfer.kafka.exception.KafkaTransferErrorCode;
 import com.openquartz.easyevent.transfer.kafka.property.KafkaCommonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -46,8 +49,8 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
     private final KafkaCommonProperty kafkaCommonProperty;
 
     public KafkaTransferProducer(Serializer serializer,
-        EventRouter eventRouter,
-        KafkaCommonProperty kafkaCommonProperty) {
+                                 EventRouter eventRouter,
+                                 KafkaCommonProperty kafkaCommonProperty) {
 
         checkNotNull(serializer);
         checkNotNull(eventRouter);
@@ -64,7 +67,7 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
         props.put(ProducerConfig.ACKS_CONFIG, "all");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-            "org.apache.kafka.common.serialization.StringSerializer");
+                "org.apache.kafka.common.serialization.StringSerializer");
         this.producer = new org.apache.kafka.clients.producer.KafkaProducer<>(props);
     }
 
@@ -81,17 +84,7 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
     @Override
     public <T> void sendMessage(EventBody<T> eventBody, EventId eventId) {
 
-        EventMessage eventMessage = EventMessageBuilder.builder()
-            .eventId(eventId)
-            .event(eventBody)
-            .serializer(serializer)
-            .build();
-        Pair<String, String> routeTopic = eventRouter.route(eventBody.getEvent());
-
-        int partition = parseRoutePartition(routeTopic);
-
-        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(
-            routeTopic.getKey(), partition, System.currentTimeMillis(), null, JSONUtil.toJson(eventMessage), null);
+        ProducerRecord<String, String> producerRecord = buildProducerRecord(eventBody, eventId);
         try {
             Future<RecordMetadata> sendFuture = producer.send(producerRecord);
             sendFuture.get();
@@ -112,22 +105,62 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
         } else {
             int currentPartition = Integer.parseInt(routeTopic.getValue());
             Asserts.isTrueIfLog(currentPartition < kafkaCommonProperty.getProduceTopicPartitions(),
-                () -> log.error(
-                    "[KafkaProducer#sendMessage] partition over outOfBounds! topic:{},partition:{},curPartition:{}",
-                    routeTopic.getLeft(), kafkaCommonProperty.getProduceTopicPartitions(), currentPartition),
-                KafkaTransferErrorCode.THE_SEND_PARTITION_OUT_OF_BOUNDS,
-                routeTopic.getKey(), 0, kafkaCommonProperty.getProduceTopicPartitions(), currentPartition);
+                    () -> log.error(
+                            "[KafkaProducer#sendMessage] partition over outOfBounds! topic:{},partition:{},curPartition:{}",
+                            routeTopic.getLeft(), kafkaCommonProperty.getProduceTopicPartitions(), currentPartition),
+                    KafkaTransferErrorCode.THE_SEND_PARTITION_OUT_OF_BOUNDS,
+                    routeTopic.getKey(), 0, kafkaCommonProperty.getProduceTopicPartitions(), currentPartition);
             partition = currentPartition;
         }
         return partition;
     }
 
+    @Override
+    public <T> void asyncSendMessage(EventBody<T> eventBody, EventId eventId, SendResultCallback callback) {
+
+        ProducerRecord<String, String> producerRecord = buildProducerRecord(eventBody, eventId);
+
+        try {
+            producer.send(producerRecord, (metadata, exception) -> {
+
+                if (Objects.isNull(callback)) {
+                    return;
+                }
+
+                if (exception != null) {
+                    callback.onFail(eventId, exception);
+                    return;
+                }
+
+                callback.onSuccess(eventId);
+            });
+        } catch (Exception ex) {
+            log.error("[KafkaProducer#sendMessage] do-send-error!event:{},eventId:{}", eventBody, eventId, ex);
+            ExceptionUtils.rethrow(ex);
+        }
+    }
+
+    private <T> ProducerRecord<String, String> buildProducerRecord(EventBody<T> eventBody, EventId eventId) {
+
+        EventMessage eventMessage = EventMessageBuilder.builder()
+                .eventId(eventId)
+                .event(eventBody)
+                .serializer(serializer)
+                .build();
+        Pair<String, String> routeTopic = eventRouter.route(eventBody.getEvent());
+
+        int partition = parseRoutePartition(routeTopic);
+
+        return new ProducerRecord<>(
+                routeTopic.getKey(), partition, System.currentTimeMillis(), null, JSONUtil.toJson(eventMessage), null);
+    }
+
     /**
      * 批量发送消息
      *
-     * @param eventList eventList
+     * @param eventList   eventList
      * @param eventIdList eventIdList
-     * @param <T> T
+     * @param <T>         T
      * @return result
      */
     @Override
@@ -141,24 +174,24 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
         }
         // mapping routeInfo 2 index
         Map<Pair<String, String>, List<Pair<Integer, EventBody<?>>>> routeInfo2EventMap = index2EventList.stream()
-            .map(e -> Pair.of(eventRouter.route(e.getValue()), e))
-            .collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
+                .map(e -> Pair.of(eventRouter.route(e.getValue()), e))
+                .collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
 
         BatchSendResult batchSendResult = new BatchSendResult();
 
         for (Entry<Pair<String, String>, List<Pair<Integer, EventBody<?>>>> routeInfo2Event : routeInfo2EventMap.entrySet()) {
             List<ProducerRecord<String, String>> messageList = routeInfo2Event.getValue()
-                .stream()
-                .map(e -> {
-                    EventMessage eventMessage = EventMessageBuilder.builder()
-                        .eventId(eventIdList.get(e.getKey()))
-                        .event(e.getValue())
-                        .serializer(serializer)
-                        .build();
-                    int partition = parseRoutePartition(routeInfo2Event.getKey());
-                    return new ProducerRecord<String, String>(routeInfo2Event.getKey().getKey(),
-                        partition, System.currentTimeMillis(), null, serializer.serialize(eventMessage), null);
-                }).collect(Collectors.toList());
+                    .stream()
+                    .map(e -> {
+                        EventMessage eventMessage = EventMessageBuilder.builder()
+                                .eventId(eventIdList.get(e.getKey()))
+                                .event(e.getValue())
+                                .serializer(serializer)
+                                .build();
+                        int partition = parseRoutePartition(routeInfo2Event.getKey());
+                        return new ProducerRecord<String, String>(routeInfo2Event.getKey().getKey(),
+                                partition, System.currentTimeMillis(), null, serializer.serialize(eventMessage), null);
+                    }).collect(Collectors.toList());
 
             List<Future<RecordMetadata>> futureList = new ArrayList<>();
             for (ProducerRecord<String, String> producerRecord : messageList) {
@@ -176,7 +209,7 @@ public class KafkaTransferProducer implements TransferProducer, LifecycleBean {
                     Thread.currentThread().interrupt();
                 } catch (Exception ex) {
                     log.error("[KafkaProducer#sendMessageList]send error!eventId:{},event:{}",
-                        eventIdList.get(eventIdPair.getKey()), eventIdPair.getRight(), ex);
+                            eventIdList.get(eventIdPair.getKey()), eventIdPair.getRight(), ex);
                     batchSendResult.addFailedIndex(eventIdPair.getKey());
                     batchSendResult.setFailedException(ex);
                 }

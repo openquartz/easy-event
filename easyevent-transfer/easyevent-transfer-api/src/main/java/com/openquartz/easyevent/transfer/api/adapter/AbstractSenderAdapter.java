@@ -60,6 +60,15 @@ public abstract class AbstractSenderAdapter implements EventSender {
      */
     public abstract Executor getAsyncSendExecutor();
 
+    /**
+     * 是否开启异步发送
+     *
+     * @return 是否开启异步发送
+     */
+    public boolean isEnableAsyncSend() {
+        return false;
+    }
+
     @Override
     public <T> boolean send(T event) {
 
@@ -71,23 +80,55 @@ public abstract class AbstractSenderAdapter implements EventSender {
         getTransactionSupport().executeAfterCommit(() -> getAsyncSendExecutor().execute(() ->
                 // 发送限流控制
                 getEventTransferSenderLimitingControl().control(event, eventId, (e, eId) -> {
-                    // 发送消息
-                    try {
-                        getTransferProducer().sendMessage(eventBody, eId);
-                    } catch (Exception ex) {
-                        // 存储执行
-                        getTransactionSupport().execute(() -> {
-                            getEventStorageService().sendFailed(eId, ex);
-                            return true;
-                        });
+
+                    if (isEnableAsyncSend()) {
+                        doAsyncSendMessage(eId, eventBody);
+                    } else {
+                        doSyncSendMessage(eId, eventBody);
                     }
-                    // 存储执行
-                    getTransactionSupport().execute(() -> {
-                        getEventStorageService().sendComplete(eId);
-                        return true;
-                    });
                 })));
         return true;
+    }
+
+    private <T> void doAsyncSendMessage(EventId eId, EventBody<T> eventBody) {
+
+        getTransferProducer().asyncSendMessage(eventBody, eId, new SendResultCallback() {
+            @Override
+            public void onSuccess(EventId eventId) {
+                getTransactionSupport().execute(() -> {
+                    getEventStorageService().sendComplete(eId);
+                    return true;
+                });
+            }
+
+            @Override
+            public void onFail(EventId eventId, Throwable error) {
+                // 存储执行
+                getTransactionSupport().execute(() -> {
+                    getEventStorageService().sendFailed(eId, error);
+                    return true;
+                });
+            }
+        });
+    }
+
+    private <T> void doSyncSendMessage(EventId eId, EventBody<T> eventBody) {
+
+        // 发送消息
+        try {
+            getTransferProducer().sendMessage(eventBody, eId);
+        } catch (Exception ex) {
+            // 存储执行
+            getTransactionSupport().execute(() -> {
+                getEventStorageService().sendFailed(eId, ex);
+                return true;
+            });
+        }
+        // 存储执行
+        getTransactionSupport().execute(() -> {
+            getEventStorageService().sendComplete(eId);
+            return true;
+        });
     }
 
     @Override

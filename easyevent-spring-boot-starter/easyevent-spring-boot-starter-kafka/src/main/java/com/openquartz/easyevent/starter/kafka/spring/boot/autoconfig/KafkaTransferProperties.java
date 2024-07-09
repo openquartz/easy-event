@@ -27,6 +27,11 @@ public class KafkaTransferProperties {
     public String produceGroup = "EasyEvent";
 
     /**
+     * 使用mq 异步发送
+     */
+    public boolean produceAsync = true;
+
+    /**
      * 发送超时
      * 单位：秒
      */
@@ -86,6 +91,14 @@ public class KafkaTransferProperties {
 
     public void setProduceTopicPartitions(int produceTopicPartitions) {
         this.produceTopicPartitions = produceTopicPartitions;
+    }
+
+    public boolean isProduceAsync() {
+        return produceAsync;
+    }
+
+    public void setProduceAsync(boolean produceAsync) {
+        this.produceAsync = produceAsync;
     }
 
     public Map<String, KafkaTransferConsumerProperties> getConsumers() {

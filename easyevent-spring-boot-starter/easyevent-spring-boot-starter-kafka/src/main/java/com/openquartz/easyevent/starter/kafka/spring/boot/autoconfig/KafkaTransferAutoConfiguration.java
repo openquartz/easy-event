@@ -18,10 +18,12 @@ import com.openquartz.easyevent.transfer.kafka.common.KafkaTransferProducer;
 import com.openquartz.easyevent.transfer.kafka.common.KafkaTriggerProperty;
 import com.openquartz.easyevent.transfer.kafka.common.KafkaTriggerProperty.KafkaConsumerProperty;
 import com.openquartz.easyevent.transfer.kafka.property.KafkaCommonProperty;
+
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,7 +34,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Role;
 import org.springframework.core.Ordered;
+
+import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE;
 
 /**
  * Kafka Transfer AutoConfiguration
@@ -49,27 +54,29 @@ public class KafkaTransferAutoConfiguration {
 
     @Bean(initMethod = "init", destroyMethod = "destroy")
     @ConditionalOnMissingBean
-    public EventSender eventSender(EventStorageService eventStorageService,
-        @Autowired @Qualifier("asyncSendExecutor") ExecutorService asyncSendExecutor,
-        TransactionSupport transactionSupport,
-        KafkaTransferProducer kafkaTransferProducer,
-        EventTransferSenderLimitingControl eventTransferSenderLimitingControl) {
+    public EventSender eventSender(
+            KafkaCommonProperty kafkaCommonProperty,
+            EventStorageService eventStorageService,
+            @Autowired @Qualifier("asyncSendExecutor") ExecutorService asyncSendExecutor,
+            TransactionSupport transactionSupport,
+            KafkaTransferProducer kafkaTransferProducer,
+            EventTransferSenderLimitingControl eventTransferSenderLimitingControl) {
 
-        return new KafkaEventSender(kafkaTransferProducer, eventStorageService, asyncSendExecutor, transactionSupport,
-            eventTransferSenderLimitingControl);
+        return new KafkaEventSender(kafkaCommonProperty, kafkaTransferProducer, eventStorageService, asyncSendExecutor, transactionSupport, eventTransferSenderLimitingControl);
     }
 
     @Bean
     @ConditionalOnMissingBean
     public KafkaTransferProducer kafkaTransferProducer(
-        Serializer serializer,
-        EventRouter eventRouter,
-        KafkaCommonProperty kafkaCommonProperty) {
+            Serializer serializer,
+            EventRouter eventRouter,
+            KafkaCommonProperty kafkaCommonProperty) {
 
         return new KafkaTransferProducer(serializer, eventRouter, kafkaCommonProperty);
     }
 
     @Bean
+    @Role(ROLE_INFRASTRUCTURE)
     public KafkaCommonProperty kafkaCommonProperty(KafkaTransferProperties kafkaTransferProperties) {
 
         KafkaCommonProperty kafkaCommonProperty = new KafkaCommonProperty();
@@ -77,27 +84,28 @@ public class KafkaTransferAutoConfiguration {
         kafkaCommonProperty.setProduceTimeout(kafkaTransferProperties.getProduceTimeout());
         kafkaCommonProperty.setProduceTryTimes(kafkaTransferProperties.getProduceTryTimes());
         kafkaCommonProperty.setProduceTopicPartitions(kafkaTransferProperties.getProduceTopicPartitions());
+        kafkaCommonProperty.setProduceAsync(kafkaTransferProperties.isProduceAsync());
         return kafkaCommonProperty;
     }
 
     @Bean
     public KafkaTriggerProperty kafkaTriggerProperty(
-        KafkaTransferProperties kafkaTransferProperties) {
+            KafkaTransferProperties kafkaTransferProperties) {
 
         Map<String, KafkaConsumerProperty> propertyMap = kafkaTransferProperties.getConsumers().entrySet()
-            .stream()
-            .collect(Collectors.toMap(Entry::getKey, e -> {
-                KafkaConsumerProperty kafkaConsumerProperty = new KafkaConsumerProperty();
-                kafkaConsumerProperty.setConsumerGroup(e.getValue().getConsumerGroup());
-                kafkaConsumerProperty.setTopic(e.getValue().getTopic());
-                kafkaConsumerProperty.setPartition(e.getValue().getPartition());
-                kafkaConsumerProperty.setCurrency(e.getValue().getCurrency());
-                kafkaConsumerProperty.setConsumeMaxRetry(e.getValue().getConsumeMaxRetry());
-                kafkaConsumerProperty
-                    .setConsumeRetryDelayTimeIntervalSeconds(e.getValue().getConsumeRetryDelayTimeIntervalSeconds());
-                kafkaConsumerProperty.setClientId(e.getValue().getClientId());
-                return kafkaConsumerProperty;
-            }));
+                .stream()
+                .collect(Collectors.toMap(Entry::getKey, e -> {
+                    KafkaConsumerProperty kafkaConsumerProperty = new KafkaConsumerProperty();
+                    kafkaConsumerProperty.setConsumerGroup(e.getValue().getConsumerGroup());
+                    kafkaConsumerProperty.setTopic(e.getValue().getTopic());
+                    kafkaConsumerProperty.setPartition(e.getValue().getPartition());
+                    kafkaConsumerProperty.setCurrency(e.getValue().getCurrency());
+                    kafkaConsumerProperty.setConsumeMaxRetry(e.getValue().getConsumeMaxRetry());
+                    kafkaConsumerProperty
+                            .setConsumeRetryDelayTimeIntervalSeconds(e.getValue().getConsumeRetryDelayTimeIntervalSeconds());
+                    kafkaConsumerProperty.setClientId(e.getValue().getClientId());
+                    return kafkaConsumerProperty;
+                }));
         KafkaTriggerProperty kafkaTriggerProperty = new KafkaTriggerProperty();
         kafkaTriggerProperty.setConsumerPropertyMap(propertyMap);
         return kafkaTriggerProperty;
@@ -106,16 +114,16 @@ public class KafkaTransferAutoConfiguration {
     @Bean(destroyMethod = "destroy", initMethod = "init")
     @ConditionalOnMissingBean
     public EventTrigger kafkaEventTrigger(KafkaCommonProperty kafkaCommonProperty,
-        KafkaTriggerProperty kafkaTriggerProperty,
-        AsyncEventHandler defaultAsyncEventHandler,
-        LockSupport lockSupport,
-        EventTransferTriggerLimitingControl eventTransferTriggerLimitingControl) {
+                                          KafkaTriggerProperty kafkaTriggerProperty,
+                                          AsyncEventHandler defaultAsyncEventHandler,
+                                          LockSupport lockSupport,
+                                          EventTransferTriggerLimitingControl eventTransferTriggerLimitingControl) {
 
         return new KafkaEventTrigger(kafkaTriggerProperty,
-            kafkaCommonProperty,
-            defaultAsyncEventHandler::handle,
-            lockSupport,
-            eventTransferTriggerLimitingControl);
+                kafkaCommonProperty,
+                defaultAsyncEventHandler::handle,
+                lockSupport,
+                eventTransferTriggerLimitingControl);
     }
 
 

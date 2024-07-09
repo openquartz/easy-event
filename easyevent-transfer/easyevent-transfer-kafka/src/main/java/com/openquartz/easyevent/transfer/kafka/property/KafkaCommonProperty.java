@@ -29,4 +29,9 @@ public class KafkaCommonProperty {
      * 重试次数
      */
     private int produceTryTimes = 5;
+
+    /**
+     * 是否异步发送
+     */
+    private boolean produceAsync = true;
 }
