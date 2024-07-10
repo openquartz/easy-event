@@ -24,6 +24,11 @@ public class BusEventEntity extends BaseEventEntity {
     private String eventData;
 
     /**
+     * Event-Key
+     */
+    private String eventKey;
+
+    /**
      * 创建者机器
      */
     private String creatingOwner;
@@ -52,10 +57,5 @@ public class BusEventEntity extends BaseEventEntity {
      * 更新时间
      */
     private Date updatedTime;
-
-    /**
-     * Event-Key
-     */
-    private String eventKey;
 
 }

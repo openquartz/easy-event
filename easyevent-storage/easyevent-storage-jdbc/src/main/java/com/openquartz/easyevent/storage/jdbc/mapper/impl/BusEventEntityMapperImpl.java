@@ -67,8 +67,8 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     private static final String GET_ALL_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id from {0} ";
     private static final String GET_BASE_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,id from {0} where id =?";
 
-    private static final String INSERT_SQL = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    private static final String INSERT_SQL_WITH_ID = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    private static final String INSERT_SQL = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    private static final String INSERT_SQL_WITH_ID = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     private static final String REFRESH_SOURCE_SQL = "update {0} set source_id = :sourceId where id = :entityId";
 
     private static final String REFRESH_PROCESS_STATE_SQL = "update {0} set processing_state=?,processing_failed_reason=? where id = ?";
@@ -124,15 +124,16 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 ps.setString(6, entity.getProcessingState().getCode());
                 ps.setString(7, entity.getTraceId());
                 ps.setString(8, entity.getEventData());
-                ps.setString(9, entity.getCreatingOwner());
-                ps.setString(10, entity.getProcessingOwner());
-                ps.setDate(11, Objects.nonNull(entity.getProcessingAvailableDate()) ? new java.sql.Date(
+                ps.setString(9, entity.getEventKey());
+                ps.setString(10, entity.getCreatingOwner());
+                ps.setString(11, entity.getProcessingOwner());
+                ps.setDate(12, Objects.nonNull(entity.getProcessingAvailableDate()) ? new java.sql.Date(
                         entity.getProcessingAvailableDate().getTime()) : null);
-                ps.setString(12, entity.getProcessingFailedReason());
-                ps.setTimestamp(13,
+                ps.setString(13, entity.getProcessingFailedReason());
+                ps.setTimestamp(14,
                         Objects.nonNull(entity.getCreatedTime()) ? new Timestamp(entity.getCreatedTime().getTime())
                                 : null);
-                ps.setTimestamp(14,
+                ps.setTimestamp(15,
                         Objects.nonNull(entity.getUpdatedTime()) ? new Timestamp(entity.getUpdatedTime().getTime())
                                 : null);
             }
@@ -174,18 +175,19 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                     ps.setString(6, entity.getProcessingState().getCode());
                     ps.setString(7, entity.getTraceId());
                     ps.setString(8, entity.getEventData());
-                    ps.setString(9, entity.getCreatingOwner());
-                    ps.setString(10, entity.getProcessingOwner());
-                    ps.setTimestamp(11, Objects.nonNull(entity.getProcessingAvailableDate()) ?
+                    ps.setString(9, entity.getEventKey());
+                    ps.setString(10, entity.getCreatingOwner());
+                    ps.setString(11, entity.getProcessingOwner());
+                    ps.setTimestamp(12, Objects.nonNull(entity.getProcessingAvailableDate()) ?
                             new Timestamp(entity.getProcessingAvailableDate().getTime()) : null);
-                    ps.setString(12, entity.getProcessingFailedReason());
-                    ps.setTimestamp(13,
+                    ps.setString(13, entity.getProcessingFailedReason());
+                    ps.setTimestamp(14,
                             Objects.nonNull(entity.getCreatedTime()) ? new Timestamp(entity.getCreatedTime().getTime())
                                     : null);
-                    ps.setTimestamp(14,
+                    ps.setTimestamp(15,
                             Objects.nonNull(entity.getUpdatedTime()) ? new Timestamp(entity.getUpdatedTime().getTime())
                                     : null);
-                    ps.setLong(15, entity.getEntityId());
+                    ps.setLong(16, entity.getEntityId());
                 }
 
                 @Override

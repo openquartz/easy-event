@@ -1,5 +1,6 @@
 package com.openquartz.easyevent.example.event;
 
+import com.openquartz.easyevent.core.IEvent;
 import lombok.Data;
 
 /**
@@ -25,8 +26,9 @@ public class TestEvent implements IEvent {
         this.source = source;
     }
 
+
     @Override
-    public String getTag() {
-        return "Test";
+    public String getEventKey() {
+        return source;
     }
 }

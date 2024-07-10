@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Resource;
 
-import com.openquartz.easyevent.example.event.IEvent;
+import com.openquartz.easyevent.core.IEvent;
 import org.springframework.stereotype.Component;
 import com.openquartz.easyevent.core.publisher.EventPublisher;
-import com.openquartz.easyevent.example.event.TestEvent;
 
 /**
  * @author svnee
