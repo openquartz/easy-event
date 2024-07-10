@@ -1,17 +1,5 @@
 package com.openquartz.easyevent.storage.jdbc;
 
-import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotEmpty;
-import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
-
-import com.openquartz.easyevent.storage.jdbc.mapper.BusEventEntityMapper;
-
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import com.openquartz.easyevent.common.concurrent.TraceContext;
 import com.openquartz.easyevent.common.constant.CommonConstants;
 import com.openquartz.easyevent.common.property.EasyEventProperties;
@@ -22,7 +10,14 @@ import com.openquartz.easyevent.common.utils.StringUtils;
 import com.openquartz.easyevent.storage.api.EventStorageService;
 import com.openquartz.easyevent.storage.identify.EventId;
 import com.openquartz.easyevent.storage.identify.IdGenerator;
+import com.openquartz.easyevent.storage.jdbc.mapper.BusEventEntityMapper;
 import com.openquartz.easyevent.storage.model.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotEmpty;
+import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
 /**
  * @author svnee
@@ -70,6 +65,7 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
         BusEventEntity busEventEntity = new BusEventEntity();
         busEventEntity.setTraceId(StringUtils.isNotBlank(traceId) ? traceId : CommonConstants.EMPTY_STRING);
         busEventEntity.setEventData(serializer.serialize(eventBody));
+        busEventEntity.setEventKey(eventBody.computeEventKey());
         busEventEntity.setCreatingOwner(IpUtil.getIp());
         busEventEntity.setProcessingOwner(CommonConstants.EMPTY_STRING);
         busEventEntity.setProcessingAvailableDate(null);

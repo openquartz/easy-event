@@ -53,4 +53,9 @@ public class BusEventEntity extends BaseEventEntity {
      */
     private Date updatedTime;
 
+    /**
+     * Event-Key
+     */
+    private String eventKey;
+
 }

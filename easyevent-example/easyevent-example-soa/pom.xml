@@ -22,11 +22,6 @@
 
     <dependencies>
 
-        <dependency>
-            <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-example-soa-event</artifactId>
-        </dependency>
-
     </dependencies>
 
 </project>

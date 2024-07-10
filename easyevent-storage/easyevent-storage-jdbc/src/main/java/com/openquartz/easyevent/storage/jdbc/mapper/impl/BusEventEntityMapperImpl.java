@@ -64,11 +64,11 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     }
 
     private static final String GET_SUCCESS_SUBSCRIBER_SQL = "select successful_subscriber from {0} where id = ?";
-    private static final String GET_ALL_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id from {0} ";
+    private static final String GET_ALL_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id from {0} ";
     private static final String GET_BASE_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,id from {0} where id =?";
 
-    private static final String INSERT_SQL = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    private static final String INSERT_SQL_WITH_ID = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    private static final String INSERT_SQL = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    private static final String INSERT_SQL_WITH_ID = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     private static final String REFRESH_SOURCE_SQL = "update {0} set source_id = :sourceId where id = :entityId";
 
     private static final String REFRESH_PROCESS_STATE_SQL = "update {0} set processing_state=?,processing_failed_reason=? where id = ?";
@@ -399,6 +399,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             BusEventEntity busEventEntity = new BusEventEntity();
             busEventEntity.setTraceId(rs.getString("trace_id"));
             busEventEntity.setEventData(rs.getString("event_data"));
+            busEventEntity.setEventKey(rs.getString("event_key"));
             busEventEntity.setCreatingOwner(rs.getString("creating_owner"));
             busEventEntity.setProcessingOwner(rs.getString("processing_owner"));
             busEventEntity.setProcessingAvailableDate(rs.getTimestamp("processing_available_date"));

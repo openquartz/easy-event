@@ -156,7 +156,7 @@ public class RocketMqProducer implements TransferProducer, LifecycleBean {
         message.setBody(JSONUtil.toJsonAsBytes(eventMessage));
         message.setTags(Objects.nonNull(routeTopic.getRight()) ? routeTopic.getRight() : TransferConstants.DEFAULT_TAG);
         message.setTopic(routeTopic.getLeft());
-        message.setKeys(String.valueOf(eventId.getId()));
+        message.setKeys(eventBody.computeEventKey());
         return message;
     }
 
@@ -192,7 +192,7 @@ public class RocketMqProducer implements TransferProducer, LifecycleBean {
                         message.setTags(
                                 Objects.nonNull(routeInfo2Event.getKey().getValue()) ? routeInfo2Event.getKey().getValue()
                                         : TransferConstants.DEFAULT_TAG);
-                        message.setKeys(String.valueOf(eventIdList.get(e.getKey())));
+                        message.setKeys(e.getValue().computeEventKey());
                         return message;
                     }).collect(Collectors.toList());
 
