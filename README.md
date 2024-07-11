@@ -43,7 +43,11 @@
 通过`EventTransfer`进行事件的分布式调度处理。也可通过自定义SPI实现。\
 异步事件处理调度如下图所示：
 
+**单机EasyEvent处理示意图：**
 ![EasyEvent异步事件处理流程示意图](./doc/image/EasyEvent.png)
+
+**SOAEvent处理示意图：**
+![SOAEvent异步事件处理流程示意图](./doc/image/SOAEvent.png)
 
 #### 代码结构
 
