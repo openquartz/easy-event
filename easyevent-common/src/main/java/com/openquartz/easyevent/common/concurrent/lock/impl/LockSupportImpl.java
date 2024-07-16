@@ -1,7 +1,7 @@
 package com.openquartz.easyevent.common.concurrent.lock.impl;
 
-import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
-
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.openquartz.easyevent.common.concurrent.lock.Consumer;
 import com.openquartz.easyevent.common.concurrent.lock.DistributedLockFactory;
 import com.openquartz.easyevent.common.concurrent.lock.LockBizType;
@@ -9,12 +9,14 @@ import com.openquartz.easyevent.common.concurrent.lock.LockSupport;
 import com.openquartz.easyevent.common.exception.CommonErrorCode;
 import com.openquartz.easyevent.common.model.Pair;
 import com.openquartz.easyevent.common.utils.Asserts;
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import lombok.extern.slf4j.Slf4j;
+
+import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
 /**
  * LockSupportImpl
@@ -25,7 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 public class LockSupportImpl implements LockSupport {
 
     private final DistributedLockFactory distributedLockFactory;
-    private final Map<String, Lock> localLockMap = new ConcurrentHashMap<>();
+    private final Cache<String, Lock> localLockMap = Caffeine.newBuilder()
+            .initialCapacity(16)
+            .maximumSize(Integer.MAX_VALUE)
+            .expireAfterAccess(30, TimeUnit.MINUTES)
+            .build();
 
     public LockSupportImpl(DistributedLockFactory distributedLockFactory) {
         this.distributedLockFactory = distributedLockFactory;
@@ -37,7 +43,7 @@ public class LockSupportImpl implements LockSupport {
      * consume if tryLock
      * first try lock local lock,second try lock distributed lock
      *
-     * @param lockKey lockKey
+     * @param lockKey  lockKey
      * @param consumer consumer function
      * @return if consume function
      */
@@ -51,7 +57,9 @@ public class LockSupportImpl implements LockSupport {
 
         String identifyLockKey = String.format(LOCK_KEY_FORMATTER, lockKey.getValue().getCode(), lockKey.getKey());
 
-        Lock lock = localLockMap.computeIfAbsent(identifyLockKey, k -> new ReentrantLock());
+        Lock lock = localLockMap.get(identifyLockKey, k -> new ReentrantLock());
+        Asserts.notNull(lock, CommonErrorCode.CANNOT_GET_LOCK_ERROR);
+        assert lock != null;
         if (lock.tryLock()) {
             try {
                 if (Objects.isNull(distributedLockFactory)) {
@@ -75,7 +83,6 @@ public class LockSupportImpl implements LockSupport {
                 } catch (Exception ex) {
                     log.error("[LockSupport#consumeIfTryLock] release lock error!lockKey:{}", lockKey, ex);
                 }
-                localLockMap.remove(identifyLockKey, lock);
             }
         }
         return false;
@@ -85,7 +92,7 @@ public class LockSupportImpl implements LockSupport {
     public void consumeIfLock(Pair<String, LockBizType> lockKey, Consumer consumer) {
         boolean tryLock = consumeIfTryLock(lockKey, consumer);
         Asserts.isTrueIfLog(tryLock,
-            () -> log.warn("[LockSupportImpl#consumeIfLock] cannot Acquire Lock,lockKey:{}", lockKey),
-            CommonErrorCode.CANNOT_GET_LOCK_ERROR);
+                () -> log.warn("[LockSupportImpl#consumeIfLock] cannot Acquire Lock,lockKey:{}", lockKey),
+                CommonErrorCode.CANNOT_GET_LOCK_ERROR);
     }
 }
