@@ -67,6 +67,8 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     private static final String GET_ALL_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id from {0} ";
     private static final String GET_BASE_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,id from {0} where id =?";
 
+    private static final String GET_ID_SQL = "select id from {0} where id =?";
+
     private static final String INSERT_SQL = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     private static final String INSERT_SQL_WITH_ID = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     private static final String REFRESH_SOURCE_SQL = "update {0} set source_id = :sourceId where id = :entityId";
@@ -329,6 +331,16 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             return null;
         }
         return entityList.get(0);
+    }
+
+    @Override
+    public boolean isPresent(Long eventId) {
+
+        checkNotNull(eventId);
+
+        String sql = MessageFormat.format(GET_ID_SQL, supplier.genBusEventEntityTable(eventId));
+        Long id = jdbcTemplate.queryForObject(sql, Long.class, eventId);
+        return Objects.nonNull(id);
     }
 
     @Override

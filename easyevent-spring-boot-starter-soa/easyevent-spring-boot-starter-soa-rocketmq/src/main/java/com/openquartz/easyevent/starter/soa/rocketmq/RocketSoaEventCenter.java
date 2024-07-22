@@ -8,7 +8,7 @@ import com.openquartz.easyevent.core.expression.ExpressionParser;
 import com.openquartz.easyevent.core.publisher.EventPublisher;
 import com.openquartz.easyevent.starter.soa.api.SoaEvent;
 import com.openquartz.easyevent.starter.soa.core.SoaEventCenter;
-import com.openquartz.easyevent.starter.soa.core.SoaEventHandler;
+import com.openquartz.easyevent.storage.api.EventStorageService;
 import com.openquartz.easyevent.storage.model.EventBody;
 import com.openquartz.easyevent.storage.model.EventContext;
 
@@ -28,17 +28,20 @@ public class RocketSoaEventCenter implements SoaEventCenter {
     private final ExpressionParser expressionParser;
     private final EventPublisher eventPublisher;
     private final SoaEventRocketMqProducer soaEventRocketMqProducer;
+    private final EventStorageService eventStorageService;
 
     public RocketSoaEventCenter(EasyEventProperties easyEventProperties,
                                 List<EventBus> eventBusList,
                                 ExpressionParser expressionParser,
                                 EventPublisher eventPublisher,
-                                SoaEventRocketMqProducer soaEventRocketMqProducer) {
+                                SoaEventRocketMqProducer soaEventRocketMqProducer,
+                                EventStorageService eventStorageService) {
         this.easyEventProperties = easyEventProperties;
         this.eventBusList = eventBusList;
         this.expressionParser = expressionParser;
         this.eventPublisher = eventPublisher;
         this.soaEventRocketMqProducer = soaEventRocketMqProducer;
+        this.eventStorageService = eventStorageService;
     }
 
 
@@ -84,6 +87,12 @@ public class RocketSoaEventCenter implements SoaEventCenter {
                     return false;
                 });
         if (!anySubscribe) {
+            return;
+        }
+        EventContext eventContext = EventContext.get();
+        if (Objects.nonNull(eventContext)
+                && Objects.nonNull(eventContext.getSourceEventId())
+                && eventStorageService.isPresent(eventContext.getSourceEventId())) {
             return;
         }
         eventPublisher.asyncPublish(event);

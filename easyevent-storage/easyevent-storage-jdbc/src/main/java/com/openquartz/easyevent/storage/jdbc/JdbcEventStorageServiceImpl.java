@@ -173,4 +173,9 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
     public List<BusEventEntity> get(BusEventSelectorCondition condition) {
         return busEventEntityMapper.getBySelectiveCondition(condition);
     }
+
+    @Override
+    public boolean isPresent(Long eventId) {
+        return busEventEntityMapper.isPresent(eventId);
+    }
 }

@@ -115,4 +115,11 @@ public interface EventStorageService {
      * @return bus-event
      */
     List<BusEventEntity> get(BusEventSelectorCondition condition);
+
+    /**
+     * 是否已经存在
+     * @param eventId eventId
+     * @return 是否存在
+     */
+    boolean isPresent(Long eventId);
 }

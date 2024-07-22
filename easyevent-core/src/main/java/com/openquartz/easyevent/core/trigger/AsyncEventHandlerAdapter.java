@@ -105,6 +105,7 @@ public abstract class AsyncEventHandlerAdapter implements AsyncEventHandler {
                     return;
                 }
                 EventBody<?> finalEventBody = eventBody;
+                finalEventBody.getContext().setSourceEventId(eventMessage.getEventId().getId());
                 EventContext.set(finalEventBody.getContext());
 
                 // execute the no join transaction subscribers

@@ -13,6 +13,7 @@ import com.openquartz.easyevent.starter.soa.rocketmq.SoaEventRocketMqProducer;
 import com.openquartz.easyevent.starter.soa.rocketmq.SoaRocketMqEventTrigger;
 import com.openquartz.easyevent.starter.spring.boot.autoconfig.EasyEventAfterAutoConfiguration;
 import com.openquartz.easyevent.starter.spring.boot.autoconfig.property.EasyEventCommonProperties;
+import com.openquartz.easyevent.storage.api.EventStorageService;
 import com.openquartz.easyevent.transfer.api.constant.TransferConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -47,8 +48,9 @@ public class RocketSoaEventAutoConfiguration {
                                          List<EventBus> eventBusList,
                                          ExpressionParser expressionParser,
                                          EventPublisher eventPublisher,
-                                         SoaEventRocketMqProducer soaEventRocketMqProducer) {
-        return new RocketSoaEventCenter(easyEventCommonProperties, eventBusList, expressionParser, eventPublisher, soaEventRocketMqProducer);
+                                         SoaEventRocketMqProducer soaEventRocketMqProducer,
+                                         EventStorageService eventStorageService) {
+        return new RocketSoaEventCenter(easyEventCommonProperties, eventBusList, expressionParser, eventPublisher, soaEventRocketMqProducer, eventStorageService);
     }
 
     @Bean(initMethod = "init", destroyMethod = "destroy")

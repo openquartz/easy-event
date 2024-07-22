@@ -12,9 +12,18 @@ import lombok.Getter;
 public class EventContext {
 
     private boolean soaFilter = false;
+    private Long sourceEventId;
 
     public synchronized void setSoaFilter(boolean soaFilter) {
         this.soaFilter = soaFilter;
+    }
+
+    public synchronized void setSourceEventId(Long sourceEventId) {
+        this.sourceEventId = sourceEventId;
+    }
+
+    public Long getSourceEventId() {
+        return sourceEventId;
     }
 
     private static final ThreadLocal<EventContext> THREAD_LOCAL;

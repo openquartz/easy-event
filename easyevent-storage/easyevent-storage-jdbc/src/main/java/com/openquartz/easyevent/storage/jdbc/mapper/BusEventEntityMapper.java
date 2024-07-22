@@ -1,6 +1,7 @@
 package com.openquartz.easyevent.storage.jdbc.mapper;
 
 import java.util.List;
+
 import com.openquartz.easyevent.storage.identify.EventId;
 import com.openquartz.easyevent.storage.model.BaseEventEntity;
 import com.openquartz.easyevent.storage.model.BusEventEntity;
@@ -46,7 +47,7 @@ public interface BusEventEntityMapper {
     /**
      * 刷新成发送成功了
      *
-     * @param eventId eventId
+     * @param eventId         eventId
      * @param transferSuccess 发送成功
      */
     void refreshSendComplete(EventId eventId, EventLifecycleState transferSuccess);
@@ -54,7 +55,7 @@ public interface BusEventEntityMapper {
     /**
      * 批量更新发送成功
      *
-     * @param eventIdList eventId
+     * @param eventIdList     eventId
      * @param transferSuccess transfer-success
      */
     void batchRefreshSendComplete(List<EventId> eventIdList, EventLifecycleState transferSuccess);
@@ -62,16 +63,16 @@ public interface BusEventEntityMapper {
     /**
      * send failed
      *
-     * @param eventId eventId
+     * @param eventId        eventId
      * @param transferFailed 发送失败
-     * @param ex ex
+     * @param ex             ex
      */
     void refreshSendFailed(EventId eventId, EventLifecycleState transferFailed, Throwable ex);
 
     /**
      * 开始处理
      *
-     * @param eventId eventId
+     * @param eventId         eventId
      * @param startProcessing 处理状态
      */
     void refreshStartProcessing(EventId eventId, EventLifecycleState startProcessing);
@@ -79,7 +80,7 @@ public interface BusEventEntityMapper {
     /**
      * 处理完成
      *
-     * @param eventId eventId
+     * @param eventId         eventId
      * @param processComplete 处理成功状态
      */
     void processingComplete(EventId eventId, EventLifecycleState processComplete);
@@ -87,13 +88,13 @@ public interface BusEventEntityMapper {
     /**
      * process failed handle method
      *
-     * @param eventId eventId
-     * @param processFailed processFailed
+     * @param eventId                       eventId
+     * @param processFailed                 processFailed
      * @param successSubscriberIdentifyList success subscriber-identify list
-     * @param invokeError invoke error
+     * @param invokeError                   invoke error
      */
     void processingFailed(EventId eventId, EventLifecycleState processFailed,
-        List<String> successSubscriberIdentifyList, Throwable invokeError);
+                          List<String> successSubscriberIdentifyList, Throwable invokeError);
 
     /**
      * get successfulSubscriber-Identify
@@ -110,6 +111,14 @@ public interface BusEventEntityMapper {
      * @return baseEventEntity
      */
     BaseEventEntity getBaseEntity(EventId eventId);
+
+    /**
+     * is present event
+     *
+     * @param eventId eventId
+     * @return is present
+     */
+    boolean isPresent(Long eventId);
 
     /**
      * get bus-event-entity by selective condition
