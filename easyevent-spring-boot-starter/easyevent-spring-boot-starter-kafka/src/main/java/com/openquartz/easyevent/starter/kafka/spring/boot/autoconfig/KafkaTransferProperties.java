@@ -2,6 +2,9 @@ package com.openquartz.easyevent.starter.kafka.spring.boot.autoconfig;
 
 import java.util.Map;
 import java.util.TreeMap;
+
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -10,6 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author svnee
  **/
+@Getter
 @Slf4j
 @ConfigurationProperties(prefix = KafkaTransferProperties.PREFIX)
 public class KafkaTransferProperties {
@@ -19,32 +23,38 @@ public class KafkaTransferProperties {
     /**
      * host
      */
+    @Setter
     private String host = "127.0.0.1:9092";
 
     /**
      * 发送者组
      */
+    @Setter
     public String produceGroup = "EasyEvent";
 
     /**
      * 使用mq 异步发送
      */
+    @Setter
     public boolean produceAsync = true;
 
     /**
      * 发送超时
      * 单位：秒
      */
+    @Setter
     private Integer produceTimeout = 1000;
 
     /**
      * 重试次数
      */
+    @Setter
     private int produceTryTimes = 5;
 
     /**
      * 生产者topic 的partition分区数
      */
+    @Setter
     private int produceTopicPartitions = 2;
 
     /**
@@ -52,58 +62,6 @@ public class KafkaTransferProperties {
      */
     private final Map<String, KafkaTransferConsumerProperties> consumers = new TreeMap<>(
         String.CASE_INSENSITIVE_ORDER);
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public String getProduceGroup() {
-        return produceGroup;
-    }
-
-    public void setProduceGroup(String produceGroup) {
-        this.produceGroup = produceGroup;
-    }
-
-    public Integer getProduceTimeout() {
-        return produceTimeout;
-    }
-
-    public void setProduceTimeout(Integer produceTimeout) {
-        this.produceTimeout = produceTimeout;
-    }
-
-    public int getProduceTryTimes() {
-        return produceTryTimes;
-    }
-
-    public void setProduceTryTimes(int produceTryTimes) {
-        this.produceTryTimes = produceTryTimes;
-    }
-
-    public int getProduceTopicPartitions() {
-        return produceTopicPartitions;
-    }
-
-    public void setProduceTopicPartitions(int produceTopicPartitions) {
-        this.produceTopicPartitions = produceTopicPartitions;
-    }
-
-    public boolean isProduceAsync() {
-        return produceAsync;
-    }
-
-    public void setProduceAsync(boolean produceAsync) {
-        this.produceAsync = produceAsync;
-    }
-
-    public Map<String, KafkaTransferConsumerProperties> getConsumers() {
-        return consumers;
-    }
 
     public void setConsumers(Map<String, KafkaTransferConsumerProperties> consumers) {
         this.consumers.putAll(consumers);
@@ -114,6 +72,8 @@ public class KafkaTransferProperties {
      *
      * @author svnee
      */
+    @Setter
+    @Getter
     public static class KafkaTransferConsumerProperties {
 
         /**
@@ -150,62 +110,6 @@ public class KafkaTransferProperties {
          * 消费重试最大时间间隔 单位：秒
          */
         private Integer consumeRetryDelayTimeIntervalSeconds = 5;
-
-        public String getConsumerGroup() {
-            return consumerGroup;
-        }
-
-        public void setConsumerGroup(String consumerGroup) {
-            this.consumerGroup = consumerGroup;
-        }
-
-        public String getTopic() {
-            return topic;
-        }
-
-        public void setTopic(String topic) {
-            this.topic = topic;
-        }
-
-        public String getPartition() {
-            return partition;
-        }
-
-        public void setPartition(String partition) {
-            this.partition = partition;
-        }
-
-        public Integer getCurrency() {
-            return currency;
-        }
-
-        public void setCurrency(Integer currency) {
-            this.currency = currency;
-        }
-
-        public Integer getConsumeMaxRetry() {
-            return consumeMaxRetry;
-        }
-
-        public void setConsumeMaxRetry(Integer consumeMaxRetry) {
-            this.consumeMaxRetry = consumeMaxRetry;
-        }
-
-        public Integer getConsumeRetryDelayTimeIntervalSeconds() {
-            return consumeRetryDelayTimeIntervalSeconds;
-        }
-
-        public void setConsumeRetryDelayTimeIntervalSeconds(Integer consumeRetryDelayTimeIntervalSeconds) {
-            this.consumeRetryDelayTimeIntervalSeconds = consumeRetryDelayTimeIntervalSeconds;
-        }
-
-        public String getClientId() {
-            return clientId;
-        }
-
-        public void setClientId(String clientId) {
-            this.clientId = clientId;
-        }
 
         @Override
         public String toString() {

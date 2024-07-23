@@ -28,6 +28,8 @@ public class DefaultTransferSenderProperties {
     /**
      * thread-pool properties
      */
+    @Setter
+    @Getter
     public static class DefaultTransferSenderThreadPoolProperties {
 
         /**
@@ -58,46 +60,6 @@ public class DefaultTransferSenderProperties {
          * max-blocking-queue-size
          */
         private Integer maxBlockingQueueSize = 2048;
-
-        public String getThreadPrefix() {
-            return threadPrefix;
-        }
-
-        public void setThreadPrefix(String threadPrefix) {
-            this.threadPrefix = threadPrefix;
-        }
-
-        public Integer getCorePoolSize() {
-            return corePoolSize;
-        }
-
-        public void setCorePoolSize(Integer corePoolSize) {
-            this.corePoolSize = corePoolSize;
-        }
-
-        public Integer getMaximumPoolSize() {
-            return maximumPoolSize;
-        }
-
-        public void setMaximumPoolSize(Integer maximumPoolSize) {
-            this.maximumPoolSize = maximumPoolSize;
-        }
-
-        public Long getKeepAliveTime() {
-            return keepAliveTime;
-        }
-
-        public void setKeepAliveTime(Long keepAliveTime) {
-            this.keepAliveTime = keepAliveTime;
-        }
-
-        public Integer getMaxBlockingQueueSize() {
-            return maxBlockingQueueSize;
-        }
-
-        public void setMaxBlockingQueueSize(Integer maxBlockingQueueSize) {
-            this.maxBlockingQueueSize = maxBlockingQueueSize;
-        }
 
         @Override
         public String toString() {

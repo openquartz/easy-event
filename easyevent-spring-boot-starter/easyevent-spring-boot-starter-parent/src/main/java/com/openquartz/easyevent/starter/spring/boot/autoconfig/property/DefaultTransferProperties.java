@@ -1,7 +1,6 @@
 package com.openquartz.easyevent.starter.spring.boot.autoconfig.property;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -10,8 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author svnee
  **/
-@Getter
-@Setter
+@Data
 @Slf4j
 @ConfigurationProperties(prefix = DefaultTransferProperties.PREFIX)
 public class DefaultTransferProperties {

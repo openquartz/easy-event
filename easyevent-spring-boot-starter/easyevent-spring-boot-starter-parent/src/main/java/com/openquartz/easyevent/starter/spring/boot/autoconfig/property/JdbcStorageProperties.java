@@ -1,6 +1,8 @@
 package com.openquartz.easyevent.starter.spring.boot.autoconfig.property;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -24,6 +26,7 @@ public class JdbcStorageProperties {
      */
     private JdbcDatasourceProperties datasource = new JdbcDatasourceProperties();
 
+    @Data
     public static class JdbcTableProperties {
 
         private String prefix = "ee";
@@ -32,22 +35,6 @@ public class JdbcStorageProperties {
          * 总的分片数。小于0不开启分表。大于0则为开启分表数表后缀为[0,totalSharding)范围内
          */
         private int totalSharding = -1;
-
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public void setPrefix(String prefix) {
-            this.prefix = prefix;
-        }
-
-        public int getTotalSharding() {
-            return totalSharding;
-        }
-
-        public void setTotalSharding(int totalSharding) {
-            this.totalSharding = totalSharding;
-        }
 
         @Override
         public String toString() {
@@ -58,6 +45,7 @@ public class JdbcStorageProperties {
         }
     }
 
+    @Data
     public static class JdbcDatasourceProperties {
 
         /**
@@ -84,46 +72,6 @@ public class JdbcStorageProperties {
          * password
          */
         private String password;
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public String getDriverClassName() {
-            return driverClassName;
-        }
-
-        public void setDriverClassName(String driverClassName) {
-            this.driverClassName = driverClassName;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
 
         @Override
         public String toString() {

@@ -1,7 +1,6 @@
 package com.openquartz.easyevent.starter.spring.boot.autoconfig.property;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -9,8 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author svnee
  **/
-@Getter
-@Setter
+@Data
 @ConfigurationProperties(prefix = DefaultEventBusProperties.PREFIX)
 public class DefaultEventBusProperties {
 
@@ -24,6 +22,7 @@ public class DefaultEventBusProperties {
     /**
      * ThreadPool-Properties
      */
+    @Data
     public static class EventBusThreadPoolProperties {
 
         /**
@@ -54,46 +53,6 @@ public class DefaultEventBusProperties {
          * max-blocking-queue-size
          */
         private Integer maxBlockingQueueSize = 2048;
-
-        public String getThreadPrefix() {
-            return threadPrefix;
-        }
-
-        public void setThreadPrefix(String threadPrefix) {
-            this.threadPrefix = threadPrefix;
-        }
-
-        public Integer getCorePoolSize() {
-            return corePoolSize;
-        }
-
-        public void setCorePoolSize(Integer corePoolSize) {
-            this.corePoolSize = corePoolSize;
-        }
-
-        public Integer getMaximumPoolSize() {
-            return maximumPoolSize;
-        }
-
-        public void setMaximumPoolSize(Integer maximumPoolSize) {
-            this.maximumPoolSize = maximumPoolSize;
-        }
-
-        public Long getKeepAliveTime() {
-            return keepAliveTime;
-        }
-
-        public void setKeepAliveTime(Long keepAliveTime) {
-            this.keepAliveTime = keepAliveTime;
-        }
-
-        public Integer getMaxBlockingQueueSize() {
-            return maxBlockingQueueSize;
-        }
-
-        public void setMaxBlockingQueueSize(Integer maxBlockingQueueSize) {
-            this.maxBlockingQueueSize = maxBlockingQueueSize;
-        }
 
         @Override
         public String toString() {

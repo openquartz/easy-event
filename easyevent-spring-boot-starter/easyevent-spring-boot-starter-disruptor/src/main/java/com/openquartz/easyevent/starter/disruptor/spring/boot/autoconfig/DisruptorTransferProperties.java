@@ -1,5 +1,7 @@
 package com.openquartz.easyevent.starter.disruptor.spring.boot.autoconfig;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -8,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author svnee
  **/
+@Getter
 @Slf4j
 @ConfigurationProperties(prefix = DisruptorTransferProperties.PREFIX)
 public class DisruptorTransferProperties {
@@ -24,17 +27,11 @@ public class DisruptorTransferProperties {
      */
     private final DisruptorTransferConsumerProperty consumer = new DisruptorTransferConsumerProperty();
 
-    public DisruptorTransferSenderProperty getSender() {
-        return sender;
-    }
-
-    public DisruptorTransferConsumerProperty getConsumer() {
-        return consumer;
-    }
-
     /**
      * sender-property
      */
+    @Setter
+    @Getter
     public static class DisruptorTransferSenderProperty {
 
         /**
@@ -47,26 +44,13 @@ public class DisruptorTransferProperties {
          */
         private String threadPrefix = "disruptor-thread-";
 
-        public String getThreadGroup() {
-            return threadGroup;
-        }
-
-        public void setThreadGroup(String threadGroup) {
-            this.threadGroup = threadGroup;
-        }
-
-        public String getThreadPrefix() {
-            return threadPrefix;
-        }
-
-        public void setThreadPrefix(String threadPrefix) {
-            this.threadPrefix = threadPrefix;
-        }
     }
 
     /**
      * consumer property
      */
+    @Setter
+    @Getter
     public static class DisruptorTransferConsumerProperty {
 
         /**
@@ -93,46 +77,6 @@ public class DisruptorTransferProperties {
          * 触发队列长度
          */
         private int bufferSize = 4096;
-
-        public String getThreadPrefix() {
-            return threadPrefix;
-        }
-
-        public void setThreadPrefix(String threadPrefix) {
-            this.threadPrefix = threadPrefix;
-        }
-
-        public int getCorePoolSize() {
-            return corePoolSize;
-        }
-
-        public void setCorePoolSize(int corePoolSize) {
-            this.corePoolSize = corePoolSize;
-        }
-
-        public int getMaximumPoolSize() {
-            return maximumPoolSize;
-        }
-
-        public void setMaximumPoolSize(int maximumPoolSize) {
-            this.maximumPoolSize = maximumPoolSize;
-        }
-
-        public long getKeepAliveTime() {
-            return keepAliveTime;
-        }
-
-        public void setKeepAliveTime(long keepAliveTime) {
-            this.keepAliveTime = keepAliveTime;
-        }
-
-        public int getBufferSize() {
-            return bufferSize;
-        }
-
-        public void setBufferSize(int bufferSize) {
-            this.bufferSize = bufferSize;
-        }
 
         @Override
         public String toString() {

@@ -4,6 +4,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import com.openquartz.easyevent.common.constant.CommonConstants;
@@ -16,6 +20,7 @@ import com.openquartz.easyevent.storage.model.EventLifecycleState;
  *
  * @author svnee
  **/
+@Setter
 @Slf4j
 @ConfigurationProperties(prefix = EasyEventCommonProperties.PREFIX)
 public class EasyEventCommonProperties implements EasyEventProperties {
@@ -35,11 +40,13 @@ public class EasyEventCommonProperties implements EasyEventProperties {
     /**
      * 补偿服务配置
      */
+    @Getter
     private EventCompensateProperty compensate = new EventCompensateProperty();
 
     /**
      * event notify
      */
+    @Getter
     private EventNotifyProperty notify = new EventNotifyProperty();
 
     @Override
@@ -47,35 +54,9 @@ public class EasyEventCommonProperties implements EasyEventProperties {
         return appId;
     }
 
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
-
     @Override
     public Integer getMaxRetryCount() {
         return maxRetryCount;
-    }
-
-    public void setMaxRetryCount(Integer maxRetryCount) {
-        this.maxRetryCount = maxRetryCount;
-    }
-
-    public EventCompensateProperty getCompensate() {
-        return compensate;
-    }
-
-    public void setCompensate(
-        EventCompensateProperty compensate) {
-        this.compensate = compensate;
-    }
-
-    public EventNotifyProperty getNotify() {
-        return notify;
-    }
-
-    public void setNotify(
-        EventNotifyProperty notify) {
-        this.notify = notify;
     }
 
     /**
@@ -83,37 +64,12 @@ public class EasyEventCommonProperties implements EasyEventProperties {
      *
      * @author svnee
      */
+    @Data
     public static class EventCompensateProperty {
 
         private EventCompensateThreadPoolProperty threadPool = new EventCompensateThreadPoolProperty();
         private EventCompensateProcessProperty self = new EventCompensateProcessProperty(10, 60);
         private EventCompensateProcessProperty global = new EventCompensateProcessProperty(60, 3600);
-
-        public EventCompensateProcessProperty getSelf() {
-            return self;
-        }
-
-        public void setSelf(
-            EventCompensateProcessProperty self) {
-            this.self = self;
-        }
-
-        public EventCompensateProcessProperty getGlobal() {
-            return global;
-        }
-
-        public void setGlobal(EventCompensateProcessProperty global) {
-            this.global = global;
-        }
-
-        public EventCompensateThreadPoolProperty getThreadPool() {
-            return threadPool;
-        }
-
-        public void setThreadPool(
-            EventCompensateThreadPoolProperty threadPool) {
-            this.threadPool = threadPool;
-        }
 
         @Override
         public String toString() {
@@ -125,6 +81,8 @@ public class EasyEventCommonProperties implements EasyEventProperties {
         }
     }
 
+    @Setter
+    @Getter
     public static class EventNotifyProperty {
 
         /**
@@ -148,39 +106,10 @@ public class EasyEventCommonProperties implements EasyEventProperties {
          */
         private int period = 10;
 
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-
-        public String getThreadPrefix() {
-            return threadPrefix;
-        }
-
-        public void setThreadPrefix(String threadPrefix) {
-            this.threadPrefix = threadPrefix;
-        }
-
-        public String getIdentify() {
-            return identify;
-        }
-
-        public void setIdentify(String identify) {
-            this.identify = identify;
-        }
-
-        public int getPeriod() {
-            return period;
-        }
-
-        public void setPeriod(int period) {
-            this.period = period;
-        }
     }
 
+    @Setter
+    @Getter
     public static class EventCompensateThreadPoolProperty {
 
         /**
@@ -212,46 +141,6 @@ public class EasyEventCommonProperties implements EasyEventProperties {
          */
         private Integer maxBlockingQueueSize = 2048;
 
-        public String getThreadPrefix() {
-            return threadPrefix;
-        }
-
-        public void setThreadPrefix(String threadPrefix) {
-            this.threadPrefix = threadPrefix;
-        }
-
-        public Integer getCorePoolSize() {
-            return corePoolSize;
-        }
-
-        public void setCorePoolSize(Integer corePoolSize) {
-            this.corePoolSize = corePoolSize;
-        }
-
-        public Integer getMaximumPoolSize() {
-            return maximumPoolSize;
-        }
-
-        public void setMaximumPoolSize(Integer maximumPoolSize) {
-            this.maximumPoolSize = maximumPoolSize;
-        }
-
-        public Long getKeepAliveTime() {
-            return keepAliveTime;
-        }
-
-        public void setKeepAliveTime(Long keepAliveTime) {
-            this.keepAliveTime = keepAliveTime;
-        }
-
-        public Integer getMaxBlockingQueueSize() {
-            return maxBlockingQueueSize;
-        }
-
-        public void setMaxBlockingQueueSize(Integer maxBlockingQueueSize) {
-            this.maxBlockingQueueSize = maxBlockingQueueSize;
-        }
-
         @Override
         public String toString() {
             return "EventCompensateThreadPoolProperty{" +
@@ -269,17 +158,25 @@ public class EasyEventCommonProperties implements EasyEventProperties {
      *
      * @author svnee
      */
+    @Setter
     public static class EventCompensateProcessProperty {
 
+        @Getter
         private boolean enabled = true;
 
+        @Getter
         private String threadPoolThreadPrefix = "EventCompensate";
+        @Getter
         private Integer threadPoolCoreSize = 1;
 
         private String compensateState = "AVAILABLE,TRANSFER_FAILED,PROCESS_FAILED";
+        @Getter
         private Integer beforeStartSeconds;
+        @Getter
         private Integer beforeEndSeconds;
+        @Getter
         private Integer offset = 100;
+        @Getter
         private Integer schedulePeriod = 10;
 
         public EventCompensateProcessProperty() {
@@ -290,54 +187,6 @@ public class EasyEventCommonProperties implements EasyEventProperties {
             this.beforeEndSeconds = beforeEndSeconds;
         }
 
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-
-        public Integer getBeforeStartSeconds() {
-            return beforeStartSeconds;
-        }
-
-        public void setBeforeStartSeconds(Integer beforeStartSeconds) {
-            this.beforeStartSeconds = beforeStartSeconds;
-        }
-
-        public Integer getBeforeEndSeconds() {
-            return beforeEndSeconds;
-        }
-
-        public void setBeforeEndSeconds(Integer beforeEndSeconds) {
-            this.beforeEndSeconds = beforeEndSeconds;
-        }
-
-        public Integer getOffset() {
-            return offset;
-        }
-
-        public void setOffset(Integer offset) {
-            this.offset = offset;
-        }
-
-        public Integer getThreadPoolCoreSize() {
-            return threadPoolCoreSize;
-        }
-
-        public String getThreadPoolThreadPrefix() {
-            return threadPoolThreadPrefix;
-        }
-
-        public void setThreadPoolThreadPrefix(String threadPoolThreadPrefix) {
-            this.threadPoolThreadPrefix = threadPoolThreadPrefix;
-        }
-
-        public void setThreadPoolCoreSize(Integer threadPoolCoreSize) {
-            this.threadPoolCoreSize = threadPoolCoreSize;
-        }
-
         public List<EventLifecycleState> getCompensateState() {
             if (StringUtils.isBlank(compensateState)) {
                 return Collections.emptyList();
@@ -346,18 +195,6 @@ public class EasyEventCommonProperties implements EasyEventProperties {
                 .map(String::trim)
                 .map(EventLifecycleState::of)
                 .collect(Collectors.toList());
-        }
-
-        public void setCompensateState(String compensateState) {
-            this.compensateState = compensateState;
-        }
-
-        public Integer getSchedulePeriod() {
-            return schedulePeriod;
-        }
-
-        public void setSchedulePeriod(Integer schedulePeriod) {
-            this.schedulePeriod = schedulePeriod;
         }
 
         @Override

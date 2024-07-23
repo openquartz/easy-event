@@ -2,6 +2,10 @@ package com.openquartz.easyevent.starter.rocketmq.spring.boot.autoconfig;
 
 import java.util.Map;
 import java.util.TreeMap;
+
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -10,6 +14,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author svnee
  **/
+@Getter
 @Slf4j
 @ConfigurationProperties(prefix = RocketTransferProperties.PREFIX)
 public class RocketTransferProperties {
@@ -19,32 +24,38 @@ public class RocketTransferProperties {
     /**
      * host
      */
+    @Setter
     private String host = "127.0.0.1:9876";
 
     /**
      * 发送者组
      */
+    @Setter
     public String produceGroup = "EasyEvent";
 
     /**
      * 发送超时
      * 单位：秒
      */
+    @Setter
     private Integer produceTimeout = 1000;
 
     /**
      * 重试次数
      */
+    @Setter
     private int produceTryTimes = 5;
 
     /**
      * 故障轉移
      */
+    @Setter
     private boolean produceLatencyFaultEnable = true;
 
     /**
      * produce message size
      */
+    @Setter
     private int produceMessageSize = 1000 * 1000;
 
     /**
@@ -52,58 +63,6 @@ public class RocketTransferProperties {
      */
     private final Map<String, RocketMqTransferConsumerProperties> consumers = new TreeMap<>(
         String.CASE_INSENSITIVE_ORDER);
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public String getProduceGroup() {
-        return produceGroup;
-    }
-
-    public void setProduceGroup(String produceGroup) {
-        this.produceGroup = produceGroup;
-    }
-
-    public Integer getProduceTimeout() {
-        return produceTimeout;
-    }
-
-    public void setProduceTimeout(Integer produceTimeout) {
-        this.produceTimeout = produceTimeout;
-    }
-
-    public int getProduceTryTimes() {
-        return produceTryTimes;
-    }
-
-    public void setProduceTryTimes(int produceTryTimes) {
-        this.produceTryTimes = produceTryTimes;
-    }
-
-    public boolean isProduceLatencyFaultEnable() {
-        return produceLatencyFaultEnable;
-    }
-
-    public void setProduceLatencyFaultEnable(boolean produceLatencyFaultEnable) {
-        this.produceLatencyFaultEnable = produceLatencyFaultEnable;
-    }
-
-    public int getProduceMessageSize() {
-        return produceMessageSize;
-    }
-
-    public void setProduceMessageSize(int produceMessageSize) {
-        this.produceMessageSize = produceMessageSize;
-    }
-
-    public Map<String, RocketMqTransferConsumerProperties> getConsumers() {
-        return consumers;
-    }
 
     public void setConsumers(Map<String, RocketMqTransferConsumerProperties> consumers) {
         this.consumers.putAll(consumers);
@@ -114,6 +73,7 @@ public class RocketTransferProperties {
      *
      * @author svnee
      */
+    @Data
     public static class RocketMqTransferConsumerProperties {
 
         /**
@@ -161,78 +121,6 @@ public class RocketTransferProperties {
          * 消费重试限流时间，单位：s
          */
         private Integer consumeLimingRetryDelayTimeBaseSeconds = 5;
-
-        public String getConsumerGroup() {
-            return consumerGroup;
-        }
-
-        public void setConsumerGroup(String consumerGroup) {
-            this.consumerGroup = consumerGroup;
-        }
-
-        public String getTopic() {
-            return topic;
-        }
-
-        public void setTopic(String topic) {
-            this.topic = topic;
-        }
-
-        public String getTags() {
-            return tags;
-        }
-
-        public void setTags(String tags) {
-            this.tags = tags;
-        }
-
-        public Integer getConsumerMaxThread() {
-            return consumerMaxThread;
-        }
-
-        public void setConsumerMaxThread(Integer consumerMaxThread) {
-            this.consumerMaxThread = consumerMaxThread;
-        }
-
-        public Integer getConsumerMinThread() {
-            return consumerMinThread;
-        }
-
-        public void setConsumerMinThread(Integer consumerMinThread) {
-            this.consumerMinThread = consumerMinThread;
-        }
-
-        public Integer getConsumeConcurrentlyMaxSpan() {
-            return consumeConcurrentlyMaxSpan;
-        }
-
-        public void setConsumeConcurrentlyMaxSpan(Integer consumeConcurrentlyMaxSpan) {
-            this.consumeConcurrentlyMaxSpan = consumeConcurrentlyMaxSpan;
-        }
-
-        public Integer getConsumeMaxRetry() {
-            return consumeMaxRetry;
-        }
-
-        public void setConsumeMaxRetry(Integer consumeMaxRetry) {
-            this.consumeMaxRetry = consumeMaxRetry;
-        }
-
-        public Integer getConsumeRetryDelayTimeIntervalSeconds() {
-            return consumeRetryDelayTimeIntervalSeconds;
-        }
-
-        public void setConsumeRetryDelayTimeIntervalSeconds(Integer consumeRetryDelayTimeIntervalSeconds) {
-            this.consumeRetryDelayTimeIntervalSeconds = consumeRetryDelayTimeIntervalSeconds;
-        }
-
-        public Integer getConsumeLimingRetryDelayTimeBaseSeconds() {
-            return consumeLimingRetryDelayTimeBaseSeconds;
-        }
-
-        public void setConsumeLimingRetryDelayTimeBaseSeconds(Integer consumeLimingRetryDelayTimeBaseSeconds) {
-            this.consumeLimingRetryDelayTimeBaseSeconds = consumeLimingRetryDelayTimeBaseSeconds;
-        }
 
         @Override
         public String toString() {
