@@ -1,10 +1,8 @@
 package com.openquartz.easyevent.common.serde.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.databind.type.CollectionType;
@@ -12,6 +10,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.openquartz.easyevent.common.utils.ExceptionUtils;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.DateFormat;
@@ -49,7 +48,9 @@ public final class JacksonHandler implements JsonFacade {
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
         objectMapper.activateDefaultTypingAsProperty(LaissezFaireSubTypeValidator.instance,
-            DefaultTyping.NON_FINAL, "@class");
+                DefaultTyping.NON_FINAL, "@class");
+        // 设置序列化时忽略 null 值的字段
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         return objectMapper;
     }
 
@@ -136,7 +137,7 @@ public final class JacksonHandler implements JsonFacade {
     }
 
     private <V, C extends Collection<?>, T> V parseCollection(String json, Class<C> collectionType,
-        Class<T> elementType) {
+                                                              Class<T> elementType) {
         try {
             TypeFactory typeFactory = mapper.getTypeFactory();
             CollectionType javaType = typeFactory.constructCollectionType(collectionType, elementType);
