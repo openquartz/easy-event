@@ -9,7 +9,7 @@
 ### Welcome to Star (Welcome Star)!!!
 
 **[Home Page](https://openquartz.github.io/)** \
-**[Github](https://github.com/openquartz/easy-event)**
+**[GitHub](https://github.com/openquartz/easy-event)**
 
 ### Introduction
 
