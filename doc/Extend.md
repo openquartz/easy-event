@@ -1,13 +1,13 @@
-## 扩展
+## Extension
 
-### 拦截
+### Interception
 
-EasyEvent 针对事件的拦截,提供了三个节点的拦截。分别为 **发布前后**、**触发前后**、**处理前后**。用户可以根据自己的需要做对应的实现进行统一的拦截处理。
+EasyEvent provides interception at three stages of event processing: **before/after publishing**, **before/after triggering**, and **before/after handling**. Users can implement custom logic for unified interception according to their needs.
 
-#### 发布前后拦截
+#### Before/After Publishing Interception
 
-服务提供 在调用`com.openquartz.easyevent.core.publisher.EventPublisher`时发布前完成时，发布前后进行拦截。\
-拦截接口为：`com.openquartz.easyevent.core.intreceptor.PublisherInterceptor`并且注入到Spring 工厂中。
+Interception is performed before and after the completion of event publishing when invoking [com.openquartz.easyevent.core.publisher.EventPublisher](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/publisher/EventPublisher.java#L7-L35).  
+The interception interface is: [com.openquartz.easyevent.core.intreceptor.PublisherInterceptor](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/intreceptor/PublisherInterceptor.java#L9-L42), which should be injected into the Spring factory.
 
 ```java
 package com.openquartz.easyevent.core.intreceptor;
@@ -15,38 +15,38 @@ package com.openquartz.easyevent.core.intreceptor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * 同步拦截器
+ * Synchronous interceptor
  *
  * @author svnee
  */
 public interface PublisherInterceptor {
 
     /**
-     * 默认先拦截顺序
+     * Default interception order
      *
-     * @return 顺序
+     * @return Order
      */
     default int order() {
         return Integer.MAX_VALUE;
     }
 
     /**
-     * 发布开始之前
+     * Before publishing starts
      *
-     * @param event event
-     * @param context 上下文
-     * @return true-执行下一个拦截器，否则默认已经响应完成。直接返回
+     * @param event Event object
+     * @param context Context
+     * @return true - proceed to next interceptor; false - response already completed, return directly
      */
     default boolean prePublish(Object event, PublisherInterceptorContext context) {
         return true;
     }
 
     /**
-     * 发布完成后
+     * After publishing completes
      *
-     * @param event event
-     * @param context context
-     * @param ex 发生异常时的异常信息
+     * @param event Event object
+     * @param context Context
+     * @param ex Exception if any occurred
      */
     default void afterCompletion(Object event, PublisherInterceptorContext context, @Nullable Exception ex) {
 
@@ -54,9 +54,9 @@ public interface PublisherInterceptor {
 }
 ```
 
-#### 触发前后拦截
+#### Before/After Triggering Interception
 
-在异步发布事件后通过`EventTrigger`时进行前后拦截。提供拦截接口`com.openquartz.easyevent.core.intreceptor.TriggerInterceptor`
+Interception is performed before and after asynchronous event triggering via `EventTrigger`. The interception interface provided is `com.openquartz.easyevent.core.intreceptor.TriggerInterceptor`.
 
 ```java
 package com.openquartz.easyevent.core.intreceptor;
@@ -72,40 +72,40 @@ import com.openquartz.easyevent.transfer.api.message.EventMessage;
 public interface TriggerInterceptor {
 
     /**
-     * 默认先拦截顺序
+     * Default interception order
      *
-     * @return 顺序
+     * @return Order
      */
     default int order() {
         return Integer.MAX_VALUE;
     }
 
     /**
-     * 处理开始之前
+     * Before processing starts
      *
-     * @param message trigger-消息
-     * @param context context
-     * @return trigger flag
+     * @param message Trigger message
+     * @param context Context
+     * @return Trigger flag
      */
     default boolean preTrigger(EventMessage message, TriggerInterceptorContext context) {
         return true;
     }
 
     /**
-     * 处理完成后
+     * After processing completes
      *
-     * @param message message
-     * @param context context
-     * @param ex 发生异常时的异常信息
+     * @param message Message
+     * @param context Context
+     * @param ex Exception if any occurred
      */
     default void afterCompletion(EventMessage message, TriggerInterceptorContext context, @Nullable Exception ex) {
     }
 }
 ```
 
-#### 处理前后拦截
+#### Before/After Handling Interception
 
-事件触发调用订阅者执行业务逻辑前后执行。提供拦截接口`com.openquartz.easyevent.core.intreceptor.HandlerInterceptor`
+Interception occurs before and after invoking subscribers to execute business logic upon event triggering. The interception interface provided is `com.openquartz.easyevent.core.intreceptor.HandlerInterceptor`.
 
 ```java
 package com.openquartz.easyevent.core.intreceptor;
@@ -120,33 +120,33 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public interface HandlerInterceptor<T> {
 
     /**
-     * 默认先拦截顺序
+     * Default interception order
      *
-     * @return 顺序
+     * @return Order
      */
     default int order() {
         return Integer.MAX_VALUE;
     }
 
     /**
-     * 处理开始之前
+     * Before handling starts
      *
-     * @param event event
-     * @param handler 处理器
-     * @param context 上下文
-     * @return true-执行下一个拦截器，否则默认已经响应完成。直接返回
+     * @param event Event
+     * @param handler Handler
+     * @param context Context
+     * @return true - proceed to next interceptor; false - response already completed, return directly
      */
     default boolean preHandle(T event, Object handler, HandlerInterceptorContext context) {
         return true;
     }
 
     /**
-     * 处理完成后
+     * After handling completes
      *
-     * @param event event
-     * @param handler 处理器
-     * @param context context
-     * @param ex 发生异常时的异常信息
+     * @param event Event
+     * @param handler Handler
+     * @param context Context
+     * @param ex Exception if any occurred
      */
     default void afterCompletion(T event, Object handler, HandlerInterceptorContext context,
         @Nullable Exception ex) {
@@ -154,10 +154,10 @@ public interface HandlerInterceptor<T> {
 }
 ```
 
-### 路由
+### Routing
 
-EasyEvent支持用户自定义异步事件发布到不同的队列topic中。默认发布到配置的topic中.配置为:`easyevent.transfer.common.default-topic`
-如果用户需要将不同的消息发送到不同的队列的topic中时。可以实现接口`com.openquartz.easyevent.transfer.api.route.EventRouter`
+EasyEvent supports custom routing of asynchronous events to different queue topics. By default, events are published to the configured topic: `easyevent.transfer.common.default-topic`.  
+If users need to send different messages to different topics, they can implement the interface [com.openquartz.easyevent.transfer.api.route.EventRouter](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/route/EventRouter.java#L9-L19).
 
 ```java
 package com.openquartz.easyevent.transfer.api.route;
@@ -165,26 +165,26 @@ package com.openquartz.easyevent.transfer.api.route;
 import com.openquartz.easyevent.common.model.Pair;
 
 /**
- * 事件路由服务
+ * Event routing service
  *
  * @author svnee
  */
 public interface EventRouter {
 
     /**
-     * 事件路由topic
+     * Route event to a topic
      *
-     * @param event event
-     * @return 路由topic。key: topic,value: 和具体实现相关。如果是 rocketmq指向tag,kafka指向partition.可为null
+     * @param event Event object
+     * @return Routing topic. Key: topic, Value: implementation-specific (e.g., RocketMQ tag, Kafka partition). Can be null.
      */
     Pair<String, String> route(Object event);
 }
 ```
 
-如果实现了自定义路由需要在配置中添加消费者配置。
+If a custom router is implemented, consumer configurations need to be added in the configuration:
 `easyevent.transfer.trigger.<mq-alias>.consumers.<consumer-alias>.<property>`
 
-例如：
+Example:
 
 ```properties
 easyevent.transfer.trigger.rocketmq.consumers.test.consumer-group=test1
@@ -198,14 +198,14 @@ easyevent.transfer.trigger.rocketmq.consumers.test.consume-retry-delay-time-inte
 easyevent.transfer.trigger.rocketmq.consumers.test.consume-liming-retry-delay-time-base-seconds=5
 ```
 
-### 限流
+### Rate Limiting
 
-针对系统的稳定性这一块,EasyEvent服务提供了在事件发送前后的限流。\
-用户可以根据需要设置不同的限流。如果限流不通过需要抛出异常`com.openquartz.easyevent.transfer.api.limiting.LimitingBlockedException`
+To ensure system stability, EasyEvent provides rate limiting before sending and consuming events.  
+Users can configure different rate limits as needed. If rate limiting is not passed, an exception [com.openquartz.easyevent.transfer.api.limiting.LimitingBlockedException](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/limiting/LimitingBlockedException.java#L10-L16) should be thrown.
 
-#### 发送前限流
+#### Sender-Side Rate Limiting
 
-在发送消息前提供限流扩展点,接口为:`com.openquartz.easyevent.transfer.api.limiting.EventTransferSenderLimitingControl`
+Rate limiting extension point before sending messages: Interface [com.openquartz.easyevent.transfer.api.limiting.EventTransferSenderLimitingControl](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/limiting/EventTransferSenderLimitingControl.java#L11-L33).
 
 ```java
 package com.openquartz.easyevent.transfer.api.limiting;
@@ -215,40 +215,40 @@ import java.util.function.BiConsumer;
 import com.openquartz.easyevent.storage.identify.EventId;
 
 /**
- * EventTransfer Sender Limiting Control
+ * EventTransfer Sender Rate Limiting Control
  *
  * @author svnee
  */
 public interface EventTransferSenderLimitingControl {
 
     /**
-     * control event handle
-     * if limiting blocked throw {@link LimitingBlockedException}
+     * Control event handling
+     * Throw {@link LimitingBlockedException} if rate limited
      *
-     * @param event event content
-     * @param eventId eventId
-     * @param senderConsumer sender function
+     * @param event Event content
+     * @param eventId Event ID
+     * @param senderConsumer Sender function
      */
     <T> void control(T event, EventId eventId, BiConsumer<T, EventId> senderConsumer);
 
     /**
-     * control event handle
-     * if limiting blocked throw {@link LimitingBlockedException}
+     * Control batch event handling
+     * Throw {@link LimitingBlockedException} if rate limited
      *
-     * @param eventList eventList
-     * @param eventIdList eventIdList
-     * @param batchSenderConsumer batch sender function
+     * @param eventList List of events
+     * @param eventIdList List of event IDs
+     * @param batchSenderConsumer Batch sender function
      */
     <T> void control(List<T> eventList, List<EventId> eventIdList,
         BiConsumer<List<T>, List<EventId>> batchSenderConsumer);
 }
 ```
 
-默认实现为：`com.openquartz.easyevent.transfer.api.limiting.impl.DefaultEventTransferSenderLimitingControl`
+Default implementation: [com.openquartz.easyevent.transfer.api.limiting.impl.DefaultEventTransferSenderLimitingControl](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/limiting/impl/DefaultEventTransferSenderLimitingControl.java#L13-L26)
 
-#### 触发前限流
+#### Trigger-Side Rate Limiting
 
-在消费消息前提供限流扩展点,接口为:`com.openquartz.easyevent.transfer.api.limiting.EventTransferTriggerLimitingControl`
+Rate limiting extension point before consuming messages: Interface [com.openquartz.easyevent.transfer.api.limiting.EventTransferTriggerLimitingControl](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/limiting/EventTransferTriggerLimitingControl.java#L10-L21).
 
 ```java
 package com.openquartz.easyevent.transfer.api.limiting;
@@ -257,31 +257,31 @@ import java.util.function.Consumer;
 import com.openquartz.easyevent.transfer.api.message.EventMessage;
 
 /**
- * EventTransfer Trigger Limiting Control
+ * EventTransfer Trigger Rate Limiting Control
  *
  * @author svnee
  */
 public interface EventTransferTriggerLimitingControl {
 
     /**
-     * control
-     * if limiting blocked throw {@link LimitingBlockedException}
+     * Control
+     * Throw {@link LimitingBlockedException} if rate limited
      *
-     * @param eventMessage event-message
-     * @param eventHandleFunction function
+     * @param eventMessage Event message
+     * @param eventHandleFunction Handling function
      */
     void control(EventMessage eventMessage, Consumer<EventMessage> eventHandleFunction);
 }
 ```
 
-默认实现为: `com.openquartz.easyevent.transfer.api.limiting.impl.DefaultEventTransferTriggerLimitingControl`
+Default implementation: [com.openquartz.easyevent.transfer.api.limiting.impl.DefaultEventTransferTriggerLimitingControl](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/limiting/impl/DefaultEventTransferTriggerLimitingControl.java#L11-L17)
 
-### 分布式锁
+### Distributed Locks
 
-由于`EasyEvent`需要中间件来做分布式调度时,可能存在消息丢失的情况或者触发失败以及积压等情况时,所以`EasyEvent`设置了补偿Job触发。\
-所以很难保证在同一时刻的同一事件的消费不会并发执行。目前`EasyEvent`提供了单机的安全。但是在分布式环境下，需要用户自定义实现分布式锁以保证并发。 或者用户在 消费订阅者的 实际事件处理逻辑中兼容掉此并发。
+Since EasyEvent uses middleware for distributed scheduling, there may be cases where messages are lost, triggering fails, or backpressure occurs. Therefore, EasyEvent includes compensatory job triggers.  
+It is difficult to guarantee that the same event will not be consumed concurrently at the same time. Currently, EasyEvent provides single-node safety. In a distributed environment, users need to implement a custom distributed lock to ensure concurrency control, or handle concurrency within the subscriber's actual event handling logic.
 
-如果用户实现分布式锁的，系统提供扩展点接口`com.openquartz.easyevent.common.concurrent.lock.DistributedLockFactory`
+For implementing distributed locks, the system provides the extension interface [com.openquartz.easyevent.common.concurrent.lock.DistributedLockFactory](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-common/src/main/java/com/openquartz/easyevent/common/concurrent/lock/DistributedLockFactory.java#L10-L20).
 
 ```java
 package com.openquartz.easyevent.common.concurrent.lock;
@@ -290,7 +290,7 @@ import java.util.concurrent.locks.Lock;
 import com.openquartz.easyevent.common.model.Pair;
 
 /**
- * Distributed EventLock
+ * Distributed Event Lock
  *
  * @author svnee
  */
@@ -299,36 +299,36 @@ public interface DistributedLockFactory {
     /**
      * Get Lock
      *
-     * @param lockKey lockKey
-     * @return lock must not be null
+     * @param lockKey Lock key
+     * @return Lock instance, must not be null
      */
     Lock getLock(Pair<String, LockBizType> lockKey);
 }
 ```
 
-用户可以使用第三方分布式中间件实现此接口,并注入到Spring工厂中。\
-推荐使用`Redisson`作为分布式锁的实现
+Users can implement this interface using third-party distributed middleware and inject it into the Spring factory.  
+It is recommended to use `Redisson` as the distributed lock implementation.
 
-### 分布式ID
+### Distributed ID Generation
 
-`EasyEvent`在使用EventStorage存储时。使用jdbc作为实现时,`EventId`提供了默认基于数据库ID的实现方案。\
-如果需要使用其他的作为实现EventId, 用户可以自定义实现接口:`com.openquartz.easyevent.storage.identify.IdGenerator`
+When using JDBC-based `EventStorage`, [EventId](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-storage/easyevent-storage-api/src/main/java/com/openquartz/easyevent/storage/identify/EventId.java#L7-L27) provides a default implementation based on database auto-increment.  
+If other ID generation strategies are required, users can customize by implementing the interface [com.openquartz.easyevent.storage.identify.IdGenerator](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-storage/easyevent-storage-api/src/main/java/com/openquartz/easyevent/storage/identify/IdGenerator.java#L7-L21).
 
 ```java
 package com.openquartz.easyevent.storage.identify;
 
 /**
- * ID 生成 器
+ * ID Generator
  *
  * @author svnee
  **/
 public interface IdGenerator {
 
     /**
-     * 生成ID
-     * 如果返回null 代表使用数据库自增实现
+     * Generate ID
+     * Return null means use database auto-increment
      *
-     * @return ID
+     * @return Generated ID
      */
     default Long generateId() {
         return null;
@@ -336,38 +336,38 @@ public interface IdGenerator {
 }
 ```
 
-并注入到Spring工厂中。\
-推荐使用`雪花算法ID`
+And then inject it into the Spring factory.  
+It is recommended to use the Snowflake algorithm for ID generation.
 
-### 分表支持
+### Table Sharding Support
 
-`EasyEvent`支持按照EventEntityID 进行自定义分表。默认是进行hash 分表。
-自定义分表路由接口为:`com.openquartz.easyevent.storage.jdbc.sharding.ShardingRouter`.
+EasyEvent supports custom table sharding based on `EventEntityID`. By default, hash-based sharding is used.  
+Custom sharding routing interface: [com.openquartz.easyevent.storage.jdbc.sharding.ShardingRouter](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-storage/easyevent-storage-jdbc/src/main/java/com/openquartz/easyevent/storage/jdbc/sharding/ShardingRouter.java#L7-L24).  
+Default implementation: [com.openquartz.easyevent.storage.jdbc.sharding.impl.DefaultShardingRouterImpl](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-storage/easyevent-storage-jdbc/src/main/java/com/openquartz/easyevent/storage/jdbc/sharding/impl/DefaultShardingRouterImpl.java#L14-L40). Depends on providing an [IdGenerator](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-storage/easyevent-storage-api/src/main/java/com/openquartz/easyevent/storage/identify/IdGenerator.java#L7-L21) implementation.
 
-默认实现为：`com.openquartz.easyevent.storage.jdbc.sharding.impl.DefaultShardingRouterImpl`.依赖提供`IdGenerator`的实现。
 ```java
 package com.openquartz.easyevent.storage.jdbc.sharding;
 
 /**
- * sharding
+ * Sharding Router
  *
  * @author svnee
  */
 public interface ShardingRouter {
 
     /**
-     * 分片
+     * Shard the given entity ID
      *
-     * 如果不开启分片时,需要返回值小于0即可。否则返回的是下标
+     * If sharding is disabled, return a value less than 0. Otherwise, return the shard index.
      *
-     * @param eventEntityId entityId
-     * @return sharding index
+     * @param eventEntityId Entity ID
+     * @return Shard index
      */
     int sharding(Long eventEntityId);
 
     /**
-     * totalSharding
-     * @return totalSharding
+     * Get total number of shards
+     * @return Total number of shards
      */
     int totalSharding();
 }

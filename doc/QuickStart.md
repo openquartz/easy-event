@@ -1,60 +1,59 @@
-## 使用教程
+## Tutorial
 
-### 一、安装到本地
+### I. Install Locally
 
-执行命令
-进入项目easy-event根目录下
+Execute the following commands:
+Enter the root directory of the `easy-event` project.
 
-### 1、先安装 easyevent-common
+#### 1. First install easyevent-common
 
 ```shell
 cd easyevent-common
 mvn clean install
 ```
 
-#### 2、先安装 easyevent-storage
+#### 2. Next install easyevent-storage
 
 ```shell
 cd ./../easyevent-storage
 mvn clean install
 ```
 
-#### 3、安装 easyevent-transfer
+#### 3. Install easyevent-transfer
 
 ```shell
 cd ./../easyevent-transfer
 mvn clean install
 ```
 
-#### 4、安装 easyevent-core
+#### 4. Install easyevent-core
 
 ```shell
 cd ./../easyevent-core
 mvn clean install
 ```
 
-#### 5、安装 easyevent-spring-boot-starter
+#### 5. Install easyevent-spring-boot-starter
 
 ```shell
 cd ./../easyevent-spring-boot-starter
 mvn clean install
 ```
 
-#### 6、安装 easyevent-spring-boot-starter-soa
+#### 6. Install easyevent-spring-boot-starter-soa
 
 ```shell
 cd ./../easyevent-spring-boot-starter-soa
 mvn clean install
 ```
 
-### 二、引入依赖
+### II. Add Dependencies
 
-#### 1、引入starter依赖
+#### 1. Add starter dependencies
 
-使用`disruptor`作为传输的maven pom
+Using [disruptor](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-disruptor/src/main/java/com/openquartz/easyevent/transfer/disruptor/DisruptorTriggerEventSender.java#L45-L45) as the transport:
 
 ```xml
-
 <dependency>
     <groupId>com.openquartz</groupId>
     <artifactId>easyevent-spring-boot-starter-disruptor</artifactId>
@@ -62,10 +61,9 @@ mvn clean install
 </dependency>
 ```
 
-或 使用`kafka`作为传输的maven pom
+Or using `kafka` as the transport:
 
 ```xml
-
 <dependency>
     <groupId>com.openquartz</groupId>
     <artifactId>easyevent-spring-boot-starter-kafka</artifactId>
@@ -73,10 +71,9 @@ mvn clean install
 </dependency>
 ```
 
-或 使用`rocketmq`作为传输的maven pom (**推荐**)
+Or using `rocketmq` as the transport (**Recommended**):
 
 ```xml
-
 <dependency>
     <groupId>com.openquartz</groupId>
     <artifactId>easyevent-spring-boot-starter-rocketmq</artifactId>
@@ -84,11 +81,11 @@ mvn clean install
 </dependency>
 ```
 
-#### 2、EventStorage依赖
+#### 2. EventStorage Dependency
 
-##### 执行SQL
+##### Execute SQL
 
-如果不开启分表，直接执行对应的SQL. 如果开启分表，执行表: `{table-prefix}_bus_event_entity_{sharding-index}`
+If table sharding is not enabled, execute the corresponding SQL directly. If it is enabled, execute on the table: `{table-prefix}_bus_event_entity_{sharding-index}`
 
 ```sql
 CREATE TABLE ee_bus_event_entity
@@ -97,181 +94,180 @@ CREATE TABLE ee_bus_event_entity
     app_id                    VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'appId',
     source_id                 BIGINT (20) NOT NULL DEFAULT 0 COMMENT 'sourceId',
     class_name                VARCHAR(128) NOT NULL DEFAULT '' COMMENT 'Event-Class',
-    error_count               TINYINT (3) NOT NULL DEFAULT 0 COMMENT '执行错误次数',
-    processing_state          VARCHAR(50)  NOT NULL DEFAULT '' COMMENT '执行状态',
-    successful_subscriber     VARCHAR(512) NOT NULL DEFAULT '' COMMENT '执行成功的订阅者',
+    error_count               TINYINT (3) NOT NULL DEFAULT 0 COMMENT 'execution error count',
+    processing_state          VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'execution status',
+    successful_subscriber     VARCHAR(512) NOT NULL DEFAULT '' COMMENT 'subscribers that succeeded',
     trace_id                  VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'traceId',
     event_data                TEXT         NOT NULL COMMENT 'EventData',
     event_key                 VARCHAR(128) NOT NULL DEFAULT '' COMMENT 'EventKey',
-    creating_owner            VARCHAR(50)  NOT NULL DEFAULT '' COMMENT '创建者机器',
-    processing_owner          VARCHAR(50)  NOT NULL DEFAULT '' COMMENT '生产者机器',
-    processing_available_date TIMESTAMP             DEFAULT NULL COMMENT '执行有效时间',
-    processing_failed_reason  VARCHAR(128) NOT NULL DEFAULT '' COMMENT '已经执行失败的原因',
-    created_time              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updated_time              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    creating_owner            VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'creator machine',
+    processing_owner          VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'producer machine',
+    processing_available_date TIMESTAMP             DEFAULT NULL COMMENT 'execution available time',
+    processing_failed_reason  VARCHAR(128) NOT NULL DEFAULT '' COMMENT 'reason for execution failure',
+    created_time              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'creation time',
+    updated_time              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'update time',
     PRIMARY KEY (id),
     INDEX                     idx_event_key (event_key),
     INDEX                     idx_app_state_owner_time(app_id, processing_state, processing_owner, created_time)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT 'ee_bus_event_entity';
 ```
 
-#### 3、引入EventTransfer依赖
+#### 3. Introduce EventTransfer Dependency
 
-需要引入`EventTransfer`的实现.目前支持`Disruptor`、`RocketMQ`、`Kafka`。
-> 推荐使用`RocketMQ`作为 `EventTransfer`的分布式调度。针对`RocketMQ` 的实现做了很多的优化。例如：批量消息发送,消息拆分,消费失败自定义重试,发送失败自定义重试次数等
+You need to include an implementation of `EventTransfer`. Currently supported are `Disruptor`, `RocketMQ`, and `Kafka`.
+> It's recommended to use `RocketMQ` as the distributed scheduler for `EventTransfer`. Many optimizations have been made in its implementation, such as batch message sending, message splitting, custom retry after consumer failure, and custom retry attempts when sending fails.
 
-可以选择其中一个作为transfer实现。
+You can choose one of them as the transfer implementation.
 
-### 三、配置
+### III. Configuration
 
-#### 1、common配置
+#### 1. Common Configuration
 
-| 配置key                            | 描述     | 默认值 | 备注                           |
-|----------------------------------|--------|-----|------------------------------|
-| easyevent.common.app-id          | 应用ID   |     | 可以与spring.application.name一致 |
-| easyevent.common.max-retry-count | 最大重试次数 | 5   |                              |
+| Configuration Key                            | Description        | Default Value | Remarks                           |
+|--------------------------------------------|--------------------|---------------|-----------------------------------|
+| easyevent.common.app-id                    | Application ID     |               | Can be consistent with spring.application.name |
+| easyevent.common.max-retry-count           | Max retry count    | 5             |                                   |
 
-##### 补偿配置
+##### Compensation Configuration
 
-| 配置key                                                           | 描述              | 默认值                   | 备注   |
-|-----------------------------------------------------------------|-----------------|-----------------------|------|
-| easyevent.common.compensate.thread-pool.thread-prefix           | 执行补偿线程池线程前缀     | EventCompensateThread |      |
-| easyevent.common.compensate.thread-pool.core-pool-size          | 执行补偿线程池核心线程数    | 10                    |      |
-| easyevent.common.compensate.thread-pool.maximum-pool-size       | 执行补偿线程池最大线程数    | 20                    |      |
-| easyevent.common.compensate.thread-pool.keep-alive-time         | 执行补偿线程池线程空闲时间   | 30                    | 单位：秒 |
-| easyevent.common.compensate.thread-pool.max-blocking-queue-size | 执行补偿线程池最大等待队列长度 | 2048                  |      |
+| Configuration Key                                                          | Description                         | Default Value           | Remarks      |
+|---------------------------------------------------------------------------|-------------------------------------|--------------------------|--------------|
+| easyevent.common.compensate.thread-pool.thread-prefix                     | Thread prefix for compensation thread pool | EventCompensateThread |              |
+| easyevent.common.compensate.thread-pool.core-pool-size                    | Core thread count for compensation thread pool | 10                      |              |
+| easyevent.common.compensate.thread-pool.maximum-pool-size                 | Max thread count for compensation thread pool | 20                      |              |
+| easyevent.common.compensate.thread-pool.keep-alive-time                  | Idle timeout for compensation threads (seconds) | 30                      |              |
+| easyevent.common.compensate.thread-pool.max-blocking-queue-size           | Max waiting queue size for compensation thread pool | 2048                  |              |
 
-###### 补偿当前机器配置
+###### Local Machine Compensation Configuration
 
-| 配置key                                                      | 描述             | 默认值                                      | 备注   |
-|------------------------------------------------------------|----------------|------------------------------------------|------|
-| easyevent.common.compensate.self.enabled                   | 是否开启调度补偿       | true                                     |      |
-| easyevent.common.compensate.self.offset                    | 每次调度重试条数       | 100                                      |      |
-| easyevent.common.compensate.self.compensate-state          | 调度补偿的状态        | AVAILABLE,TRANSFER_FAILED,PROCESS_FAILED |      |
-| easyevent.common.compensate.self.before-start-seconds      | 调度补偿的时间范围-开始时间 | 10                                       | 单位:秒 |
-| easyevent.common.compensate.self.before-end-seconds        | 调度补偿的时间范围-结束时间 | 60                                       | 单位:秒 |
-| easyevent.common.compensate.self.schedule-period           | 执行周期           | 10                                       | 单位:秒 |
-| easyevent.common.compensate.self.thread-pool-core-size     | 执行调度线程数        | 1                                        |      |
-| easyevent.common.compensate.self.thread-pool-thread-prefix | 执行调度的线程名前缀     | EventCompensate                          |      |
+| Configuration Key                                                         | Description                              | Default Value                                     | Remarks   |
+|---------------------------------------------------------------------------|------------------------------------------|--------------------------------------------------|-----------|
+| easyevent.common.compensate.self.enabled                                  | Enable local scheduling compensation       | true                                             |           |
+| easyevent.common.compensate.self.offset                                   | Number of retries per scheduling           | 100                                              |           |
+| easyevent.common.compensate.self.compensate-state                         | Statuses for scheduling compensation       | AVAILABLE,TRANSFER_FAILED,PROCESS_FAILED         |           |
+| easyevent.common.compensate.self.before-start-seconds                     | Start time range for compensation (seconds) | 10                                               |           |
+| easyevent.common.compensate.self.before-end-seconds                       | End time range for compensation (seconds)   | 60                                               |           |
+| easyevent.common.compensate.self.schedule-period                          | Execution period (seconds)                 | 10                                               |           |
+| easyevent.common.compensate.self.thread-pool-core-size                    | Scheduling thread count                    | 1                                                |           |
+| easyevent.common.compensate.self.thread-pool-thread-prefix                | Prefix for scheduling threads              | EventCompensate                                |           |
 
-###### 全局当前机器配置
+###### Global Machine Compensation Configuration
 
-| 配置key                                                        | 描述             | 默认值                                      | 备注     |
-|--------------------------------------------------------------|----------------|------------------------------------------|--------|
-| easyevent.common.compensate.global.enabled                   | 是否开启调度补偿       | true                                     |        |
-| easyevent.common.compensate.global.offset                    | 每次调度重试条数       | 100                                      |        |
-| easyevent.common.compensate.global.compensate-state          | 调度补偿的状态        | AVAILABLE,TRANSFER_FAILED,PROCESS_FAILED |        |
-| easyevent.common.compensate.global.before-start-seconds      | 调度补偿的时间范围-开始时间 | 60                                       | 单位 : 秒 |
-| easyevent.common.compensate.global.before-end-seconds        | 调度补偿的时间范围-结束时间 | 3600                                     | 单位 : 秒 |
-| easyevent.common.compensate.global.schedule-period           | 执行周期           | 10                                       | 单位:秒   |
-| easyevent.common.compensate.global.thread-pool-core-size     | 执行调度线程数        | 1                                        |        |
-| easyevent.common.compensate.global.thread-pool-thread-prefix | 执行调度的线程名前缀     | EventCompensate                          |        |
+| Configuration Key                                                        | Description                               | Default Value                                      | Remarks     |
+|--------------------------------------------------------------------------|-------------------------------------------|--------------------------------------------------|-------------|
+| easyevent.common.compensate.global.enabled                               | Enable global scheduling compensation       | true                                             |             |
+| easyevent.common.compensate.global.offset                                | Number of retries per scheduling            | 100                                              |             |
+| easyevent.common.compensate.global.compensate-state                      | Statuses for scheduling compensation        | AVAILABLE,TRANSFER_FAILED,PROCESS_FAILED        |             |
+| easyevent.common.compensate.global.before-start-seconds                  | Start time range for compensation (seconds) | 60                                               | Unit: seconds |
+| easyevent.common.compensate.global.before-end-seconds                    | End time range for compensation (seconds)   | 3600                                             | Unit: seconds |
+| easyevent.common.compensate.global.schedule-period                        | Execution period (seconds)                  | 10                                               |             |
+| easyevent.common.compensate.global.thread-pool-core-size                 | Scheduling thread count                     | 1                                                |             |
+| easyevent.common.compensate.global.thread-pool-thread-prefix             | Prefix for scheduling threads               | EventCompensate                                |             |
 
-#### 2、bus配置
+#### 2. Bus Configuration
 
-| 配置key                                             | 描述                   | 默认值                       | 备注   |
-|---------------------------------------------------|----------------------|---------------------------|------|
-| easyevent.bus.thread-pool.thread-prefix           | eventbus处理线程池线程前缀    | DefaultEventBusThreadPool |      |
-| easyevent.bus.thread-pool.core-pool-size          | eventbus处理核心线程池      | 10                        |      |
-| easyevent.bus.thread-pool.maximum-pool-size       | eventbus处理核心线程池最大线程数 | 20                        |      |
-| easyevent.bus.thread-pool.keep-alive-time         | eventbus处理线程池最大空闲时间  | 30                        | 单位:秒 |
-| easyevent.bus.thread-pool.max-blocking-queue-size | eventbus处理线程池最大队列长度  | 2048                      |      |
+| Configuration Key                                          | Description                             | Default Value           | Remarks   |
+|------------------------------------------------------------|-----------------------------------------|--------------------------|-----------|
+| easyevent.bus.thread-pool.thread-prefix                    | Thread prefix for EventBus thread pool | DefaultEventBusThreadPool |           |
+| easyevent.bus.thread-pool.core-pool-size                   | Core thread count for EventBus         | 10                        |           |
+| easyevent.bus.thread-pool.maximum-pool-size                | Max thread count for EventBus          | 20                        |           |
+| easyevent.bus.thread-pool.keep-alive-time                  | Idle timeout for EventBus threads (seconds) | 30                     |           |
+| easyevent.bus.thread-pool.max-blocking-queue-size          | Max queue length for EventBus thread pool | 2048                    |           |
 
-#### 3、storage配置
+#### 3. Storage Configuration
 
-| 配置key                                               | 描述             | 默认值 | 备注              |
-|-----------------------------------------------------|----------------|-----|-----------------|
-| easyevent.storage.jdbc.datasource.type              | 存储jdbc连接池数据源类型 |     |                 |
-| easyevent.storage.jdbc.datasource.driver-class-name | 存储jdbc连接池驱动类   |     |                 |
-| easyevent.storage.jdbc.datasource.url               | 存储jdbc连接池url   |     |                 |
-| easyevent.storage.jdbc.datasource.username          | 存储jdbc连接用户名    |     |                 |
-| easyevent.storage.jdbc.datasource.password          | 存储jdbc连接密码     |     |                 |
-| easyevent.storage.jdbc.table.prefix                 | 存储jdbc表前缀      | ee  |                 |
-| easyevent.storage.jdbc.table.total-sharding         | 存储jdbc分表数      | -1  | -1:不分表,>0 代表分表数 |
+| Configuration Key                                         | Description                   | Default Value | Remarks                       |
+|-----------------------------------------------------------|-------------------------------|---------------|-------------------------------|
+| easyevent.storage.jdbc.datasource.type                    | JDBC connection pool type     |               |                               |
+| easyevent.storage.jdbc.datasource.driver-class-name       | JDBC driver class             |               |                               |
+| easyevent.storage.jdbc.datasource.url                     | JDBC URL                      |               |                               |
+| easyevent.storage.jdbc.datasource.username                | JDBC username                 |               |                               |
+| easyevent.storage.jdbc.datasource.password                | JDBC password                 |               |                               |
+| easyevent.storage.jdbc.table.prefix                       | Table prefix for JDBC storage | ee            |                               |
+| easyevent.storage.jdbc.table.total-sharding               | Total number of shards        | -1            | -1: No sharding; >0: Shard count |
 
-#### 4、transfer配置
+#### 4. Transfer Configuration
 
-| 配置key                                                         | 描述                   | 默认值                       | 备注   |
-|---------------------------------------------------------------|----------------------|---------------------------|------|
-| easyevent.transfer.common.default-topic                       | 默认topic              | default                   |      |
-| easyevent.transfer.sender.thread-pool.thread-prefix           | Transfer处理线程池线程前缀    | DefaultTransferThreadPool |      |
-| easyevent.transfer.sender.thread-pool.core-pool-size          | Transfer处理核心线程池      | 10                        |      |
-| easyevent.transfer.sender.thread-pool.maximum-pool-size       | Transfer处理核心线程池最大线程数 | 20                        |      |
-| easyevent.transfer.sender.thread-pool.keep-alive-time         | Transfer处理线程池最大空闲时间  | 30                        | 单位:秒 |
-| easyevent.transfer.sender.thread-pool.max-blocking-queue-size | Transfers处理线程池最大队列长度 | 2048                      |      |
+| Configuration Key                                                       | Description                           | Default Value           | Remarks   |
+|--------------------------------------------------------------------------|---------------------------------------|--------------------------|-----------|
+| easyevent.transfer.common.default-topic                                 | Default topic                         | default                  |           |
+| easyevent.transfer.sender.thread-pool.thread-prefix                     | Thread prefix for Transfer thread pool | DefaultTransferThreadPool |           |
+| easyevent.transfer.sender.thread-pool.core-pool-size                    | Core thread count for Transfer         | 10                       |           |
+| easyevent.transfer.sender.thread-pool.maximum-pool-size                 | Max thread count for Transfer          | 20                       |           |
+| easyevent.transfer.sender.thread-pool.keep-alive-time                   | Idle timeout for Transfer threads (seconds) | 30                    |           |
+| easyevent.transfer.sender.thread-pool.max-blocking-queue-size           | Max queue length for Transfer thread pool | 2048                   |           |
 
-##### disruptor配置
+##### Disruptor Configuration
 
-| 配置key                                                           | 描述          | 默认值                 | 备注 |
-|-----------------------------------------------------------------|-------------|---------------------|----|
-| easyevent.transfer.trigger.disruptor.consumer.buffer-size       | buffer size |                     |    |
-| easyevent.transfer.trigger.disruptor.consumer.maximum-pool-size |             |                     |    |
-| easyevent.transfer.trigger.disruptor.consumer.core-pool-size    |             |                     |    |
-| easyevent.transfer.trigger.disruptor.consumer.thread-prefix     |             |                     |    |
-| easyevent.transfer.trigger.disruptor.sender.thread-group        | 发送线程池组      | easyevent-disruptor |    |
-| easyevent.transfer.trigger.disruptor.sender.thread-prefix       | 发送线程前缀      | disruptor-thread-   |    |
+| Configuration Key                                                   | Description           | Default Value | Remarks |
+|----------------------------------------------------------------------|-----------------------|---------------|---------|
+| easyevent.transfer.trigger.disruptor.consumer.buffer-size           | Buffer size           |               |         |
+| easyevent.transfer.trigger.disruptor.consumer.maximum-pool-size     | Max thread count      |               |         |
+| easyevent.transfer.trigger.disruptor.consumer.core-pool-size        | Core thread count     |               |         |
+| easyevent.transfer.trigger.disruptor.consumer.thread-prefix         | Thread prefix         |               |         |
+| easyevent.transfer.trigger.disruptor.sender.thread-group            | Sender thread group   | easyevent-disruptor |         |
+| easyevent.transfer.trigger.disruptor.sender.thread-prefix           | Sender thread prefix  | disruptor-thread- |         |
 
-##### rocketmq 配置
+##### RocketMQ Configuration
 
-| 配置key                                                            | 描述           | 默认值            | 备注         |
-|------------------------------------------------------------------|--------------|----------------|------------|
-| easyevent.transfer.trigger.rocketmq.host                         | rocketmq连接地址 | 127.0.0.1:9876 | 多个时使用 逗号分隔 |
-| easyevent.transfer.trigger.rocketmq.produce-group                | 生产者组         | EasyEvent      |            |
-| easyevent.transfer.trigger.rocketmq.produce-latency-fault-enable | 是否开启故障转移     | true           |            |
-| easyevent.transfer.trigger.rocketmq.produce-message-size         | 发送消息大小       | 1000000        | 单位：byte    |
-| easyevent.transfer.trigger.rocketmq.produce-timeout              | 发送超时时间       | 1000           | 单位：秒       |
-| easyevent.transfer.trigger.rocketmq.produce-try-times            | 发送尝试最大次数     | 5              |            |
+| Configuration Key                                                    | Description                  | Default Value         | Remarks             |
+|----------------------------------------------------------------------|------------------------------|------------------------|----------------------|
+| easyevent.transfer.trigger.rocketmq.host                            | RocketMQ connection address | 127.0.0.1:9876       | Multiple addresses separated by commas |
+| easyevent.transfer.trigger.rocketmq.produce-group                   | Producer group              | EasyEvent             |                      |
+| easyevent.transfer.trigger.rocketmq.produce-latency-fault-enable    | Enable latency fault tolerance | true                 |                      |
+| easyevent.transfer.trigger.rocketmq.produce-message-size            | Message size (bytes)        | 1000000               |                      |
+| easyevent.transfer.trigger.rocketmq.produce-timeout                 | Timeout for sending (seconds) | 1000                 |                      |
+| easyevent.transfer.trigger.rocketmq.produce-try-times               | Max retry attempts          | 5                       |                      |
 
-**消费者配置**\
-**格式：** `easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.x`
+**Consumer Configuration**  
+**Format:** `easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.x`
 
-| 配置key                                                                                                       | 描述          | 默认值       | 备注         |
-|-------------------------------------------------------------------------------------------------------------|-------------|-----------|------------|
-| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consumer-group                               | 消费者组        |           |            |
-| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.topic                                        | 消费topic     | EasyEvent |            |
-| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.tags                                         | 消费tag       | *         | 多个tag以逗号分隔 |
-| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consumer-min-thread                          | 消费者最小线程数    | 1         |            |
-| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consumer-max-thread                          | 消费者最大线程数    | 3         |            |
-| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-concurrently-max-span                | 消费者最大并发span | 10        |            |
-| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-max-retry                            | 消费最大重试次数    | 5         |            |
-| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-retry-delay-time-interval-seconds    | 消费重试间隔      | 5         | 单位：秒       |
-| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-liming-retry-delay-time-base-seconds | 消费限流基础重试间隔  | 5         | 单位：秒       |
+| Configuration Key                                                                                             | Description           | Default Value       | Remarks               |
+|---------------------------------------------------------------------------------------------------------------|-----------------------|----------------------|------------------------|
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consumer-group                               | Consumer group        |                      |                        |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.topic                                        | Topic                 | EasyEvent            |                        |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.tags                                         | Tags                  | *                    | Multiple tags separated by commas |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consumer-min-thread                          | Minimum consumer threads | 1                   |                        |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consumer-max-thread                          | Maximum consumer threads | 3                   |                        |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-concurrently-max-span                | Max concurrent span   | 10                   |                        |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-max-retry                            | Max retry attempts    | 5                    |                        |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-retry-delay-time-interval-seconds    | Retry interval (seconds) | 5                  |                        |
+| easyevent.transfer.trigger.rocketmq.consumers.<consumer alias>.consume-liming-retry-delay-time-base-seconds | Base retry delay for rate limiting (seconds) | 5 |                        |
 
-##### kafka 配置
+##### Kafka Configuration
 
-| 配置key                                                     | 描述          | 默认值            | 备注        |
-|-----------------------------------------------------------|-------------|----------------|-----------|
-| easyevent.transfer.trigger.kafka.host                     | kafka集群地址   | 127.0.0.1:9876 | 多个地址以逗号分隔 |
-| easyevent.transfer.trigger.kafka.produce-group            | 生产者组        | EasyEvent      |           |
-| easyevent.transfer.trigger.kafka.produce-topic-partitions | topic对应的分区数 | 4              |           |
-| easyevent.transfer.trigger.kafka.produce-timeout          | 发送超时时间      | 1000           | 单位：秒      |
-| easyevent.transfer.trigger.kafka.produce-try-times        | 发送尝试最大次数    | 5              |           |
+| Configuration Key                                            | Description           | Default Value         | Remarks               |
+|--------------------------------------------------------------|-----------------------|------------------------|------------------------|
+| easyevent.transfer.trigger.kafka.host                        | Kafka cluster address | 127.0.0.1:9876       | Multiple addresses separated by commas |
+| easyevent.transfer.trigger.kafka.produce-group               | Producer group        | EasyEvent             |                        |
+| easyevent.transfer.trigger.kafka.produce-topic-partitions    | Partitions for topic  | 4                       |                        |
+| easyevent.transfer.trigger.kafka.produce-timeout             | Timeout for sending (seconds) | 1000         |                        |
+| easyevent.transfer.trigger.kafka.produce-try-times           | Max retry attempts    | 5                       |                        |
 
-**消费者配置**\
-**格式：** `easyevent.transfer.trigger.kafka.consumers.<consumer alias>.x`\
-同一个topic下如果已经指定分区了,需要将全部分区都配置且不能配置有 `*` 的分区。
+**Consumer Configuration**  
+**Format:** `easyevent.transfer.trigger.kafka.consumers.<consumer alias>.x`  
+If partitions are specified for a topic, all partitions must be configured and cannot contain [*](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/doc/QuickStart.md).
 
-| 配置key                                                                                                 | 描述          | 默认值       | 备注      |
-|-------------------------------------------------------------------------------------------------------|-------------|-----------|---------|
-| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consumer-group                            | 消费者组        |           |         |
-| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.topic                                     | 消费topic     | EasyEvent |         |
-| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.partition                                 | 分区          | *         | 默认是所有分区 |
-| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.currency                                  | 消费并发数       | 4         |         |
-| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.client-id                                 | 消费者ClientId |           |         |
-| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-max-retry                         | 消费者最大重试次数   | 5         |         |
-| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-retry-delay-time-interval-seconds | 消费重试时间间隔    | 5         | 单位：秒    |
+| Configuration Key                                                                                     | Description           | Default Value       | Remarks       |
+|-------------------------------------------------------------------------------------------------------|-----------------------|----------------------|----------------|
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consumer-group                          | Consumer group        |                      |                |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.topic                                   | Topic                 | EasyEvent            |                |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.partition                               | Partition             | *                    | Default: all   |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.currency                                | Consumption concurrency | 4                   |                |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.client-id                               | ClientId              |                      |                |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-max-retry                       | Max retry attempts    | 5                    |                |
+| easyevent.transfer.trigger.kafka.consumers.<consumer alias>.consume-retry-delay-time-interval-seconds | Retry interval (seconds) | 5                  |                |
 
-### 四、编写代码
+### IV. Writing Code
 
-#### 发布事件
+#### Publishing Events
 
-`EasyEvent` 发布事件的统一入口为`com.openquartz.easyevent.core.publisher.EventPublisher`。可以使用Spring的直接注入到方法中使用进行发布事件类。
-目前支持发布**同步事件**
-和**异步事件**。
-**同步事件**：指和当前发布事件线程在同一线程中触发执行;
-**异步事件**：指的是通过中间件进行异步调度然后最终一致性实现订阅处理的事件。
+The unified entry point for publishing events in `EasyEvent` is [com.openquartz.easyevent.core.publisher.EventPublisher](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/publisher/EventPublisher.java#L7-L35). You can inject this into methods using Spring for event publishing.
+Currently, **synchronous events** and **asynchronous events** are supported.
+- **Synchronous Event**: Triggered in the same thread as the current publishing thread.
+- **Asynchronous Event**: Triggered asynchronously via middleware, achieving eventual consistency in subscription handling.
 
-样例：
+Example:
 
 ```java
 import java.util.ArrayList;
@@ -305,24 +301,23 @@ public class TestEventPublisher {
     }
 
 }
-
 ```
 
-#### 订阅事件
+#### Subscribing to Events
 
-订阅者需要在类上加上注解(`com.openquartz.easyevent.starter.annotation.EventHandler`)来标识这是一个Event处理类。
+Subscribers should annotate their classes with ([com.openquartz.easyevent.starter.annotation.EventHandler](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-spring-boot-starter/easyevent-spring-boot-starter-parent/src/main/java/com/openquartz/easyevent/starter/annotation/EventHandler.java#L15-L30)) to identify them as event handlers.
 
-同时在订阅的方法上加上注解(`com.openquartz.easyevent.core.annotation.Subscribe`)可以标识这个方法在订阅参数中的事件。
-> 支持按条件订阅。可以在注解@Subscriube上添加属性condition。支持`SPEL` 表达式.
+Additionally, annotate the method with ([com.openquartz.easyevent.core.annotation.Subscribe](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/annotation/Subscribe.java#L23-L36)) to indicate that the method subscribes to the event passed as a parameter.
+> Conditional subscriptions are supported. You can add the [condition](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/annotation/Subscribe.java#L30-L30) attribute to the [@Subscribe](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/annotation/Subscribe.java#L23-L36) annotation. `SPEL` expressions are supported.
 
-`EasyEvent` 订阅者订阅事件,目前支持**串行订阅事件**和**并行订阅事件**。
-**串行订阅事件**：默认是串行订阅。和当前主线程在同一个线程中,一起成功,或者一起失败。
-允许进行编排顺序。可以通过加上注解(`com.openquartz.easyevent.core.annotation.Order`)在订阅方法上，其中值越小越优先执行。
-> 针对串行订阅事件。可以选择是否加入到事件完成的事务中。可以配置属性`joinTransaction=false`.默认加入一起事务中。\
-> 使用场景: 针对一些RPC的场景，可以使用`joinTransaction=false`.以减少事务执行时长.避免大事务发生。
+`EasyEvent` subscribers currently support **serial subscription** and **parallel subscription**.
+- **Serial Subscription**: Serial subscription is the default. It runs in the same thread as the main thread, succeeding or failing together.
+Ordering can be customized by adding the annotation ([com.openquartz.easyevent.core.annotation.Order](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/annotation/Order.java#L13-L23)) to the subscribed method, where smaller values are executed first.
+> For serial subscriptions, you can choose whether to join the transaction upon event completion. Set the property `joinTransaction=false`. By default, it joins the transaction.
+> Use case: For RPC scenarios, `joinTransaction=false` can be used to reduce transaction execution time and avoid large transactions.
 
-**并行订阅事件**：并行订阅事件。指订阅者之间是互不影响，独立触发执行。使用并行订阅线程池触发执行。
-可以通过加上注解(`com.openquartz.easyevent.core.annotation.AllowConcurrentEvents`)在订阅方法上。
+- **Parallel Subscription**: Parallel subscription means subscribers operate independently and are triggered separately. Execution is triggered using a parallel subscription thread pool.
+This can be achieved by annotating the subscription method with ([com.openquartz.easyevent.core.annotation.AllowConcurrentEvents](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/annotation/AllowConcurrentEvents.java#L16-L18)).
 
 ```java
 import com.openquartz.easyevent.core.annotation.AllowConcurrentEvents;
@@ -339,17 +334,17 @@ public class Test2EventHandler {
     @Subscribe
     @AllowConcurrentEvents
     public void handle(TestEvent event) {
-        // do 业务处理
+        // Business logic here
     }
 }
 ```
 
-### 五、预警通知(可选)
+### V. Alert Notifications (Optional)
 
-服务提供重试达到最大次数的事件仍然未能成功的进行预警。实现接口`com.openquartz.easyevent.core.notify.EventHandleFailedNotifier`。\
-默认实现为`com.openquartz.easyevent.starter.schedule.DefaultEventHandleFailedNotifier`.
+An alert will be triggered if an event fails even after reaching the maximum number of retries. Implement the interface [com.openquartz.easyevent.core.notify.EventHandleFailedNotifier](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/notify/EventHandleFailedNotifier.java#L7-L14).
+The default implementation is [com.openquartz.easyevent.starter.schedule.DefaultEventHandleFailedNotifier](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-spring-boot-starter/easyevent-spring-boot-starter-parent/src/main/java/com/openquartz/easyevent/starter/schedule/DefaultEventHandleFailedNotifier.java#L26-L65).
 
-预警通知接口为: `com.openquartz.easyevent.core.notify.EventNotifier`
+The alert notification interface is: [com.openquartz.easyevent.core.notify.EventNotifier](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/notify/EventNotifier.java#L10-L18)
 
 ```java
 package com.openquartz.easyevent.core.notify;
@@ -359,46 +354,43 @@ import java.util.List;
 import com.openquartz.easyevent.storage.model.BusEventEntity;
 
 /**
- * event notifier
+ * Event notifier
  *
  * @author svnee
  */
 public interface EventNotifier {
 
     /**
-     * notify event
+     * Notify about events
      *
-     * @param eventList eventList
+     * @param eventList List of events
      */
     void notify(List<BusEventEntity> eventList);
 }
 ```
 
-默认实现是`com.openquartz.easyevent.core.notify.LogEventNotifier`。
-用户可以自定义实现进行使用不同方式通知,并注入到Spring工厂中。例如:`微信`,`钉钉`等。
+The default implementation is [com.openquartz.easyevent.core.notify.LogEventNotifier](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/notify/LogEventNotifier.java#L15-L31). Users can customize implementations for different notification methods and inject them into the Spring factory. Examples include WeChat, DingTalk, etc.
 
-同时默认提供了预警自定义配置
+Additionally, default configurations for alerts are provided:
 
-| 配置key                                 | 描述       | 默认值                 | 备注    |
-|---------------------------------------|----------|---------------------|-------|
-| easyevent.common.notify.enabled       | 是否启用预警   | true                |       |
-| easyevent.common.notify.identify      | 通知唯一标识   | EventFailedNotifier |       |
-| easyevent.common.notify.period        | 通知周期     | 10                  | 单位：分钟 |
-| easyevent.common.notify.thread-prefix | 通知线程前缀名称 | EventNotifierThread |       |
+| Configuration Key                                | Description          | Default Value         | Remarks     |
+|--------------------------------------------------|----------------------|------------------------|--------------|
+| easyevent.common.notify.enabled                | Enable alerts        | true                   |              |
+| easyevent.common.notify.identify               | Unique identifier for notifications | EventFailedNotifier |              |
+| easyevent.common.notify.period                 | Notification interval (minutes) | 10          |              |
+| easyevent.common.notify.thread-prefix          | Thread prefix for notifications | EventNotifierThread |              |
 
-如果需要支持分布式预警通知,需要用于提供实现接口`com.openquartz.easyevent.common.concurrent.lock.DistributedLockFactory`
-并注入到Spring工厂中。
+If distributed alert notifications are required, users need to provide an implementation of the interface [com.openquartz.easyevent.common.concurrent.lock.DistributedLockFactory](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-common/src/main/java/com/openquartz/easyevent/common/concurrent/lock/DistributedLockFactory.java#L10-L20) and inject it into the Spring factory.
 
-### 六、SOA Event支持
+### VI. SOA Event Support
 
-Easy-Event提供了SOA 微服务下的事件中心的支持.
+Easy-Event provides support for event centers in SOA microservices.
 
-#### 1、引入依赖
+#### 1. Add Dependencies
 
-在正常使用单服务的事件的基础上引入.目前提供了基于RocketMQ作为SOA事件传递的中心。开发者也可以自定扩展其他中间件的事件中心。
+Introduce these dependencies based on normal single-service events. Currently, RocketMQ-based event centers for SOA are provided. Developers can also extend other middleware-based event centers.
 
 ```xml
-
 <dependency>
     <groupId>com.openquartz</groupId>
     <artifactId>easyevent-spring-boot-starter-soa-rocketmq</artifactId>
@@ -406,13 +398,12 @@ Easy-Event提供了SOA 微服务下的事件中心的支持.
 </dependency>
 ```
 
-#### 2、定义SOA事件
+#### 2. Define SOA Events
 
-建议将SOA的服务事件类，定义到一个公共的module中，发布到仓库中，各个服务依赖使用。
-SOA 事件需要依赖pom
+It is recommended to define SOA service event classes in a common module, publish them to a repository, and have various services depend on them.
+SOA events require the following dependency:
 
 ```xml
-
 <dependency>
     <groupId>com.openquartz</groupId>
     <artifactId>easyevent-spring-boot-starter-soa-api</artifactId>
@@ -420,22 +411,25 @@ SOA 事件需要依赖pom
 </dependency>
 ```
 
-SOA 事件需要实现`com.openquartz.easyevent.starter.soa.api.SoaEvent`接口。
-并重写方法
-```java
-    @Override
-    public String getSoaIdentify() {
-      // 应用 event appId
-    }
+SOA events need to implement the [com.openquartz.easyevent.starter.soa.api.SoaEvent](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-spring-boot-starter-soa/easyevent-spring-boot-starter-soa-api/src/main/java/com/openquartz/easyevent/starter/soa/api/SoaEvent.java#L7-L23) interface.
+Override the methods:
 
-    // 可选
-    @Override
-    public String getEventKey() {
-        // 方便检索的事件key
-    }
+```java
+@Override
+public String getSoaIdentify() {
+    // Application event appId
+}
+
+// Optional
+@Override
+public String getEventKey() {
+    // Easily searchable event key
+}
 ```
-#### 3、配置
-需要提供配置：
+
+#### 3. Configuration
+
+Configuration needed:
 ```properties
 easyevent.soa.event-center.rocketmq.host=localhost:9876
 easyevent.soa.event-center.rocketmq.topic=event_center
@@ -443,8 +437,9 @@ easyevent.soa.event-center.rocketmq.produce-group=easyevent-soa-publisher-produc
 easyevent.soa.event-center.rocketmq.consume-group=easyevent-soa-publisher-consume-group
 ```
 
-#### 4、发布&订阅
-SOA事件的发布仅支持异步发布事件， 不支持同步发布事件。
-可以使用接口发布：`com.openquartz.easyevent.core.publisher.EventPublisher.asyncPublish`、`com.openquartz.easyevent.core.publisher.EventPublisher.asyncPublishList`
+#### 4. Publish & Subscribe
 
-订阅事件。同之前的订阅消费一致。
+SOA events only support asynchronous publishing and do not support synchronous publishing.
+You can use the interfaces for publishing: `com.openquartz.easyevent.core.publisher.EventPublisher.asyncPublish`, `com.openquartz.easyevent.core.publisher.EventPublisher.asyncPublishList`
+
+Subscription remains consistent with previous consumption mechanisms.
