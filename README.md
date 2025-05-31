@@ -15,7 +15,7 @@
 
 #### What is EasyEvent
 
-`EasyEvent` is a distributed, extensible, and eventually consistent real-time [EventBus](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/EventBus.java#L24-L245) solution based on `Google Guava`'s [EventBus](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/EventBus.java#L24-L245).  
+`EasyEvent` is a distributed, extensible, and eventually consistent real-time EventBus solution based on `Google Guava`'s EventBus.  
 It mainly addresses issues such as lack of persistence and distributed machine scheduling in the `Google EventBus`.
 
 #### Features
