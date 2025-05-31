@@ -3,7 +3,7 @@
 <div align=center> Make Distributed Event Driven Easier !!! </div>
 
 # EasyEvent
-
+[中文版本](README_zh.md)
 > **Note**: This project has not been published to the Maven central repository. You need to manually add it to your local or private repository for use.
 
 ### Welcome to Star (Welcome Star)!!!
