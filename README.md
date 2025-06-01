@@ -104,3 +104,10 @@ Below is a comparison focused on each framework's key features:
 | Stability   | Asynchronous event triggering supports custom rate limiting for both consumption and sending; tag-level isolation supported | No rate control             | Timed scheduling, difficult to control frequency, poor real-time performance | In distributed environments, heavily dependent on MQ stability; sudden spikes in events can easily cause bottlenecks | Depends on the stability of `RocketMQ EventBridge` and `RocketMQ` |
 | Extensibility | Storage supports relational databases like `JDBC`, and can be customized via APIs. Transmission supports `RocketMQ`, `Kafka`, and can also be extended | Not extensible            | Depends on `Oracle`; other storage components require code rewrites | Multiple transmission components provided, easy to extend | Strongly dependent on `RocketMQ`; no alternative components currently available |
 
+## 🌟Misc
+
+<div align="center">
+
+[![Star History Chart](https://api.star-history.com/svg?repos=openquartz/easy-event&type=Date)](https://www.star-history.com/#openquartz/easy-event&Date)
+
+</div>
