@@ -109,4 +109,10 @@
 | 稳定性 | 异步事件触发支持消费和发送自定义限流。支持tag级别的隔离                                   | 无                  | 定时调度.很难控制频率。实时性较差             | 分布式下事件强依赖MQ稳定性。突发事件过多易出现尖刺        | 依赖服务 `RocketMQ EventBridge` 稳定性和`RocketMQ`稳定性 |
 | 扩展性 | 存储支持使用`JDBC`等关系型数据库，也可以根据api自定义扩展。传输支持`RocketMQ`、`Kafka`.也可以自定义扩展 | 无                  | 依赖`Oracle`.其他存储组件需要改写代码重新实现   | 传输提供了多个组件的实现。易扩展。                 | 强依赖`RocketMQ`,暂未提供其他可替换组件                     |
 
+## 🌟Misc
 
+<div align="center">
+
+[![Star History Chart](https://api.star-history.com/svg?repos=openquartz/easy-event&type=Date)](https://www.star-history.com/#openquartz/easy-event&Date)
+
+</div>
