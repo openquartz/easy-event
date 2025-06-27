@@ -10,8 +10,6 @@ public final class CommonConstants {
     private CommonConstants() {
     }
 
-    public static final String BASE_PACKAGE_PATH = "com.openquartz.easyevent";
-
     public static final String ALL_MATCH_EXPRESSION = "*";
 
     public static final String EMPTY_STRING = "";
@@ -27,7 +25,7 @@ public final class CommonConstants {
     /**
      * The constant LINE_SEPARATOR.
      */
-    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    public static final String LINE_SEPARATOR = System.lineSeparator();
 
     /**
      * 分割符号
