@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Future;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import com.openquartz.easyevent.common.model.Pair;
 import com.openquartz.easyevent.common.utils.CollectionUtils;
@@ -197,6 +198,7 @@ public abstract class Dispatcher {
             return invokeResult;
         }
 
+        @Getter
         private static final class EventAndSubscribers {
 
             private final Object event;
@@ -207,13 +209,6 @@ public abstract class Dispatcher {
                 this.subscribers = subscribers;
             }
 
-            public Object getEvent() {
-                return event;
-            }
-
-            public Iterator<Subscriber> getSubscribers() {
-                return subscribers;
-            }
         }
     }
 

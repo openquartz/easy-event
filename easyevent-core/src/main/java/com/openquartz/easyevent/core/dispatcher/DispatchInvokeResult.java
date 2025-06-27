@@ -73,10 +73,6 @@ public class DispatchInvokeResult {
         return Objects.isNull(invokeError);
     }
 
-    public Exception getInvokeError() {
-        return invokeError;
-    }
-
     public DispatchInvokeResult merge(DispatchInvokeResult result) {
         if (!Objects.equals(result.getEvent(), this.event)) {
             throw new IllegalArgumentException("not support diff event merge!");
