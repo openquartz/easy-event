@@ -8,7 +8,7 @@
 ### 1、先安装 easyevent-common
 
 ```shell
-cd easyevent-common
+cd ./../easyevent-common
 mvn clean install
 ```
 

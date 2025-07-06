@@ -59,7 +59,7 @@ public final class JSONUtil {
      * @return 对象
      */
     public static <T> T parseObject(byte[] json, Class<T> clazz) {
-        if (Objects.isNull(json) || json.length <= 0) {
+        if (Objects.isNull(json) || json.length == 0) {
             return null;
         }
         return JSON_FACADE.parseObject(json, clazz);
@@ -74,7 +74,7 @@ public final class JSONUtil {
      * @return 对象
      */
     public static <T> T parseObject(byte[] json, TypeReference<T> clazz) {
-        if (Objects.isNull(json) || json.length <= 0) {
+        if (Objects.isNull(json) || json.length == 0) {
             return null;
         }
         return JSON_FACADE.parseObject(json, clazz);
