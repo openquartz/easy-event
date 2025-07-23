@@ -16,6 +16,8 @@ import com.openquartz.easyevent.common.exception.EasyEventException;
  * <p>Provides utilities for manipulating and examining
  * <code>Throwable</code> objects.</p>
  *
+ * 源代码链接自：apache commons-lang3(org.apache.commons.lang3.exception.ExceptionUtils)
+ *
  * @author svnee
  * @since 1.0
  */
