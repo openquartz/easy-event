@@ -21,6 +21,9 @@ import java.lang.reflect.Method;
 /**
  * Context for an exception thrown by a subscriber.
  *
+ * 源代码链接自：Google Guava (com.google.common.eventbus.SubscriberExceptionContext)
+ * <link>https://github.com/google/guava/blob/master/guava/src/com/google/common/eventbus/SubscriberExceptionContext.java</link>
+ *
  * @author svnee
  * @since 16.0
  */

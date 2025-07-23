@@ -22,6 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 服务订阅者
  *
+ * 源代码链接自：Google Guava (com.google.common.eventbus.Dispatcher)
+ * <link>https://github.com/google/guava/blob/master/guava/src/com/google/common/eventbus/Subscriber.java</link>
+ *
  * @author svnee
  */
 @Slf4j

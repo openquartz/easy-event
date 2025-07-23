@@ -9,6 +9,9 @@ import com.openquartz.easyevent.core.expression.ExpressionParser;
  * An {@link EventBus} that takes the Executor of your choice and uses it to dispatch events,
  * allowing dispatch to occur asynchronously.
  *
+ * 源代码链接自：Google Guava (com.google.common.eventbus.AsyncEventBus)
+ * <link>https://github.com/google/guava/blob/master/guava/src/com/google/common/eventbus/AsyncEventBus.java</link>
+ *
  * @author Cliff Biffle
  * @since 10.0
  */

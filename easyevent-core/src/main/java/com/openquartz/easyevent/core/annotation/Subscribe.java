@@ -19,6 +19,10 @@ import java.lang.annotation.Target;
  * <p>Unless also annotated with @{@link AllowConcurrentEvents}, event subscriber methods will be
  * invoked serially by each event bus that they are registered with.
  *
+ * 源代码链接自：Google Guava (com.google.common.eventbus.Subscribe)
+ * <link>https://github.com/google/guava/blob/master/guava/src/com/google/common/eventbus/Subscribe.java</link>
+ *
+ *
  * @author svnee
  */
 @Retention(RetentionPolicy.RUNTIME)

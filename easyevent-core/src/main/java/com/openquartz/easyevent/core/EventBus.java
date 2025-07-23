@@ -20,6 +20,9 @@ import com.openquartz.easyevent.core.expression.ExpressionParser;
 /**
  * EventBus
  *
+ * 源代码链接自：Google Guava (com.google.common.eventbus.EventBus)
+ * <link>https://github.com/google/guava/blob/master/guava/src/com/google/common/eventbus/EventBus.java</link>
+ *
  * @author svnee
  */
 public class EventBus {

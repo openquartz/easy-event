@@ -10,6 +10,9 @@ import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
  * <p>Registering a DeadEvent subscriber is useful for debugging or logging, as it can detect
  * misconfigurations in a system's event distribution.
  *
+ * 源代码链接自：Google Guava (com.google.common.eventbus.DeadEvent)
+ * <link>https://github.com/google/guava/blob/master/guava/src/com/google/common/eventbus/DeadEvent.java</link>
+ *
  * @author Cliff Biffle
  * @since 10.0
  */

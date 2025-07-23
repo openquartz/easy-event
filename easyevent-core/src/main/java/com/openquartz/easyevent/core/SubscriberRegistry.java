@@ -27,9 +27,12 @@ import com.openquartz.easyevent.common.utils.reflect.TypeToken;
 import com.openquartz.easyevent.core.annotation.Subscribe;
 import com.openquartz.easyevent.core.exception.EventBusErrorCode;
 
-
 /**
  * Registry of subscribers to a single event bus.
+ *
+ * 源代码链接自：Google Guava (com.google.common.eventbus.SubscriberRegistry)
+ * <link>https://github.com/google/guava/blob/master/guava/src/com/google/common/eventbus/SubscriberRegistry.java</link>
+ *
  *
  * @author Colin Decker
  */

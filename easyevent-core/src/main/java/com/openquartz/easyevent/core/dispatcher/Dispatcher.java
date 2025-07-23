@@ -24,6 +24,9 @@ import com.openquartz.easyevent.common.utils.CollectionUtils;
 /**
  * Dispatcher
  *
+ * 源代码链接自：Google Guava (com.google.common.eventbus.Dispatcher)
+ * <link>https://github.com/google/guava/blob/master/guava/src/com/google/common/eventbus/Dispatcher.java</link>
+ *
  * @author svnee
  */
 @Slf4j
