@@ -5,16 +5,13 @@ import com.openquartz.easyevent.example.event.TestEvent;
 import com.openquartz.easyevent.starter.annotation.EventHandler;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * @author svnee
- **/
 @Slf4j
 @EventHandler
-public class TestEventHandler {
+public class RpcEventHandler {
 
-    @Subscribe
-    public void handle(TestEvent event) {
-        log.info(">>>>>>>>>--------TestEventHandler" + event + ":" + Thread.currentThread().getId());
+    @Subscribe(joinTransaction = false)
+    public void handle(TestEvent event) throws InterruptedException {
+        log.info(">>>>>>>>>--------RpcEventHandler" + event + ":" + Thread.currentThread().getId());
+        Thread.sleep(10000L);
     }
-
 }
