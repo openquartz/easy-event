@@ -1,20 +1,20 @@
 package com.openquartz.easyevent.example.handler;
 
-import com.openquartz.easyevent.core.annotation.AllowConcurrentEvents;
 import com.openquartz.easyevent.core.annotation.Subscribe;
 import com.openquartz.easyevent.example.event.TestEvent;
 import com.openquartz.easyevent.starter.annotation.EventHandler;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author svnee
  **/
+@Slf4j
 @EventHandler
-public class Test2EventHandler {
+public class JoinMainTransactionEventHandler {
 
-    @AllowConcurrentEvents
-    @Subscribe(condition = "args[0].source.equals(\'\')")
+    @Subscribe
     public void handle(TestEvent event) {
-        System.out.println(">>>>>>>>>--------Test2EventHandler" + event + ":" + Thread.currentThread().getId());
+        log.info(">>>>>>>>>--------TestEventHandler" + event + ":" + Thread.currentThread().getId());
     }
 
 }
