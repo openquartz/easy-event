@@ -3,106 +3,111 @@
 <div align=center> Make Distributed Event Driven Easier !!! </div>
 
 # EasyEvent
-[中文版本](README_zh.md)
-> **Note**: This project has not been published to the Maven central repository. You need to manually add it to your local or private repository for use.
+[English](README_cn.md) | 中文简体
+> **注意**：本项目未发布到maven中央仓库，需要手动添加到本地仓库 或者 到私有仓库中使用。
 
-### Welcome to Star (Welcome Star)!!!
+### 欢迎Star (Welcome Star)!!!
 
-**[Home Page](https://openquartz.github.io/)** \
+**[主页](https://openquartz.github.io/)** \
 **[GitHub](https://github.com/openquartz/easy-event)**
 
-### Introduction
+### 介绍
 
-#### What is EasyEvent
+#### 什么是EasyEvent
 
-`EasyEvent` is a distributed, extensible, and eventually consistent real-time EventBus solution based on `Google Guava`'s EventBus.  
-It mainly addresses issues such as lack of persistence and distributed machine scheduling in the `Google EventBus`.
+`EasyEvent`是一款基于`Google Guava` 的`EventBus`为蓝本的分布式的,可扩展的,最终一致性的实时的`EventBus`解决方案。\
+主要是解决`Google EventBus`的不支持持久化和分布式机器调度等的问题。
 
-#### Features
+#### 功能特性
 
-- Supports execution of synchronous events, asynchronous events, serial events/parallel events triggering.
-- Supports event exception compensation and warning functions.
+支持同步事件、异步事件、串行事件/并行事件触发执行。\
+支持事件异常补偿、预警等功能
 
-#### Problems Solved
+#### 解决问题
 
-1. Solves data consistency problems in event-driven architectures.
-2. Addresses service instability caused by concentrated event triggers.
-3. Resolves distributed event traceability issues.
-4. Handles monitoring and early-warning for abnormal event executions.
-5. Addresses event-driven challenges in Domain-Driven Design (DDD).
-6. Solves various distributed event issues: e.g., excessive storage demands for events, sharp traffic spikes due to clustered events, slow processing blocking other normal event subscriptions, etc.
+1、解决使用事件驱动中的数据一致性问题
 
-### Software Architecture
+2、解决事件集中触发出现时,服务不稳定性问题
 
-To address these issues, `EasyEvent` abstracts several core components. It uses `EventStorage`, which can be extended via SPI implementations.  
-For distributed event scheduling, it utilizes `EventTransfer`, also extendable through custom SPI implementations.  
-The asynchronous event processing workflow is illustrated below:
+3、解决分布式事件追踪性问题
 
-**Diagram for Single-node EasyEvent Processing:**  
-![EasyEvent Asynchronous Event Processing Flow Chart](./doc/image/EasyEvent.png)
+4、解决针对事件执行异常监控预警问题
 
-**Diagram for SOAEvent Processing:**  
-![SOAEvent Asynchronous Event Processing Flow Chart](./doc/image/SOAEvent.png)
+5、解决DDD中的事件驱动问题
 
-#### Code Structure
+6、解决分布式事件中的问题：例如：事件过多的存储问题。事件集中出现导致尖刺明显。存在处理慢的实现阻塞其他事件正常订阅等等
 
-- `easyevent-common`: Public module service
+### 软件架构
 
-- `easyevent-core`: Core EventBus logic
+`EasyEvent` 为了实现上述问题。抽象出几个核心的角色。通过`EventStorage` 进行存储,可以通过SPI的形式进行扩展实现。\
+通过`EventTransfer`进行事件的分布式调度处理。也可通过自定义SPI实现。\
+异步事件处理调度如下图所示：
 
-- `easyevent-storage`: Storage Service
-    - `easyevent-storage-api`: Storage Service API
-    - `easyevent-storage-jdbc`: JDBC-based storage implementation
+**单机EasyEvent处理示意图：**
+![EasyEvent异步事件处理流程示意图](./doc/image/EasyEvent.png)
 
-- `easyevent-transfer`: Event Transfer Service
-    - `easyevent-transfer-api`: Event transfer protocol
-    - `easyevent-transfer-disruptor`: Disruptor as an event transfer implementation
-    - `easyevent-transfer-rocketmq`: RocketMQ as an event transfer implementation
-    - `easyevent-transfer-kafka`: Kafka as an event transfer implementation
+**SOAEvent处理示意图：**
+![SOAEvent异步事件处理流程示意图](./doc/image/SOAEvent.png)
 
-- `easyevent-spring-boot-starter`: EasyEvent Starter Package
-    - `easyevent-spring-boot-starter-parent`: `easyevent starter parent` project
-    - `easyevent-spring-boot-starter-disruptor`: Spring Boot starter with Disruptor as the event transfer implementation
-    - `easyevent-spring-boot-starter-kafka`: Spring Boot starter with Kafka as the event transfer implementation
-    - `easyevent-spring-boot-starter-rocketmq`: Spring Boot starter with RocketMQ as the event transfer implementation
+#### 代码结构
 
-- `easyevent-spring-boot-starter-soa`: EasyEvent SOA Support Starter Package
-    - `easyevent-spring-boot-starter-soa-api`: `easyevent soa event api` project
-    - `easyevent-spring-boot-starter-soa-parent`: `easyevent soa starter parent` project
-    - `easyevent-spring-boot-starter-soa-rocketmq`: SOA-based event transfer center using RocketMQ as the implementation
+- `easyevent-common`: 公共模块服务
 
-- `easyevent-example`: Example Projects
-    - `easyevent-example-disruptor`: Uses Disruptor as the transport scheduling layer
-    - `easyevent-example-rocketmq`: Uses RocketMQ as the transport scheduling layer
-    - `easyevent-example-kafka`: Uses Kafka as the transport scheduling layer
-    - `easyevent-example-soa`: SOA Example Project
-        - `easyevent-example-soa-event`: SOA public events
-        - `easyevent-example-soa-publisher`: SOA event publishing service
-        - `easyevent-example-soa-subscriber`: SOA event subscription service
+- `easyevent-core`: 核心eventbus逻辑
 
-### Quick Start
+- `easyevent-storage`: 存储服务
+    - `easyevent-storage-api`: 存储服务`API`
+    - `easyevent-storage-jdbc`: 基于`jdbc`的存储实现
 
-[Quick Start Guide](doc/QuickStart.md)
+- `easyevent-transfer`: 事件传输服务
+    - `easyevent-transfer-api`: 事件传输协议
+    - `easyevent-transfer-disruptor`: disruptor 作为事件传输的实现
+    - `easyevent-transfer-rocketmq`: rocketmq 作为事件传输的实现
+    - `easyevent-transfer-kafka`: kafka 作为事件传输的实现
 
-### Extensibility
+- `easyevent-spring-boot-starter`: easyevent starter 包
+    - `easyevent-spring-boot-starter-parent`: `easyevent starter parent`工程
+    - `easyevent-spring-boot-starter-disruptor`: `disruptor` 作为事件传输的实现的 springboot starter
+    - `easyevent-spring-boot-starter-kafka`: `kafka` 作为事件传输的实现的 springboot starter
+    - `easyevent-spring-boot-starter-rocketmq`: `rocketmq` 作为事件传输的实现的 springboot starter
 
-[Extending EasyEvent](doc/Extend.md)
+- `easyevent-spring-boot-starter-soa`: easyevent soa 支持starter 包
+    - `easyevent-spring-boot-starter-soa-api`: `easyevent soa event api`工程
+    - `easyevent-spring-boot-starter-soa-parent`: `easyevent soa starter parent`工程
+    - `easyevent-spring-boot-starter-soa-rocketmq`: `rocketmq` 作为事件传输的实现的 soa 的事件传输中心
 
-### Comparison with Similar Frameworks
+- `easyevent-example`: 样例工程
+    - `easyevent-example-disruptor`: 使用`disruptor` 作为传输调度层
+    - `easyevent-example-rocketmq`: 使用`rocketmq` 作为传输调度层
+    - `easyevent-example-kafka`: 使用`kafka` 作为传输调度层
+    - `easyevent-example-soa`: 样例工程
+        - `easyevent-example-soa-event`: soa 公共事件
+        - `easyevent-example-soa-publisher`: soa 事件发布服务
+        - `easyevent-example-soa-subscriber`: soa 事件订阅服务
 
-There are many event-driven frameworks available, including `Google EventBus`, `SpringCloud-Bus`, `killbill-queue`, and `RocketMQ EventBridge`.  
-Below is a comparison focused on each framework's key features:
+### 快速开始
 
-|     | easy-event                                                      | Google EventBus           | killbill-queue                        | SpringCloud-Bus                           | RocketMQ EventBridge                              |
-|-----|-----------------------------------------------------------------|---------------------------|---------------------------------------|-------------------------------------------|---------------------------------------------------|
-| Description  | A distributed, eventually consistent EventBus solution based on `Google Guava`, with similar usage | In-memory EventBus based on single machine | Extended based on `DB` + `Google EventBus` | Provides both standalone and distributed EventBus for SpringCloud | High-reliability, low-coupling, high-performance event-driven architecture based on `RocketMQ 5.0` |
-| Distributed Support | Supports distributed environments across multiple machines in a single service, SOA microservices | Single-machine only         | Supports distributed environments for a single service | Supports distributed environments in microservices | Supports distributed environments in microservices |
-| Reliability | Uses local message tables to ensure no data loss in distributed event-driven scenarios, achieving eventual consistency | Events not persisted, potential for loss | Uses local message tables for distributed event-driven handling | Not persistent; reliability depends on MQ in distributed mode | Depends on the stability of `RocketMQ` |
-| Ease of Use | Provides a `SpringBootStarter` package; simply introduce dependencies for quick adoption. Usage is nearly identical to `Google EventBus` | Simple to use             | Same usage as `Google EventBus`          | Usage similar to `Spring Application Event` | Introduce EventBridge-related dependencies |
-| Operations & Maintenance | Common component ecosystem, no additional deployment required (`DB` + `MQ`) | No additional deployment needed | Depends on Oracle (no MySQL version available) | Common component ecosystem, no additional deployment required (depends on MQ) | Deployment requires both `RocketMQ EventBridge` and `RocketMQ` |
-| Isolation   | Supports customizable isolation (storage, transmission) for different events with extensibility | No isolation                | No isolation                             | No isolation                                | No isolation                                      |
-| Stability   | Asynchronous event triggering supports custom rate limiting for both consumption and sending; tag-level isolation supported | No rate control             | Timed scheduling, difficult to control frequency, poor real-time performance | In distributed environments, heavily dependent on MQ stability; sudden spikes in events can easily cause bottlenecks | Depends on the stability of `RocketMQ EventBridge` and `RocketMQ` |
-| Extensibility | Storage supports relational databases like `JDBC`, and can be customized via APIs. Transmission supports `RocketMQ`, `Kafka`, and can also be extended | Not extensible            | Depends on `Oracle`; other storage components require code rewrites | Multiple transmission components provided, easy to extend | Strongly dependent on `RocketMQ`; no alternative components currently available |
+[快速开始](doc/QuickStart_zh.md)
+
+### 扩展性
+
+[扩展](doc/Extend_zh.md)
+
+### 同类型对比
+
+事件驱动框架有很多。常见的有：`Google EventBus`、`SpringCloud-Bus`、`killbill-queue`、`RocketMQ EventBridge`.
+针对每个框架的所专注的点做一些对比。
+
+|     | easy-event                                                      | Google EventBus    | killbill-queue                | SpringCloud-Bus                   | RocketMQ EventBridge                          |
+|-----|-----------------------------------------------------------------|--------------------|-------------------------------|-----------------------------------|-----------------------------------------------|
+| 介绍  | 基于`Google Guava`开发的分布式的最终一致性的，用法基本相同                            | 基于单机内存的 `EventBus` | 基于`DB`+`Google EventBus`开发的扩展 | springcloud 提供的可单机可分布式的`EventBus` | 基于`RocketMQ5.0`的高可靠、低耦合、高性能的事件驱动架构            |
+| 分布式 | 支持单服务的多机器的分布式环境、soa 微服务下的分布式环境                                  | 只支持单机              | 支持单服务的多机器的分布式                 | 支持微服务下的分布式环境                      | 支持微服务下的分布式环境                                  |                                               | 只支持单机              | 支持单服务的多机器的分布式                 | 支持微服务下的分布式环境                      | 支持微服务下的分布式环境                                  | 
+| 可靠性 | 使用本地消息表完成分布式事件驱动,数据不会丢失.最终一致性实现                                 | 事件未持久,存在丢失可能       | 使用本地消息表完成分布式事件驱动              | 未作持久化,分布式下依赖 MQ的可靠性               | 依赖`RocketMQ`的稳定性                              |
+| 易用性 | 提供`SpringBootStarer`包,引入相关依赖即可快熟使用。使用方法几乎和`Google EventBus` 相同  | 用法简单               | `Google EventBus` 相同          | 和`Spring Application Event`使用用法相同 | 引入EventBridge相关依赖                             |
+| 运维  | 常用组件生态,无需额外部署(`DB`+`MQ`)                                        | 无需额外部署             | 依赖`Oracle`（无`MySql`对应版本）      | 常用组件生态,无需额外部署(依赖`MQ`组件)           | 部署服务`RocketMQ EventBridge` 与 `RocketMQ`       |
+| 隔离性 | 支持不同事件自定义隔离（存储、传递）可扩展                                           | 无                  | 无                             | 无                                 | 无                                             |
+| 稳定性 | 异步事件触发支持消费和发送自定义限流。支持tag级别的隔离                                   | 无                  | 定时调度.很难控制频率。实时性较差             | 分布式下事件强依赖MQ稳定性。突发事件过多易出现尖刺        | 依赖服务 `RocketMQ EventBridge` 稳定性和`RocketMQ`稳定性 |
+| 扩展性 | 存储支持使用`JDBC`等关系型数据库，也可以根据api自定义扩展。传输支持`RocketMQ`、`Kafka`.也可以自定义扩展 | 无                  | 依赖`Oracle`.其他存储组件需要改写代码重新实现   | 传输提供了多个组件的实现。易扩展。                 | 强依赖`RocketMQ`,暂未提供其他可替换组件                     |
 
 ## 🌟Misc
 
