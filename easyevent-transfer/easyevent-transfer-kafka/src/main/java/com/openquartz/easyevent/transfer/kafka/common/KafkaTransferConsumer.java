@@ -1,12 +1,13 @@
 package com.openquartz.easyevent.transfer.kafka.common;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 
 /**
  * @author svnee
@@ -39,7 +40,7 @@ public class KafkaTransferConsumer extends Thread {
         try {
             doWork();
         } catch (Exception e) {
-            log.error("[KafkaTransferConsumer#run]Unexpected termination, exception thrown:" + e);
+            log.error("[KafkaTransferConsumer#run]Unexpected termination, exception thrown:", e);
         } finally {
             shutdown();
         }

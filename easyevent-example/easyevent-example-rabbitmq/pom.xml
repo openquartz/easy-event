@@ -10,7 +10,7 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>easyevent-example-rocketmq</artifactId>
+    <artifactId>easyevent-example-rabbitmq</artifactId>
     <packaging>jar</packaging>
 
     <name>${project.artifactId}</name>
@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>com.openquartz</groupId>
-            <artifactId>easyevent-spring-boot-starter-rocketmq</artifactId>
+            <artifactId>easyevent-spring-boot-starter-rabbitmq</artifactId>
         </dependency>
 
         <dependency>
@@ -51,11 +51,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-core</artifactId>
         </dependency>
 
     </dependencies>

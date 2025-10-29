@@ -20,6 +20,7 @@
         <module>easyevent-spring-boot-starter-disruptor</module>
         <module>easyevent-spring-boot-starter-kafka</module>
         <module>easyevent-spring-boot-starter-rocketmq</module>
+        <module>easyevent-spring-boot-starter-rabbitmq</module>
     </modules>
 
     <dependencies>

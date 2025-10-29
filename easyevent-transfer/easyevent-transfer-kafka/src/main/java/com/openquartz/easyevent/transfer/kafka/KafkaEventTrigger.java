@@ -1,20 +1,5 @@
 package com.openquartz.easyevent.transfer.kafka;
 
-import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.TopicPartition;
 import com.openquartz.easyevent.common.concurrent.lock.LockBizType;
 import com.openquartz.easyevent.common.concurrent.lock.LockSupport;
 import com.openquartz.easyevent.common.constant.CommonConstants;
@@ -30,6 +15,18 @@ import com.openquartz.easyevent.transfer.kafka.common.KafkaTransferConsumer;
 import com.openquartz.easyevent.transfer.kafka.common.KafkaTriggerProperty;
 import com.openquartz.easyevent.transfer.kafka.common.KafkaTriggerProperty.KafkaConsumerProperty;
 import com.openquartz.easyevent.transfer.kafka.property.KafkaCommonProperty;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
 /**
  * KafkaEventTrigger
@@ -113,7 +110,7 @@ public class KafkaEventTrigger implements EventTrigger {
                 .collect(Collectors.groupingBy(e -> e.getPartition().trim(), Collectors.toList()));
             if (partition2KafkaConsumerPropertyMap.containsKey(CommonConstants.ALL_MATCH_EXPRESSION)) {
 
-                Asserts.isTrueIfLog(partition2KafkaConsumerPropertyMap.keySet().size() == 1,
+                Asserts.isTrueIfLog(partition2KafkaConsumerPropertyMap.size() == 1,
                     () -> log.error(
                         "[KafkaEventTrigger#create] same topic has all match expression,meantime has spec partition expression! partition:{}",
                         partition2KafkaConsumerPropertyMap.keySet()),

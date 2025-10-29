@@ -18,6 +18,7 @@
         <module>easyevent-example-disruptor</module>
         <module>easyevent-example-rocketmq</module>
         <module>easyevent-example-kafka</module>
+        <module>easyevent-example-rabbitmq</module>
         <module>easyevent-example-soa</module>
     </modules>
 
