@@ -61,8 +61,8 @@ public class DataSourceFactory {
 
     @SuppressWarnings("unchecked")
     private DataSource buildDataSource(JdbcStorageProperties jdbcStorageProperties) {
+        String dataSourceType = jdbcStorageProperties.getDatasource().getType();
         try {
-            String dataSourceType = jdbcStorageProperties.getDatasource().getType();
 
             Class<? extends DataSource> type = (Class<? extends DataSource>) Class.forName(dataSourceType);
             String driverClassName = jdbcStorageProperties.getDatasource().getDriverClassName();
@@ -86,7 +86,7 @@ public class DataSourceFactory {
 
         } catch (ClassNotFoundException e) {
             log.error("[JdbcStorageAutoConfiguration#buildDataSource] class-not-found! error", e);
-            throw new EasyEventException(CommonErrorCode.CLASS_NOT_FOUND_ERROR);
+            throw EasyEventException.replacePlaceHold(CommonErrorCode.CLASS_NOT_FOUND_ERROR, dataSourceType);
         }
     }
 

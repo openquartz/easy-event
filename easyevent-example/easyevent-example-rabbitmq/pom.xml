@@ -17,6 +17,12 @@
     <description>${project.artifactId}</description>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.openquartz</groupId>
             <artifactId>easyevent-spring-boot-starter-rabbitmq</artifactId>

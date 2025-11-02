@@ -9,7 +9,7 @@ import lombok.Getter;
 public enum CommonErrorCode implements EasyEventErrorCode {
 
     PARAM_ILLEGAL_ERROR("01", "参数不合法异常"),
-    CLASS_NOT_FOUND_ERROR("02", "Class not exist!"),
+    CLASS_NOT_FOUND_ERROR("02", "Class {0} not exist!"),
     THREAD_PRIORITY_SETTER_MORE_ERROR("03", "Thread priority ({0}) must be >= {1}", true),
     THREAD_PRIORITY_SETTER_LESS_THAN_ERROR("04", "Thread priority ({0}) must be <= {1}", true),
     THREAD_EXECUTE_EXCEPTION_NULLABLE_ERROR("05", "Handle Exception must not be null!"),
