@@ -18,7 +18,7 @@ public class RabbitMqTriggerProperty {
      * key: 消费者标识
      * value: 消费者属性
      */
-    private final Map<String, RabbitMqConsumerProperty> consumerPropertyMap = new ConcurrentHashMap<>();
+    private Map<String, RabbitMqConsumerProperty> consumerPropertyMap = new ConcurrentHashMap<>();
 
     @Data
     public static class RabbitMqConsumerProperty {

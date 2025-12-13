@@ -115,7 +115,7 @@ public class RabbitMqTransferProducer implements TransferProducer, LifecycleBean
                 MessageProperties.PERSISTENT_TEXT_PLAIN,
                 messageBody.getBytes("UTF-8"));
                 
-            log.info("[RabbitMQ#sendMessage] data:{},exchange:{},routingKey:{}", 
+            log.debug("[RabbitMQ#sendMessage] data:{},exchange:{},routingKey:{}", 
                 eventBody, exchangeName, routingKey);
         } catch (Exception ex) {
             log.error("[RabbitMQ#sendMessage] exe-error!,data:{},exchange:{},routingKey:{}", 
@@ -148,7 +148,7 @@ public class RabbitMqTransferProducer implements TransferProducer, LifecycleBean
                 MessageProperties.PERSISTENT_TEXT_PLAIN,
                 messageBody.getBytes("UTF-8"));
                 
-            log.info("[RabbitMQ#asyncSendMessage] data:{},exchange:{},routingKey:{}", 
+            log.debug("[RabbitMQ#asyncSendMessage] data:{},exchange:{},routingKey:{}", 
                 eventBody, exchangeName, routingKey);
                 
             if (callback != null) {
