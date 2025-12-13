@@ -2,6 +2,7 @@ package com.openquartz.easyevent.example.rabbitmq.handler;
 
 import com.openquartz.easyevent.core.annotation.Subscribe;
 import com.openquartz.easyevent.example.rabbitmq.event.TestEvent;
+import com.openquartz.easyevent.starter.annotation.EventHandler;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -10,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author svnee
  */
 @Slf4j
+@EventHandler
 public class TestEventHandler {
 
     @Subscribe
