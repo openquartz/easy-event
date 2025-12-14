@@ -136,19 +136,35 @@ public class RabbitMqEventTrigger implements EventTrigger {
             // 设置QoS
             channel.basicQos(rabbitMqConsumerProperty.getConsumeConcurrentlyMaxSpan());
             
-            // 声明交换机
-            if (rabbitMqConsumerProperty.getExchangeName() != null) {
-                channel.exchangeDeclare(rabbitMqConsumerProperty.getExchangeName(), "topic", true);
+            String exchangeName = rabbitMqConsumerProperty.getExchangeName();
+            String routingKey = rabbitMqConsumerProperty.getRoutingKey();
+            
+            // 处理默认exchange的情况（空字符串或"/"）
+            boolean isDefaultExchange = exchangeName == null || exchangeName.isEmpty() || "/".equals(exchangeName);
+            
+            if (!isDefaultExchange) {
+                // 声明topic交换机
+                channel.exchangeDeclare(exchangeName, "topic", true);
             }
             
             // 声明队列
             channel.queueDeclare(rabbitMqConsumerProperty.getQueueName(), true, false, false, null);
             
             // 绑定队列到交换机
-            if (rabbitMqConsumerProperty.getExchangeName() != null && rabbitMqConsumerProperty.getRoutingKey() != null) {
+            if (!isDefaultExchange) {
+                // 使用topic exchange，需要绑定队列
+                String finalRoutingKey = (routingKey != null && !routingKey.isEmpty()) 
+                    ? routingKey 
+                    : rabbitMqConsumerProperty.getQueueName(); // 如果没有routingKey，使用队列名
+                
                 channel.queueBind(rabbitMqConsumerProperty.getQueueName(), 
-                                rabbitMqConsumerProperty.getExchangeName(), 
-                                rabbitMqConsumerProperty.getRoutingKey());
+                                exchangeName, 
+                                finalRoutingKey);
+                log.info("[RabbitMqEventTrigger#createConsumer] Queue {} bound to exchange {} with routingKey {}", 
+                    rabbitMqConsumerProperty.getQueueName(), exchangeName, finalRoutingKey);
+            } else {
+                log.info("[RabbitMqEventTrigger#createConsumer] Using default exchange, queue: {} (messages will be routed directly to queue)", 
+                    rabbitMqConsumerProperty.getQueueName());
             }
             
             RabbitMqTransferConsumer transferConsumer = new RabbitMqTransferConsumer(

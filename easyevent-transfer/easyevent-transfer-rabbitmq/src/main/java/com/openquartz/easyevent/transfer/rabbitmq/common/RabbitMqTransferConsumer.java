@@ -1,14 +1,11 @@
 package com.openquartz.easyevent.transfer.rabbitmq.common;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
-import com.rabbitmq.client.AMQP;
-import com.openquartz.easyevent.transfer.api.message.EventMessage;
 import com.openquartz.easyevent.common.utils.JSONUtil;
+import com.openquartz.easyevent.transfer.api.message.EventMessage;
+import com.rabbitmq.client.*;
 import lombok.extern.slf4j.Slf4j;
-import java.io.IOException;
+
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
@@ -61,11 +58,11 @@ public class RabbitMqTransferConsumer extends Thread {
                 public void handleDelivery(String consumerTag,
                                          Envelope envelope,
                                          AMQP.BasicProperties properties,
-                                         byte[] body) throws IOException {
+                                           byte[] body) {
                     long deliveryTag = envelope.getDeliveryTag();
                     
                     try {
-                        String messageBody = new String(body, "UTF-8");
+                        String messageBody = new String(body, StandardCharsets.UTF_8);
                         EventMessage eventMessage = JSONUtil.parseObject(messageBody, EventMessage.class);
                         
                         if (eventMessage != null && eventHandler != null) {
