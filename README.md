@@ -64,12 +64,14 @@
     - `easyevent-transfer-disruptor`: disruptor 作为事件传输的实现
     - `easyevent-transfer-rocketmq`: rocketmq 作为事件传输的实现
     - `easyevent-transfer-kafka`: kafka 作为事件传输的实现
+    - `easyevent-transfer-rabbitmq`: kafka 作为事件传输的实现
 
 - `easyevent-spring-boot-starter`: easyevent starter 包
     - `easyevent-spring-boot-starter-parent`: `easyevent starter parent`工程
     - `easyevent-spring-boot-starter-disruptor`: `disruptor` 作为事件传输的实现的 springboot starter
     - `easyevent-spring-boot-starter-kafka`: `kafka` 作为事件传输的实现的 springboot starter
     - `easyevent-spring-boot-starter-rocketmq`: `rocketmq` 作为事件传输的实现的 springboot starter
+    - `easyevent-spring-boot-starter-rabbitmq`: `rabbitmq` 作为事件传输的实现的 springboot starter
 
 - `easyevent-spring-boot-starter-soa`: easyevent soa 支持starter 包
     - `easyevent-spring-boot-starter-soa-api`: `easyevent soa event api`工程
