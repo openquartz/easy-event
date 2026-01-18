@@ -60,6 +60,15 @@ public abstract class Dispatcher {
     }
 
     /**
+     * Returns a dispatcher that dispatches events to subscribers immediately as they're posted
+     * without waiting for the concurrent execution result.
+     */
+    public static Dispatcher asyncImmediate(ExpressionParser expressionParser) {
+        Dispatcher.expressionParser = expressionParser;
+        return AsyncImmediateDispatcher.INSTANCE;
+    }
+
+    /**
      * Dispatches the given {@code event} to the given {@code subscribers}.
      */
     public abstract DispatchInvokeResult dispatch(Object event, Iterator<Subscriber> subscribers, boolean joinTransaction);
@@ -249,6 +258,54 @@ public abstract class Dispatcher {
 
             return dispatchConcurrentEvent(concurrentSubscriberList, event, context)
                     .merge(dispatchSyncEvent(syncSubscriberList, event, context));
+        }
+    }
+
+    /**
+     * Implementation of {@link #asyncImmediate(ExpressionParser)}.
+     */
+    private static final class AsyncImmediateDispatcher extends Dispatcher {
+
+        private static final AsyncImmediateDispatcher INSTANCE = new AsyncImmediateDispatcher();
+
+        @Override
+        public DispatchInvokeResult dispatch(Object event, Iterator<Subscriber> subscribers, boolean joinTransaction) {
+            checkNotNull(event);
+            HandlerInterceptorContext context = new HandlerInterceptorContext();
+
+            List<Subscriber> syncSubscriberList = new ArrayList<>();
+            List<Subscriber> concurrentSubscriberList = new ArrayList<>();
+
+            while (subscribers.hasNext()) {
+
+                Subscriber subscriber = subscribers.next();
+                if (subscriber.isJoinTransaction() != joinTransaction) {
+                    continue;
+                }
+
+                if (subscriber instanceof SynchronizedSubscriber) {
+                    syncSubscriberList.add(subscriber);
+                } else {
+                    concurrentSubscriberList.add(subscriber);
+                }
+            }
+
+            // sort sync subscriber
+            syncSubscriberList.sort((Comparator.comparingInt(Subscriber::getOrder)));
+
+            // Dispatch concurrent events without waiting
+            DispatchInvokeResult concurrentResult = new DispatchInvokeResult(event);
+            if (!CollectionUtils.isEmpty(concurrentSubscriberList)) {
+                for (Subscriber subscriber : concurrentSubscriberList) {
+                    if (!subscriber.shouldSubscribe(Dispatcher.expressionParser, event)) {
+                        continue;
+                    }
+                    // Fire and forget
+                    subscriber.concurrentDispatchEvent(event, context);
+                }
+            }
+
+            return concurrentResult.merge(dispatchSyncEvent(syncSubscriberList, event, context));
         }
     }
 }

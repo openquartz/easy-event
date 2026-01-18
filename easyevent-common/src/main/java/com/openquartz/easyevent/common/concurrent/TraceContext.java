@@ -52,6 +52,7 @@ public class TraceContext {
         Map<String, Object> map = CURRENT_TRACE_CONTEXT.get();
         if (Objects.isNull(map)) {
             map = new HashMap<>();
+            CURRENT_TRACE_CONTEXT.set(map);
         }
 
         return map.putIfAbsent(param.getCode(), value);
@@ -65,6 +66,7 @@ public class TraceContext {
         Map<String, Object> map = CURRENT_TRACE_CONTEXT.get();
         if (Objects.isNull(map)) {
             map = new HashMap<>();
+            CURRENT_TRACE_CONTEXT.set(map);
         }
 
         return map.put(param.getCode(), value);

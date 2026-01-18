@@ -4,7 +4,10 @@ import com.openquartz.easyevent.core.EventBus;
 import com.openquartz.easyevent.core.Subscriber;
 import com.openquartz.easyevent.core.dispatcher.DispatchInvokeResult;
 
+import com.openquartz.easyevent.common.utils.StringUtils;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.openquartz.easyevent.storage.model.EventBody;
@@ -77,6 +80,11 @@ public abstract class AsyncEventHandlerAdapter implements AsyncEventHandler {
 
             // put traceId
             TraceContext.putSourceEventIdIfAbsent(eventMessage.getEventId().getId());
+            if (StringUtils.isNotBlank(entity.getTraceId())) {
+                Map<String, String> traceMap = new HashMap<>();
+                traceMap.put("traceId", entity.getTraceId());
+                TraceContext.putTrace(traceMap);
+            }
 
             TriggerInterceptorContext context = new TriggerInterceptorContext();
             boolean preTrigger = TriggerInterceptorChain.applyPreTrigger(eventMessage, context);

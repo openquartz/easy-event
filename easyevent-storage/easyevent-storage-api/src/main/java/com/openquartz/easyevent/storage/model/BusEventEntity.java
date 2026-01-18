@@ -14,11 +14,6 @@ import lombok.EqualsAndHashCode;
 public class BusEventEntity extends BaseEventEntity {
 
     /**
-     * traceId
-     */
-    private String traceId;
-
-    /**
      * EventData
      */
     private String eventData;

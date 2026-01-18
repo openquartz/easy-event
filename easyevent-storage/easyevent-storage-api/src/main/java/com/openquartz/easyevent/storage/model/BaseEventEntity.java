@@ -28,6 +28,11 @@ public class BaseEventEntity {
     private Long sourceId;
 
     /**
+     * traceId
+     */
+    private String traceId;
+
+    /**
      * Event-Class
      */
     private String className;

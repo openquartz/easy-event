@@ -33,6 +33,18 @@ public class AsyncEventBus extends EventBus {
     /**
      * Creates a new AsyncEventBus that will use {@code executor} to dispatch events.
      *
+     * @param identifier       short name for the bus, for logging purposes.
+     * @param executor         Executor to use to dispatch events.
+     * @param expressionParser expression parser
+     * @param fireAndForget    if true, post() will return immediately without waiting for subscribers to finish.
+     */
+    public AsyncEventBus(String identifier, ExecutorService executor, ExpressionParser expressionParser, boolean fireAndForget) {
+        super(identifier, executor, fireAndForget ? Dispatcher.asyncImmediate(expressionParser) : Dispatcher.immediate(expressionParser), LoggingHandler.INSTANCE);
+    }
+
+    /**
+     * Creates a new AsyncEventBus that will use {@code executor} to dispatch events.
+     *
      * @param executor                   Executor to use to dispatch events. It is the caller's responsibility to shut
      *                                   down the executor after the last event has been posted to this event bus.
      * @param subscriberExceptionHandler Handler used to handle exceptions thrown from subscribers.

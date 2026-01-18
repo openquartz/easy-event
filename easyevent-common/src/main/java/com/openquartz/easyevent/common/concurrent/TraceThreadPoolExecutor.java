@@ -86,9 +86,18 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
     public void execute(Runnable command) {
         TraceRunnable traceRunnable = new TraceRunnable(command);
         Map<String, String> traceContextMap = MDC.getCopyOfContextMap();
-        TraceContext.putTrace(traceContextMap);
-        Map<String, Object> contextMap = TraceContext.getTraceContextMap();
-        if (contextMap != null && !contextMap.isEmpty()) {
+        
+        Map<String, Object> contextMap = new java.util.HashMap<>();
+        Map<String, Object> currentTraceContext = TraceContext.getTraceContextMap();
+        if (currentTraceContext != null && !currentTraceContext.isEmpty()) {
+            contextMap.putAll(currentTraceContext);
+        }
+
+        if (traceContextMap != null && !traceContextMap.isEmpty()) {
+            contextMap.put(TraceContextParam.TRACE_ID.getCode(), traceContextMap);
+        }
+        
+        if (!contextMap.isEmpty()) {
             traceRunnable.setTraceContextMap(contextMap);
         }
         super.execute(traceRunnable);

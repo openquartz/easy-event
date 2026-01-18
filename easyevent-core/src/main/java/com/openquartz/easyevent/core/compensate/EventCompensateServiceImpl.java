@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import com.openquartz.easyevent.storage.model.*;
 import lombok.extern.slf4j.Slf4j;
+import com.openquartz.easyevent.common.concurrent.TraceContext;
 import com.openquartz.easyevent.common.concurrent.lock.LockBizType;
 import com.openquartz.easyevent.common.concurrent.lock.LockSupport;
 import com.openquartz.easyevent.common.model.Pair;
@@ -98,6 +99,13 @@ public class EventCompensateServiceImpl implements EventCompensateService {
 
             compensateExecutor.execute(() -> {
                 try {
+                    // Inject trace context
+                    if (entity.getTraceId() != null) {
+                        java.util.Map<String, String> traceMap = new java.util.HashMap<>();
+                        traceMap.put("traceId", entity.getTraceId());
+                        TraceContext.putTrace(traceMap);
+                    }
+
                     // lock key
                     Pair<String, LockBizType> lockKey = Pair
                             .of(String.valueOf(entity.getEntityId()), LockBizType.EVENT_HANDLE);
@@ -122,6 +130,7 @@ public class EventCompensateServiceImpl implements EventCompensateService {
                 } catch (Exception ex) {
                     log.error("[EventCompensateService#compensate]doHandle-error!eventMessage:{}", eventMessage, ex);
                 } finally {
+                    TraceContext.clear();
                     countDownLatch.countDown();
                 }
             });

@@ -7,6 +7,7 @@ import com.openquartz.easyevent.starter.transaction.DataSourceFactory;
 import com.openquartz.easyevent.storage.api.EventStorageService;
 import com.openquartz.easyevent.storage.identify.IdGenerator;
 import com.openquartz.easyevent.storage.jdbc.JdbcEventStorageServiceImpl;
+import com.openquartz.easyevent.storage.jdbc.identify.SnowflakeIdGenerator;
 import com.openquartz.easyevent.storage.jdbc.mapper.BusEventEntityMapper;
 import com.openquartz.easyevent.storage.jdbc.mapper.impl.BusEventEntityMapperImpl;
 import com.openquartz.easyevent.storage.jdbc.sharding.ShardingRouter;
@@ -57,6 +58,12 @@ public class JdbcStorageAutoConfiguration {
             @Qualifier("jdbcStorageJdbcTemplate") JdbcTemplate jdbcStorageJdbcTemplate,
             EasyEventTableGeneratorSupplier easyEventTableGeneratorSupplier) {
         return new BusEventEntityMapperImpl(jdbcStorageJdbcTemplate, easyEventTableGeneratorSupplier);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IdGenerator.class)
+    public IdGenerator idGenerator() {
+        return new SnowflakeIdGenerator();
     }
 
     @Bean

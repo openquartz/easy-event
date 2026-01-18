@@ -65,7 +65,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
     private static final String GET_SUCCESS_SUBSCRIBER_SQL = "select successful_subscriber from {0} where id = ?";
     private static final String GET_ALL_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id from {0} ";
-    private static final String GET_BASE_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,id from {0} where id =?";
+    private static final String GET_BASE_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,id from {0} where id =?";
 
     private static final String GET_ID_SQL = "select id from {0} where id =?";
 
@@ -325,6 +325,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             baseEventEntity.setSuccessfulSubscriberList(
                     Joiner.split(rs.getString("successful_subscriber"), CommonConstants.COMMA));
             baseEventEntity.setProcessingState(EventLifecycleState.of(rs.getString("processing_state")));
+            baseEventEntity.setTraceId(rs.getString("trace_id"));
             return baseEventEntity;
         }, eventId.getId());
         if (CollectionUtils.isEmpty(entityList)) {
