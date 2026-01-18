@@ -1,374 +1,162 @@
-## 扩展
+# 扩展指南
 
-### 拦截
+## 1. 拦截器扩展
 
-EasyEvent 针对事件的拦截,提供了三个节点的拦截。分别为 **发布前后**、**触发前后**、**处理前后**。用户可以根据自己的需要做对应的实现进行统一的拦截处理。
+EasyEvent 提供了事件处理三个阶段的拦截能力：**发布前后**、**触发前后**、**处理前后**。您可以根据需要实现自定义逻辑进行统一拦截。
 
-#### 发布前后拦截
+### 1.1 发布拦截 (Publisher Interception)
 
-服务提供 在调用`com.openquartz.easyevent.core.publisher.EventPublisher`时发布前完成时，发布前后进行拦截。\
-拦截接口为：`com.openquartz.easyevent.core.intreceptor.PublisherInterceptor`并且注入到Spring 工厂中。
+在调用 `EventPublisher` 发布事件的前后进行拦截。
+
+接口：`com.openquartz.easyevent.core.intreceptor.PublisherInterceptor`
 
 ```java
-package com.openquartz.easyevent.core.intreceptor;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-/**
- * 同步拦截器
- *
- * @author svnee
- */
 public interface PublisherInterceptor {
+    /**
+     * 发布前钩子
+     * @param event 发布的事件
+     */
+    void onPublish(Object event);
 
     /**
-     * 默认先拦截顺序
-     *
-     * @return 顺序
+     * 发布后钩子
+     * @param event 发布的事件
      */
-    default int order() {
-        return Integer.MAX_VALUE;
-    }
-
-    /**
-     * 发布开始之前
-     *
-     * @param event event
-     * @param context 上下文
-     * @return true-执行下一个拦截器，否则默认已经响应完成。直接返回
-     */
-    default boolean prePublish(Object event, PublisherInterceptorContext context) {
-        return true;
-    }
-
-    /**
-     * 发布完成后
-     *
-     * @param event event
-     * @param context context
-     * @param ex 发生异常时的异常信息
-     */
-    default void afterCompletion(Object event, PublisherInterceptorContext context, @Nullable Exception ex) {
-
-    }
+    void afterPublish(Object event);
 }
 ```
 
-#### 触发前后拦截
+实现该接口并注册为 Spring Bean 即可生效。
 
-在异步发布事件后通过`EventTrigger`时进行前后拦截。提供拦截接口`com.openquartz.easyevent.core.intreceptor.TriggerInterceptor`
+### 1.2 触发拦截 (Trigger Interception)
+
+在异步任务被触发（例如提交到线程池或消息队列）的前后进行拦截。
+
+接口：`com.openquartz.easyevent.core.intreceptor.TriggerInterceptor`
 
 ```java
-package com.openquartz.easyevent.core.intreceptor;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
-import com.openquartz.easyevent.transfer.api.message.EventMessage;
-
-/**
- * Trigger Interceptor
- *
- * @author svnee
- */
 public interface TriggerInterceptor {
+    /**
+     * 触发前钩子
+     * @param eventContext 事件上下文
+     */
+    void onTrigger(EventContext eventContext);
 
     /**
-     * 默认先拦截顺序
-     *
-     * @return 顺序
+     * 触发后钩子
+     * @param eventContext 事件上下文
      */
-    default int order() {
-        return Integer.MAX_VALUE;
-    }
-
-    /**
-     * 处理开始之前
-     *
-     * @param message trigger-消息
-     * @param context context
-     * @return trigger flag
-     */
-    default boolean preTrigger(EventMessage message, TriggerInterceptorContext context) {
-        return true;
-    }
-
-    /**
-     * 处理完成后
-     *
-     * @param message message
-     * @param context context
-     * @param ex 发生异常时的异常信息
-     */
-    default void afterCompletion(EventMessage message, TriggerInterceptorContext context, @Nullable Exception ex) {
-    }
+    void afterTrigger(EventContext eventContext);
 }
 ```
 
-#### 处理前后拦截
+### 1.3 处理拦截 (Handler Interception)
 
-事件触发调用订阅者执行业务逻辑前后执行。提供拦截接口`com.openquartz.easyevent.core.intreceptor.HandlerInterceptor`
+在订阅者方法实际执行的前后进行拦截。
+
+接口：`com.openquartz.easyevent.core.intreceptor.HandlerInterceptor`
 
 ```java
-package com.openquartz.easyevent.core.intreceptor;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-/**
- * Handle Interceptor
- *
- * @author svnee
- */
-public interface HandlerInterceptor<T> {
+public interface HandlerInterceptor {
+    /**
+     * 处理前钩子
+     * @param eventContext 事件上下文
+     */
+    void onHandle(EventContext eventContext);
 
     /**
-     * 默认先拦截顺序
-     *
-     * @return 顺序
+     * 处理后钩子
+     * @param eventContext 事件上下文
      */
-    default int order() {
-        return Integer.MAX_VALUE;
-    }
-
-    /**
-     * 处理开始之前
-     *
-     * @param event event
-     * @param handler 处理器
-     * @param context 上下文
-     * @return true-执行下一个拦截器，否则默认已经响应完成。直接返回
-     */
-    default boolean preHandle(T event, Object handler, HandlerInterceptorContext context) {
-        return true;
-    }
-
-    /**
-     * 处理完成后
-     *
-     * @param event event
-     * @param handler 处理器
-     * @param context context
-     * @param ex 发生异常时的异常信息
-     */
-    default void afterCompletion(T event, Object handler, HandlerInterceptorContext context,
-        @Nullable Exception ex) {
-    }
+    void afterHandle(EventContext eventContext);
 }
 ```
 
-### 路由
+## 2. 事件路由 (Event Routing)
 
-EasyEvent支持用户自定义异步事件发布到不同的队列topic中。默认发布到配置的topic中.配置为:`easyevent.transfer.common.default-topic`
-如果用户需要将不同的消息发送到不同的队列的topic中时。可以实现接口`com.openquartz.easyevent.transfer.api.route.EventRouter`
+您可以自定义事件路由策略，决定事件的分发路径。
+
+接口：`com.openquartz.easyevent.core.route.EventRouter`
 
 ```java
-package com.openquartz.easyevent.transfer.api.route;
-
-import com.openquartz.easyevent.common.model.Pair;
-
-/**
- * 事件路由服务
- *
- * @author svnee
- */
 public interface EventRouter {
-
     /**
-     * 事件路由topic
-     *
-     * @param event event
-     * @return 路由topic。key: topic,value: 和具体实现相关。如果是 rocketmq指向tag,kafka指向partition.可为null
+     * 决定事件的路由键
+     * @param event 事件对象
+     * @return 路由键
      */
-    Pair<String, String> route(Object event);
+    String route(Object event);
 }
 ```
 
-如果实现了自定义路由需要在配置中添加消费者配置。
-`easyevent.transfer.trigger.<mq-alias>.consumers.<consumer-alias>.<property>`
+默认实现：`DefaultEventRouter`（基于事件类型路由）。
 
-例如：
+## 3. 限流控制 (Rate Limiting)
 
-```properties
-easyevent.transfer.trigger.rocketmq.consumers.test.consumer-group=test1
-easyevent.transfer.trigger.rocketmq.consumers.test.topic=easyevent
-easyevent.transfer.trigger.rocketmq.consumers.test.consume-concurrently-max-span=10
-easyevent.transfer.trigger.rocketmq.consumers.test.tags=*
-easyevent.transfer.trigger.rocketmq.consumers.test.consumer-min-thread=1
-easyevent.transfer.trigger.rocketmq.consumers.test.consumer-max-thread=3
-easyevent.transfer.trigger.rocketmq.consumers.test.consume-max-retry=5
-easyevent.transfer.trigger.rocketmq.consumers.test.consume-retry-delay-time-interval-seconds=5
-easyevent.transfer.trigger.rocketmq.consumers.test.consume-liming-retry-delay-time-base-seconds=5
-```
+EasyEvent 支持在 **发送** 和 **触发** 阶段进行限流。
 
-### 限流
+### 3.1 传输发送限流
 
-针对系统的稳定性这一块,EasyEvent服务提供了在事件发送前后的限流。\
-用户可以根据需要设置不同的限流。如果限流不通过需要抛出异常`com.openquartz.easyevent.transfer.api.limiting.LimitingBlockedException`
+控制事件发送到传输层（如 Disruptor, Kafka）的速率。
 
-#### 发送前限流
+接口：`com.openquartz.easyevent.core.limiting.EventTransferSenderLimitingControl`
 
-在发送消息前提供限流扩展点,接口为:`com.openquartz.easyevent.transfer.api.limiting.EventTransferSenderLimitingControl`
+### 3.2 传输触发限流
+
+控制消费者处理事件的速率。
+
+接口：`com.openquartz.easyevent.core.limiting.EventTransferTriggerLimitingControl`
+
+## 4. 分布式锁 (Distributed Lock)
+
+在集群环境下，某些协调任务需要分布式锁支持。
+
+接口：`com.openquartz.easyevent.common.lock.DistributedLockFactory`
 
 ```java
-package com.openquartz.easyevent.transfer.api.limiting;
-
-import java.util.List;
-import java.util.function.BiConsumer;
-import com.openquartz.easyevent.storage.identify.EventId;
-
-/**
- * EventTransfer Sender Limiting Control
- *
- * @author svnee
- */
-public interface EventTransferSenderLimitingControl {
-
-    /**
-     * control event handle
-     * if limiting blocked throw {@link LimitingBlockedException}
-     *
-     * @param event event content
-     * @param eventId eventId
-     * @param senderConsumer sender function
-     */
-    <T> void control(T event, EventId eventId, BiConsumer<T, EventId> senderConsumer);
-
-    /**
-     * control event handle
-     * if limiting blocked throw {@link LimitingBlockedException}
-     *
-     * @param eventList eventList
-     * @param eventIdList eventIdList
-     * @param batchSenderConsumer batch sender function
-     */
-    <T> void control(List<T> eventList, List<EventId> eventIdList,
-        BiConsumer<List<T>, List<EventId>> batchSenderConsumer);
-}
-```
-
-默认实现为：`com.openquartz.easyevent.transfer.api.limiting.impl.DefaultEventTransferSenderLimitingControl`
-
-#### 触发前限流
-
-在消费消息前提供限流扩展点,接口为:`com.openquartz.easyevent.transfer.api.limiting.EventTransferTriggerLimitingControl`
-
-```java
-package com.openquartz.easyevent.transfer.api.limiting;
-
-import java.util.function.Consumer;
-import com.openquartz.easyevent.transfer.api.message.EventMessage;
-
-/**
- * EventTransfer Trigger Limiting Control
- *
- * @author svnee
- */
-public interface EventTransferTriggerLimitingControl {
-
-    /**
-     * control
-     * if limiting blocked throw {@link LimitingBlockedException}
-     *
-     * @param eventMessage event-message
-     * @param eventHandleFunction function
-     */
-    void control(EventMessage eventMessage, Consumer<EventMessage> eventHandleFunction);
-}
-```
-
-默认实现为: `com.openquartz.easyevent.transfer.api.limiting.impl.DefaultEventTransferTriggerLimitingControl`
-
-### 分布式锁
-
-由于`EasyEvent`需要中间件来做分布式调度时,可能存在消息丢失的情况或者触发失败以及积压等情况时,所以`EasyEvent`设置了补偿Job触发。\
-所以很难保证在同一时刻的同一事件的消费不会并发执行。目前`EasyEvent`提供了单机的安全。但是在分布式环境下，需要用户自定义实现分布式锁以保证并发。 或者用户在 消费订阅者的 实际事件处理逻辑中兼容掉此并发。
-
-如果用户实现分布式锁的，系统提供扩展点接口`com.openquartz.easyevent.common.concurrent.lock.DistributedLockFactory`
-
-```java
-package com.openquartz.easyevent.common.concurrent.lock;
-
-import java.util.concurrent.locks.Lock;
-import com.openquartz.easyevent.common.model.Pair;
-
-/**
- * Distributed EventLock
- *
- * @author svnee
- */
 public interface DistributedLockFactory {
-
     /**
-     * Get Lock
-     *
-     * @param lockKey lockKey
-     * @return lock must not be null
+     * 获取分布式锁
+     * @param key 锁键
+     * @return 锁实例
      */
-    Lock getLock(Pair<String, LockBizType> lockKey);
+    Lock getLock(String key);
 }
 ```
 
-用户可以使用第三方分布式中间件实现此接口,并注入到Spring工厂中。\
-推荐使用`Redisson`作为分布式锁的实现
+用户需要实现此接口（例如使用 Redis/Redisson 或 Zookeeper）并注册为 Spring Bean。
 
-### 分布式ID
+## 5. 分布式 ID 生成
 
-`EasyEvent`在使用EventStorage存储时。使用jdbc作为实现时,`EventId`提供了默认基于数据库ID的实现方案。\
-如果需要使用其他的作为实现EventId, 用户可以自定义实现接口:`com.openquartz.easyevent.storage.identify.IdGenerator`
+自定义事件 ID 的生成策略。
+
+接口：`com.openquartz.easyevent.storage.identify.IdGenerator`
 
 ```java
-package com.openquartz.easyevent.storage.identify;
-
-/**
- * ID 生成 器
- *
- * @author svnee
- **/
 public interface IdGenerator {
-
     /**
-     * 生成ID
-     * 如果返回null 代表使用数据库自增实现
-     *
-     * @return ID
+     * 生成唯一 ID
+     * @return 唯一 ID
      */
-    default Long generateId() {
-        return null;
-    }
+    Long generateId();
 }
 ```
 
-并注入到Spring工厂中。\
-推荐使用`雪花算法ID`
+默认实现使用雪花算法 (Snowflake)。
 
-### 分表支持
+## 6. 分表策略 (Table Sharding)
 
-`EasyEvent`支持按照EventEntityID 进行自定义分表。默认是进行hash 分表。
-自定义分表路由接口为:`com.openquartz.easyevent.storage.jdbc.sharding.ShardingRouter`.
+如果事件数据量较大，可以实现分表策略。
 
-默认实现为：`com.openquartz.easyevent.storage.jdbc.sharding.impl.DefaultShardingRouterImpl`.依赖提供`IdGenerator`的实现。
+接口：`com.openquartz.easyevent.storage.sharding.ShardingRouter`
+
 ```java
-package com.openquartz.easyevent.storage.jdbc.sharding;
-
-/**
- * sharding
- *
- * @author svnee
- */
 public interface ShardingRouter {
-
     /**
-     * 分片
-     *
-     * 如果不开启分片时,需要返回值小于0即可。否则返回的是下标
-     *
-     * @param eventEntityId entityId
-     * @return sharding index
+     * 决定表下标
+     * @param event 事件对象
+     * @return 表下标后缀
      */
-    int sharding(Long eventEntityId);
-
-    /**
-     * totalSharding
-     * @return totalSharding
-     */
-    int totalSharding();
+    int route(BaseEventEntity event);
 }
 ```

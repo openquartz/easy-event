@@ -1,374 +1,162 @@
-## Extension
+# Extension Guide
 
-### Interception
+## 1. Interception
 
-EasyEvent provides interception at three stages of event processing: **before/after publishing**, **before/after triggering**, and **before/after handling**. Users can implement custom logic for unified interception according to their needs.
+EasyEvent provides interception at three stages of event processing: **Before/After Publishing**, **Before/After Triggering**, and **Before/After Handling**. You can implement custom logic for unified interception as needed.
 
-#### Before/After Publishing Interception
+### 1.1 Publisher Interception
 
-Interception is performed before and after the completion of event publishing when invoking [com.openquartz.easyevent.core.publisher.EventPublisher](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/publisher/EventPublisher.java#L7-L35).  
-The interception interface is: [com.openquartz.easyevent.core.intreceptor.PublisherInterceptor](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-core/src/main/java/com/openquartz/easyevent/core/intreceptor/PublisherInterceptor.java#L9-L42), which should be injected into the Spring factory.
+Interception occurs before and after the event is published via `EventPublisher`.
+
+Interface: `com.openquartz.easyevent.core.intreceptor.PublisherInterceptor`
 
 ```java
-package com.openquartz.easyevent.core.intreceptor;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-/**
- * Synchronous interceptor
- *
- * @author svnee
- */
 public interface PublisherInterceptor {
+    /**
+     * Pre-publish hook
+     * @param event The event being published
+     */
+    void onPublish(Object event);
 
     /**
-     * Default interception order
-     *
-     * @return Order
+     * Post-publish hook
+     * @param event The event that was published
      */
-    default int order() {
-        return Integer.MAX_VALUE;
-    }
-
-    /**
-     * Before publishing starts
-     *
-     * @param event Event object
-     * @param context Context
-     * @return true - proceed to next interceptor; false - response already completed, return directly
-     */
-    default boolean prePublish(Object event, PublisherInterceptorContext context) {
-        return true;
-    }
-
-    /**
-     * After publishing completes
-     *
-     * @param event Event object
-     * @param context Context
-     * @param ex Exception if any occurred
-     */
-    default void afterCompletion(Object event, PublisherInterceptorContext context, @Nullable Exception ex) {
-
-    }
+    void afterPublish(Object event);
 }
 ```
 
-#### Before/After Triggering Interception
+Implement this interface and register it as a Spring Bean.
 
-Interception is performed before and after asynchronous event triggering via `EventTrigger`. The interception interface provided is `com.openquartz.easyevent.core.intreceptor.TriggerInterceptor`.
+### 1.2 Trigger Interception
+
+Interception occurs before the asynchronous task is triggered (e.g., sent to the thread pool or message queue).
+
+Interface: `com.openquartz.easyevent.core.intreceptor.TriggerInterceptor`
 
 ```java
-package com.openquartz.easyevent.core.intreceptor;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
-import com.openquartz.easyevent.transfer.api.message.EventMessage;
-
-/**
- * Trigger Interceptor
- *
- * @author svnee
- */
 public interface TriggerInterceptor {
+    /**
+     * Pre-trigger hook
+     * @param eventContext Event context
+     */
+    void onTrigger(EventContext eventContext);
 
     /**
-     * Default interception order
-     *
-     * @return Order
+     * Post-trigger hook
+     * @param eventContext Event context
      */
-    default int order() {
-        return Integer.MAX_VALUE;
-    }
-
-    /**
-     * Before processing starts
-     *
-     * @param message Trigger message
-     * @param context Context
-     * @return Trigger flag
-     */
-    default boolean preTrigger(EventMessage message, TriggerInterceptorContext context) {
-        return true;
-    }
-
-    /**
-     * After processing completes
-     *
-     * @param message Message
-     * @param context Context
-     * @param ex Exception if any occurred
-     */
-    default void afterCompletion(EventMessage message, TriggerInterceptorContext context, @Nullable Exception ex) {
-    }
+    void afterTrigger(EventContext eventContext);
 }
 ```
 
-#### Before/After Handling Interception
+### 1.3 Handler Interception
 
-Interception occurs before and after invoking subscribers to execute business logic upon event triggering. The interception interface provided is `com.openquartz.easyevent.core.intreceptor.HandlerInterceptor`.
+Interception occurs before and after the actual subscriber method is invoked.
+
+Interface: `com.openquartz.easyevent.core.intreceptor.HandlerInterceptor`
 
 ```java
-package com.openquartz.easyevent.core.intreceptor;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-/**
- * Handle Interceptor
- *
- * @author svnee
- */
-public interface HandlerInterceptor<T> {
+public interface HandlerInterceptor {
+    /**
+     * Pre-handle hook
+     * @param eventContext Event context
+     */
+    void onHandle(EventContext eventContext);
 
     /**
-     * Default interception order
-     *
-     * @return Order
+     * Post-handle hook
+     * @param eventContext Event context
      */
-    default int order() {
-        return Integer.MAX_VALUE;
-    }
-
-    /**
-     * Before handling starts
-     *
-     * @param event Event
-     * @param handler Handler
-     * @param context Context
-     * @return true - proceed to next interceptor; false - response already completed, return directly
-     */
-    default boolean preHandle(T event, Object handler, HandlerInterceptorContext context) {
-        return true;
-    }
-
-    /**
-     * After handling completes
-     *
-     * @param event Event
-     * @param handler Handler
-     * @param context Context
-     * @param ex Exception if any occurred
-     */
-    default void afterCompletion(T event, Object handler, HandlerInterceptorContext context,
-        @Nullable Exception ex) {
-    }
+    void afterHandle(EventContext eventContext);
 }
 ```
 
-### Routing
+## 2. Event Routing
 
-EasyEvent supports custom routing of asynchronous events to different queue topics. By default, events are published to the configured topic: `easyevent.transfer.common.default-topic`.  
-If users need to send different messages to different topics, they can implement the interface [com.openquartz.easyevent.transfer.api.route.EventRouter](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/route/EventRouter.java#L9-L19).
+You can customize how events are routed to different processing channels.
+
+Interface: `com.openquartz.easyevent.core.route.EventRouter`
 
 ```java
-package com.openquartz.easyevent.transfer.api.route;
-
-import com.openquartz.easyevent.common.model.Pair;
-
-/**
- * Event routing service
- *
- * @author svnee
- */
 public interface EventRouter {
-
     /**
-     * Route event to a topic
-     *
-     * @param event Event object
-     * @return Routing topic. Key: topic, Value: implementation-specific (e.g., RocketMQ tag, Kafka partition). Can be null.
+     * Determine the route for an event
+     * @param event The event
+     * @return The route key
      */
-    Pair<String, String> route(Object event);
+    String route(Object event);
 }
 ```
 
-If a custom router is implemented, consumer configurations need to be added in the configuration:
-`easyevent.transfer.trigger.<mq-alias>.consumers.<consumer-alias>.<property>`
+Default implementation: `DefaultEventRouter` (routes based on event type).
 
-Example:
+## 3. Rate Limiting
 
-```properties
-easyevent.transfer.trigger.rocketmq.consumers.test.consumer-group=test1
-easyevent.transfer.trigger.rocketmq.consumers.test.topic=easyevent
-easyevent.transfer.trigger.rocketmq.consumers.test.consume-concurrently-max-span=10
-easyevent.transfer.trigger.rocketmq.consumers.test.tags=*
-easyevent.transfer.trigger.rocketmq.consumers.test.consumer-min-thread=1
-easyevent.transfer.trigger.rocketmq.consumers.test.consumer-max-thread=3
-easyevent.transfer.trigger.rocketmq.consumers.test.consume-max-retry=5
-easyevent.transfer.trigger.rocketmq.consumers.test.consume-retry-delay-time-interval-seconds=5
-easyevent.transfer.trigger.rocketmq.consumers.test.consume-liming-retry-delay-time-base-seconds=5
-```
+EasyEvent supports rate limiting at both the **Send** (Transfer) and **Trigger** stages.
 
-### Rate Limiting
+### 3.1 Transfer Sender Limiting
 
-To ensure system stability, EasyEvent provides rate limiting before sending and consuming events.  
-Users can configure different rate limits as needed. If rate limiting is not passed, an exception [com.openquartz.easyevent.transfer.api.limiting.LimitingBlockedException](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/limiting/LimitingBlockedException.java#L10-L16) should be thrown.
+Controls the rate at which events are sent to the transfer layer (e.g., Disruptor, Kafka).
 
-#### Sender-Side Rate Limiting
+Interface: `com.openquartz.easyevent.core.limiting.EventTransferSenderLimitingControl`
 
-Rate limiting extension point before sending messages: Interface [com.openquartz.easyevent.transfer.api.limiting.EventTransferSenderLimitingControl](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/limiting/EventTransferSenderLimitingControl.java#L11-L33).
+### 3.2 Trigger Limiting
+
+Controls the rate at which events are processed by consumers.
+
+Interface: `com.openquartz.easyevent.core.limiting.EventTransferTriggerLimitingControl`
+
+## 4. Distributed Lock
+
+When using clustering, a distributed lock is required for certain coordination tasks.
+
+Interface: `com.openquartz.easyevent.common.lock.DistributedLockFactory`
 
 ```java
-package com.openquartz.easyevent.transfer.api.limiting;
-
-import java.util.List;
-import java.util.function.BiConsumer;
-import com.openquartz.easyevent.storage.identify.EventId;
-
-/**
- * EventTransfer Sender Rate Limiting Control
- *
- * @author svnee
- */
-public interface EventTransferSenderLimitingControl {
-
-    /**
-     * Control event handling
-     * Throw {@link LimitingBlockedException} if rate limited
-     *
-     * @param event Event content
-     * @param eventId Event ID
-     * @param senderConsumer Sender function
-     */
-    <T> void control(T event, EventId eventId, BiConsumer<T, EventId> senderConsumer);
-
-    /**
-     * Control batch event handling
-     * Throw {@link LimitingBlockedException} if rate limited
-     *
-     * @param eventList List of events
-     * @param eventIdList List of event IDs
-     * @param batchSenderConsumer Batch sender function
-     */
-    <T> void control(List<T> eventList, List<EventId> eventIdList,
-        BiConsumer<List<T>, List<EventId>> batchSenderConsumer);
-}
-```
-
-Default implementation: [com.openquartz.easyevent.transfer.api.limiting.impl.DefaultEventTransferSenderLimitingControl](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/limiting/impl/DefaultEventTransferSenderLimitingControl.java#L13-L26)
-
-#### Trigger-Side Rate Limiting
-
-Rate limiting extension point before consuming messages: Interface [com.openquartz.easyevent.transfer.api.limiting.EventTransferTriggerLimitingControl](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/limiting/EventTransferTriggerLimitingControl.java#L10-L21).
-
-```java
-package com.openquartz.easyevent.transfer.api.limiting;
-
-import java.util.function.Consumer;
-import com.openquartz.easyevent.transfer.api.message.EventMessage;
-
-/**
- * EventTransfer Trigger Rate Limiting Control
- *
- * @author svnee
- */
-public interface EventTransferTriggerLimitingControl {
-
-    /**
-     * Control
-     * Throw {@link LimitingBlockedException} if rate limited
-     *
-     * @param eventMessage Event message
-     * @param eventHandleFunction Handling function
-     */
-    void control(EventMessage eventMessage, Consumer<EventMessage> eventHandleFunction);
-}
-```
-
-Default implementation: [com.openquartz.easyevent.transfer.api.limiting.impl.DefaultEventTransferTriggerLimitingControl](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-transfer/easyevent-transfer-api/src/main/java/com/openquartz/easyevent/transfer/api/limiting/impl/DefaultEventTransferTriggerLimitingControl.java#L11-L17)
-
-### Distributed Locks
-
-Since EasyEvent uses middleware for distributed scheduling, there may be cases where messages are lost, triggering fails, or backpressure occurs. Therefore, EasyEvent includes compensatory job triggers.  
-It is difficult to guarantee that the same event will not be consumed concurrently at the same time. Currently, EasyEvent provides single-node safety. In a distributed environment, users need to implement a custom distributed lock to ensure concurrency control, or handle concurrency within the subscriber's actual event handling logic.
-
-For implementing distributed locks, the system provides the extension interface [com.openquartz.easyevent.common.concurrent.lock.DistributedLockFactory](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-common/src/main/java/com/openquartz/easyevent/common/concurrent/lock/DistributedLockFactory.java#L10-L20).
-
-```java
-package com.openquartz.easyevent.common.concurrent.lock;
-
-import java.util.concurrent.locks.Lock;
-import com.openquartz.easyevent.common.model.Pair;
-
-/**
- * Distributed Event Lock
- *
- * @author svnee
- */
 public interface DistributedLockFactory {
-
     /**
-     * Get Lock
-     *
-     * @param lockKey Lock key
-     * @return Lock instance, must not be null
+     * Get a distributed lock
+     * @param key Lock key
+     * @return Lock instance
      */
-    Lock getLock(Pair<String, LockBizType> lockKey);
+    Lock getLock(String key);
 }
 ```
 
-Users can implement this interface using third-party distributed middleware and inject it into the Spring factory.  
-It is recommended to use `Redisson` as the distributed lock implementation.
+Users need to implement this interface (e.g., using Redis/Redisson or Zookeeper) and register it as a Spring Bean.
 
-### Distributed ID Generation
+## 5. Distributed ID Generation
 
-When using JDBC-based `EventStorage`, [EventId](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-storage/easyevent-storage-api/src/main/java/com/openquartz/easyevent/storage/identify/EventId.java#L7-L27) provides a default implementation based on database auto-increment.  
-If other ID generation strategies are required, users can customize by implementing the interface [com.openquartz.easyevent.storage.identify.IdGenerator](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-storage/easyevent-storage-api/src/main/java/com/openquartz/easyevent/storage/identify/IdGenerator.java#L7-L21).
+Customize how event IDs are generated.
+
+Interface: `com.openquartz.easyevent.storage.identify.IdGenerator`
 
 ```java
-package com.openquartz.easyevent.storage.identify;
-
-/**
- * ID Generator
- *
- * @author svnee
- **/
 public interface IdGenerator {
-
     /**
-     * Generate ID
-     * Return null means use database auto-increment
-     *
-     * @return Generated ID
+     * Generate a unique ID
+     * @return Unique ID
      */
-    default Long generateId() {
-        return null;
-    }
+    Long generateId();
 }
 ```
 
-And then inject it into the Spring factory.  
-It is recommended to use the Snowflake algorithm for ID generation.
+Default implementation uses Snowflake algorithm.
 
-### Table Sharding Support
+## 6. Table Sharding
 
-EasyEvent supports custom table sharding based on `EventEntityID`. By default, hash-based sharding is used.  
-Custom sharding routing interface: [com.openquartz.easyevent.storage.jdbc.sharding.ShardingRouter](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-storage/easyevent-storage-jdbc/src/main/java/com/openquartz/easyevent/storage/jdbc/sharding/ShardingRouter.java#L7-L24).  
-Default implementation: [com.openquartz.easyevent.storage.jdbc.sharding.impl.DefaultShardingRouterImpl](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-storage/easyevent-storage-jdbc/src/main/java/com/openquartz/easyevent/storage/jdbc/sharding/impl/DefaultShardingRouterImpl.java#L14-L40). Depends on providing an [IdGenerator](file:///Users/jackxu/Documents/Code/github.com/openquartz/easy-event/easyevent-storage/easyevent-storage-api/src/main/java/com/openquartz/easyevent/storage/identify/IdGenerator.java#L7-L21) implementation.
+If you have a large volume of events, you can implement table sharding strategies.
+
+Interface: `com.openquartz.easyevent.storage.sharding.ShardingRouter`
 
 ```java
-package com.openquartz.easyevent.storage.jdbc.sharding;
-
-/**
- * Sharding Router
- *
- * @author svnee
- */
 public interface ShardingRouter {
-
     /**
-     * Shard the given entity ID
-     *
-     * If sharding is disabled, return a value less than 0. Otherwise, return the shard index.
-     *
-     * @param eventEntityId Entity ID
-     * @return Shard index
+     * Determine the table index
+     * @param event The event
+     * @return Table index suffix
      */
-    int sharding(Long eventEntityId);
-
-    /**
-     * Get total number of shards
-     * @return Total number of shards
-     */
-    int totalSharding();
+    int route(BaseEventEntity event);
 }
 ```
