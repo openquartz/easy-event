@@ -25,7 +25,17 @@
 
         <dependency>
             <groupId>com.openquartz</groupId>
+            <artifactId>easyevent-spring-boot-starter-disruptor</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.openquartz</groupId>
             <artifactId>easyevent-spring-boot-starter-soa-rocketmq</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-client</artifactId>
         </dependency>
 
         <dependency>
@@ -42,6 +52,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
     </dependencies>
