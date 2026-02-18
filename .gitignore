@@ -33,3 +33,12 @@ build/
 .vscode/
 **/**/.flattened-pom.xml
 ./.flattened-pom.xml
+
+### OS X ###
+.DS_Store
+
+### Node ###
+node_modules/
+dist/
+npm-debug.log
+yarn-error.log

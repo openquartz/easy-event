@@ -1,0 +1,30 @@
+version: '3'
+services:
+  easyevent-admin:
+    build: .
+    ports:
+      - "8088:8088"
+    depends_on:
+      - mysql
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/easy_event?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    networks:
+      - easyevent-net
+
+  mysql:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=easy_event
+    volumes:
+      - ../scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - easyevent-net
+
+networks:
+  easyevent-net:
+    driver: bridge

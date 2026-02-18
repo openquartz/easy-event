@@ -17,6 +17,7 @@
         <module>easyevent-spring-boot-starter</module>
         <module>easyevent-spring-boot-starter-soa</module>
         <module>easyevent-example</module>
+        <module>easyevent-admin</module>
     </modules>
 
     <name>${project.artifactId}</name>
