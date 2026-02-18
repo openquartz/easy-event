@@ -19,7 +19,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: '../easyevent-admin/src/main/resources/static',
+    outDir: '../easyevent-admin-server/src/main/resources/static',
     emptyOutDir: true
   }
 })

@@ -26,22 +26,27 @@ cd easyevent-admin-ui
 npm install
 npm run build
 ```
-This will generate static files into `easyevent-admin/src/main/resources/static`.
+This will generate static files into `../easyevent-admin-server/src/main/resources/static`.
 
 ### 2. Build Backend
 ```bash
+# In project root
 mvn clean package -pl easyevent-admin -am -DskipTests
+```
+Or go to `easyevent-admin` directory and run:
+```bash
+mvn clean package -DskipTests
 ```
 
 ### 3. Run Locally
 ```bash
-java -jar easyevent-admin/target/easyevent-admin-1.5.0-beta.jar
+java -jar easyevent-admin-server/target/easyevent-admin-server-1.5.0-beta.jar
 ```
 Access: http://localhost:8088
 
 ### 4. Run with Docker Compose
 ```bash
-cd easyevent-admin
+cd easyevent-admin-server
 docker-compose up -d
 ```
 

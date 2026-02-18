@@ -21,7 +21,7 @@ services:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=easy_event
     volumes:
-      - ../scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../../scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - easyevent-net
 
