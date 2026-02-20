@@ -51,8 +51,9 @@ public class EventAdminService {
         detail.setTitle(event.getEventKey() != null ? event.getEventKey() : event.getClassName());
         detail.setMaxRetries(5); // Default value as it's not stored
         
-        // Find started time from history (first time status became IN_PROCESSING or PROCESSING)
-        if (history != null) {
+        if (event.getStartExecutionTime() != null) {
+            detail.setStartedTime(event.getStartExecutionTime());
+        } else if (history != null) {
             history.stream()
                 .filter(h -> h.getStatus() != null && h.getStatus().contains("PROCESSING"))
                 .min((h1, h2) -> h1.getCreateTime().compareTo(h2.getCreateTime()))

@@ -34,6 +34,8 @@ Retrieves detailed information for a specific event, including execution history
   "createdTime": "2023-10-27T10:00:00.000+00:00",
   "updatedTime": "2023-10-27T10:00:05.000+00:00",
   "startedTime": "2023-10-27T10:00:01.000+00:00",
+  "startExecutionTime": "2023-10-27T10:00:01.000+00:00",
+  "executionSuccessTime": "2023-10-27T10:00:05.000+00:00",
   "estimatedCompleteTime": "2023-10-27T10:00:02.000+00:00",
   "statusHistory": [
     {
@@ -73,7 +75,7 @@ The dialog displays comprehensive information organized in sections:
 2.  **Content**: Event Data (JSON formatted), Context/Keys.
 3.  **Execution Stats**: Retry Count / Max Retries, Error Count.
 4.  **Status**: Current Status tag, Status History Table (Time, Status, Context).
-5.  **Time**: Created, Started, Updated, Estimated Completion.
+5.  **Time**: Created, Started, Updated, Start Execution, Execution Success, Estimated Completion.
 
 ### Responsive Design
 - The dialog adapts to screen size (mobile/desktop).

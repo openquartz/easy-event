@@ -2,6 +2,7 @@ package com.openquartz.easyevent.storage.jdbc.mapper.impl;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -111,6 +112,38 @@ public class BusEventEntityMapperImplTest {
             eq(eventIdVal),
             eq(state.getCode()),
             eq("Start Processing")
+        );
+    }
+
+    @Test
+    public void testProcessingComplete_ShouldUpdateSuccessTimeAndSaveHistory() {
+        // Arrange
+        long eventIdVal = 101112L;
+        EventId eventId = new EventId(eventIdVal, 1L);
+        EventLifecycleState state = EventLifecycleState.PROCESS_COMPLETE;
+        String tableName = "ee_bus_event_entity";
+
+        when(supplier.genBusEventEntityTable(eventIdVal)).thenReturn(tableName);
+        when(jdbcTemplate.update(anyString(), any(), any(), any())).thenReturn(1); // For update state
+
+        // Act
+        mapper.processingComplete(eventId, state);
+
+        // Assert
+        // Verify update call with execution_success_time=NOW()
+        verify(jdbcTemplate).update(
+            contains("execution_success_time=CASE WHEN processing_state = 'PROCESS_COMPLETE' THEN execution_success_time ELSE NOW() END"), 
+            eq(state.getCode()), 
+            eq(""), 
+            eq(eventIdVal)
+        );
+        
+        // Verify history
+        verify(jdbcTemplate).update(
+            contains("insert into ee_bus_event_history"),
+            eq(eventIdVal),
+            eq(state.getCode()),
+            contains("Process State Updated")
         );
     }
 }

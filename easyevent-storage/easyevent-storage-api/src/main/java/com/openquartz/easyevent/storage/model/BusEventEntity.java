@@ -53,4 +53,13 @@ public class BusEventEntity extends BaseEventEntity {
      */
     private Date updatedTime;
 
+    /**
+     * 开始执行时间
+     */
+    private Date startExecutionTime;
+
+    /**
+     * 执行成功时间
+     */
+    private Date executionSuccessTime;
 }

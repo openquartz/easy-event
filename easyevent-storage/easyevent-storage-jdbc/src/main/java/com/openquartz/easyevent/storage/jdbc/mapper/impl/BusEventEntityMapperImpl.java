@@ -52,19 +52,20 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     }
 
     private static final String GET_SUCCESS_SUBSCRIBER_SQL = "select successful_subscriber from {0} where id = ?";
-    private static final String GET_ALL_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id from {0} ";
+    private static final String GET_ALL_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,start_execution_time,execution_success_time,id from {0} ";
     private static final String GET_BASE_SQL = "select app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,id from {0} where id =?";
 
     private static final String GET_ID_SQL = "select id from {0} where id =?";
 
-    private static final String INSERT_SQL = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    private static final String INSERT_SQL_WITH_ID = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,id) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    private static final String INSERT_SQL = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,start_execution_time,execution_success_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    private static final String INSERT_SQL_WITH_ID = "insert into {0}(app_id,source_id,class_name,error_count,successful_subscriber,processing_state,trace_id,event_data,event_key,creating_owner,processing_owner,processing_available_date,processing_failed_reason,created_time,updated_time,start_execution_time,execution_success_time,id) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     private static final String REFRESH_SOURCE_SQL = "update {0} set source_id = :sourceId where id = :entityId";
 
     private static final String REFRESH_PROCESS_STATE_SQL = "update {0} set processing_state=?,processing_failed_reason=? where id = ?";
+    private static final String REFRESH_PROCESSING_COMPLETE_SQL = "update {0} set processing_state=?,processing_failed_reason=?,execution_success_time=CASE WHEN processing_state = ''PROCESS_COMPLETE'' THEN execution_success_time ELSE NOW() END where id = ?";
     private static final String BATCH_REFRESH_PROCESS_STATE_SQL = "update {0} set processing_state= :processingState ,processing_failed_reason= :processingFailedReason where id in (:idList)";
 
-    private static final String REFRESH_START_PROCESSING_SQL = "update {0} set processing_state=?,processing_failed_reason=?,processing_owner=? where id = ?";
+    private static final String REFRESH_START_PROCESSING_SQL = "update {0} set processing_state=?,processing_failed_reason=?,processing_owner=?,start_execution_time=CASE WHEN processing_state = ''IN_PROCESSING'' THEN start_execution_time ELSE NOW() END where id = ?";
     private static final String REFRESH_SEND_FAILED_SQL = "update {0} set processing_state=?,processing_failed_reason=?,processing_owner=?,error_count=error_count+1 where id = ?";
     private static final String REFRESH_PROCESSING_FAILED_SQL = "update {0} set processing_state=?,processing_failed_reason=?,successful_subscriber=?,error_count=error_count+1 where id = ?";
     private static final String INSERT_HISTORY_SQL = "insert into ee_bus_event_history(entity_id, status, context, create_time) values(?, ?, ?, NOW())";
@@ -127,6 +128,12 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 ps.setTimestamp(15,
                         Objects.nonNull(entity.getUpdatedTime()) ? new Timestamp(entity.getUpdatedTime().getTime())
                                 : null);
+                ps.setTimestamp(16,
+                        Objects.nonNull(entity.getStartExecutionTime()) ? new Timestamp(
+                                entity.getStartExecutionTime().getTime()) : null);
+                ps.setTimestamp(17,
+                        Objects.nonNull(entity.getExecutionSuccessTime()) ? new Timestamp(
+                                entity.getExecutionSuccessTime().getTime()) : null);
             }
 
             @Override
@@ -178,7 +185,13 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                     ps.setTimestamp(15,
                             Objects.nonNull(entity.getUpdatedTime()) ? new Timestamp(entity.getUpdatedTime().getTime())
                                     : null);
-                    ps.setLong(16, entity.getEntityId());
+                    ps.setTimestamp(16,
+                            Objects.nonNull(entity.getStartExecutionTime()) ? new Timestamp(
+                                    entity.getStartExecutionTime().getTime()) : null);
+                    ps.setTimestamp(17,
+                            Objects.nonNull(entity.getExecutionSuccessTime()) ? new Timestamp(
+                                    entity.getExecutionSuccessTime().getTime()) : null);
+                    ps.setLong(18, entity.getEntityId());
                 }
 
                 @Override
@@ -282,7 +295,12 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         checkNotNull(eventId);
         checkNotNull(processComplete);
 
-        refreshProcessState(eventId, processComplete, StringUtils.EMPTY);
+        String sql = MessageFormat
+                .format(REFRESH_PROCESSING_COMPLETE_SQL, supplier.genBusEventEntityTable(eventId.getId()));
+        int actual = jdbcTemplate
+                .update(sql, processComplete.getCode(), StringUtils.EMPTY, eventId.getId());
+        DataUtils.checkUpdateOne(actual);
+        saveHistory(eventId.getId(), processComplete.getCode(), "Process State Updated: " + StringUtils.EMPTY);
     }
 
     @Override
@@ -427,6 +445,8 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             busEventEntity.setProcessingFailedReason(rs.getString("processing_failed_reason"));
             busEventEntity.setCreatedTime(rs.getTimestamp("created_time"));
             busEventEntity.setUpdatedTime(rs.getTimestamp("updated_time"));
+            busEventEntity.setStartExecutionTime(rs.getTimestamp("start_execution_time"));
+            busEventEntity.setExecutionSuccessTime(rs.getTimestamp("execution_success_time"));
             busEventEntity.setEntityId(rs.getLong("id"));
             busEventEntity.setAppId(rs.getString("app_id"));
             busEventEntity.setSourceId(rs.getLong("source_id"));

@@ -26,7 +26,7 @@ public class BusEventDaoMySQL implements BusEventDao {
 
     private static final String BASE_SELECT = "SELECT id, app_id, source_id, class_name, error_count, processing_state, " +
             "successful_subscriber, trace_id, event_data, event_key, creating_owner, processing_owner, " +
-            "processing_available_date, processing_failed_reason, created_time, updated_time FROM ee_bus_event_entity";
+            "processing_available_date, processing_failed_reason, created_time, updated_time, start_execution_time, execution_success_time FROM ee_bus_event_entity";
 
     private static final RowMapper<BusEventEntity> ROW_MAPPER = new RowMapper<BusEventEntity>() {
         @Override
@@ -48,6 +48,8 @@ public class BusEventDaoMySQL implements BusEventDao {
             entity.setProcessingFailedReason(rs.getString("processing_failed_reason"));
             entity.setCreatedTime(rs.getTimestamp("created_time"));
             entity.setUpdatedTime(rs.getTimestamp("updated_time"));
+            entity.setStartExecutionTime(rs.getTimestamp("start_execution_time"));
+            entity.setExecutionSuccessTime(rs.getTimestamp("execution_success_time"));
             return entity;
         }
     };

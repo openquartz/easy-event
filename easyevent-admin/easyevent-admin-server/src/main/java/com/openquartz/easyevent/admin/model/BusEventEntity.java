@@ -39,5 +39,9 @@ public class BusEventEntity {
 
     private Date updatedTime;
 
+    private Date startExecutionTime;
+
+    private Date executionSuccessTime;
+
     private List<BusEventHistoryEntity> statusHistory;
 }

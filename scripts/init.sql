@@ -16,6 +16,8 @@ CREATE TABLE ee_bus_event_entity
     processing_failed_reason  VARCHAR(128) NOT NULL DEFAULT '' COMMENT '已经执行失败的原因',
     created_time              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_time              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    start_execution_time      TIMESTAMP             DEFAULT NULL COMMENT '开始执行时间',
+    execution_success_time    TIMESTAMP             DEFAULT NULL COMMENT '执行成功时间',
     PRIMARY KEY (id),
     INDEX                     idx_event_key (event_key),
     INDEX                     idx_app_state_owner_time(app_id, processing_state, processing_owner, created_time)
