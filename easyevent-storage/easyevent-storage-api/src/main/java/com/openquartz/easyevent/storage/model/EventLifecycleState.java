@@ -1,10 +1,15 @@
 package com.openquartz.easyevent.storage.model;
 
+import lombok.Getter;
+
+import java.util.Optional;
+
 /**
  * EventEntity
  *
  * @author svnee
  */
+@Getter
 public enum EventLifecycleState {
     AVAILABLE("AVAILABLE", "待处理"),
     TRANSFER_SUCCESS("TRANSFER_SUCCESS", "触发成功"),
@@ -21,21 +26,13 @@ public enum EventLifecycleState {
         this.desc = desc;
     }
 
-    public static EventLifecycleState of(String code) {
+    public static Optional<EventLifecycleState> ofNullable(String code) {
         for (EventLifecycleState value : values()) {
             if (value.code.equals(code)) {
-                return value;
+                return Optional.of(value);
             }
         }
-        return null;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getDesc() {
-        return desc;
+        return Optional.empty();
     }
 
     @Override

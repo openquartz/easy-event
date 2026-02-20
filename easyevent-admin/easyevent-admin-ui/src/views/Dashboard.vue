@@ -2,19 +2,19 @@
   <el-row :gutter="20">
     <el-col :span="8">
       <el-card>
-        <template #header>Total Events</template>
+        <template #header>{{ $t('dashboard.totalEvents') }}</template>
         <div class="stat-value">{{ totalCount }}</div>
       </el-card>
     </el-col>
     <el-col :span="8">
       <el-card>
-        <template #header>Success Rate</template>
+        <template #header>{{ $t('dashboard.successRate') }}</template>
         <div class="stat-value">{{ successRate }}%</div>
       </el-card>
     </el-col>
     <el-col :span="8">
       <el-card>
-        <template #header>Failed Events</template>
+        <template #header>{{ $t('dashboard.failedEvents') }}</template>
         <div class="stat-value text-danger">{{ failedCount }}</div>
       </el-card>
     </el-col>
@@ -23,13 +23,13 @@
   <el-row :gutter="20" style="margin-top: 20px">
     <el-col :span="12">
       <el-card>
-        <template #header>State Distribution</template>
+        <template #header>{{ $t('dashboard.stateDistribution') }}</template>
         <div ref="pieChart" style="height: 300px"></div>
       </el-card>
     </el-col>
     <el-col :span="12">
       <el-card>
-        <template #header>Event Trend (24h)</template>
+        <template #header>{{ $t('dashboard.eventTrend') }}</template>
         <div ref="lineChart" style="height: 300px"></div>
       </el-card>
     </el-col>
@@ -37,10 +37,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import * as echarts from 'echarts'
 import { getDashboardStats } from '@/api/event'
+import { useI18n } from 'vue-i18n'
 
+const { t, locale } = useI18n()
 const stats = ref<any>({})
 const pieChart = ref<HTMLElement>()
 const lineChart = ref<HTMLElement>()
@@ -64,7 +66,10 @@ const successRate = computed(() => {
 
 const initCharts = () => {
   if (pieChart.value && stats.value.stateDistribution) {
-    const chart = echarts.init(pieChart.value)
+    let chart = echarts.getInstanceByDom(pieChart.value)
+    if (!chart) {
+      chart = echarts.init(pieChart.value)
+    }
     chart.setOption({
       tooltip: { trigger: 'item' },
       series: [
@@ -73,7 +78,7 @@ const initCharts = () => {
           radius: '50%',
           data: stats.value.stateDistribution.map((s: any) => ({
             value: s.count,
-            name: s.state
+            name: t(`event.states.${s.state}`)
           }))
         }
       ]
@@ -81,7 +86,10 @@ const initCharts = () => {
   }
   
   if (lineChart.value && stats.value.trend) {
-    const chart = echarts.init(lineChart.value)
+    let chart = echarts.getInstanceByDom(lineChart.value)
+    if (!chart) {
+      chart = echarts.init(lineChart.value)
+    }
     chart.setOption({
       xAxis: {
         type: 'category',
@@ -97,6 +105,10 @@ const initCharts = () => {
     })
   }
 }
+
+watch(locale, () => {
+  initCharts()
+})
 
 onMounted(async () => {
   try {

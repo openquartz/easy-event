@@ -1,6 +1,7 @@
 package com.openquartz.easyevent.admin.model;
 
 import java.util.Date;
+import java.util.List;
 import lombok.Data;
 
 @Data
@@ -37,4 +38,6 @@ public class BusEventEntity {
     private Date createdTime;
 
     private Date updatedTime;
+
+    private List<BusEventHistoryEntity> statusHistory;
 }

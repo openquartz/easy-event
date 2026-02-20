@@ -27,6 +27,10 @@ export interface BusEvent {
   processingFailedReason: string
   createdTime: string
   updatedTime: string
+  title?: string
+  maxRetries?: number
+  startedTime?: string
+  estimatedCompleteTime?: string
 }
 
 export interface PageResult<T> {
@@ -38,6 +42,10 @@ export interface PageResult<T> {
 
 export const getEvents = (params: EventQuery) => {
   return request.get<any, PageResult<BusEvent>>('/events/list', { params })
+}
+
+export const getEventDetail = (id: number) => {
+  return request.get<any, BusEvent>(`/events/${id}/details`)
 }
 
 export const retryEvents = (eventIds: number[]) => {

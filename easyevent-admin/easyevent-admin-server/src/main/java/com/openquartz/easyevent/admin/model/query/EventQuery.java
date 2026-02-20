@@ -13,7 +13,7 @@ public class EventQuery {
     private String eventKey;
     private String processingState;
     
-    @DateTimeFormat(pattern = "yyyy-MM-d HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startTime;
     
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

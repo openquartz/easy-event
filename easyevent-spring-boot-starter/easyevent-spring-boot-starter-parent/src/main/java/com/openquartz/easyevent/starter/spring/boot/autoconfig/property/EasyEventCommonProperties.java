@@ -1,19 +1,20 @@
 package com.openquartz.easyevent.starter.spring.boot.autoconfig.property;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import com.openquartz.easyevent.common.constant.CommonConstants;
+import com.openquartz.easyevent.common.property.EasyEventProperties;
+import com.openquartz.easyevent.common.utils.StringUtils;
+import com.openquartz.easyevent.storage.model.EventLifecycleState;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import com.openquartz.easyevent.common.constant.CommonConstants;
-import com.openquartz.easyevent.common.property.EasyEventProperties;
-import com.openquartz.easyevent.common.utils.StringUtils;
-import com.openquartz.easyevent.storage.model.EventLifecycleState;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * EasyEventCommonProperties
@@ -74,10 +75,10 @@ public class EasyEventCommonProperties implements EasyEventProperties {
         @Override
         public String toString() {
             return "EventCompensateProperty{" +
-                "threadPool=" + threadPool +
-                ", self=" + self +
-                ", global=" + global +
-                '}';
+                    "threadPool=" + threadPool +
+                    ", self=" + self +
+                    ", global=" + global +
+                    '}';
         }
     }
 
@@ -144,12 +145,12 @@ public class EasyEventCommonProperties implements EasyEventProperties {
         @Override
         public String toString() {
             return "EventCompensateThreadPoolProperty{" +
-                "threadPrefix='" + threadPrefix + '\'' +
-                ", corePoolSize=" + corePoolSize +
-                ", maximumPoolSize=" + maximumPoolSize +
-                ", keepAliveTime=" + keepAliveTime +
-                ", maxBlockingQueueSize=" + maxBlockingQueueSize +
-                '}';
+                    "threadPrefix='" + threadPrefix + '\'' +
+                    ", corePoolSize=" + corePoolSize +
+                    ", maximumPoolSize=" + maximumPoolSize +
+                    ", keepAliveTime=" + keepAliveTime +
+                    ", maxBlockingQueueSize=" + maxBlockingQueueSize +
+                    '}';
         }
     }
 
@@ -192,33 +193,35 @@ public class EasyEventCommonProperties implements EasyEventProperties {
                 return Collections.emptyList();
             }
             return Stream.of(compensateState.split(CommonConstants.COMMA))
-                .map(String::trim)
-                .map(EventLifecycleState::of)
-                .collect(Collectors.toList());
+                    .map(String::trim)
+                    .map(EventLifecycleState::ofNullable)
+                    .filter(Optional::isPresent)
+                    .map(e -> e.orElse(null))
+                    .collect(Collectors.toList());
         }
 
         @Override
         public String toString() {
             return "EventCompensateProcessProperty{" +
-                "enabled=" + enabled +
-                ", threadPoolThreadPrefix='" + threadPoolThreadPrefix + '\'' +
-                ", threadPoolCoreSize=" + threadPoolCoreSize +
-                ", compensateState='" + compensateState + '\'' +
-                ", beforeStartSeconds=" + beforeStartSeconds +
-                ", beforeEndSeconds=" + beforeEndSeconds +
-                ", offset=" + offset +
-                ", schedulePeriod=" + schedulePeriod +
-                '}';
+                    "enabled=" + enabled +
+                    ", threadPoolThreadPrefix='" + threadPoolThreadPrefix + '\'' +
+                    ", threadPoolCoreSize=" + threadPoolCoreSize +
+                    ", compensateState='" + compensateState + '\'' +
+                    ", beforeStartSeconds=" + beforeStartSeconds +
+                    ", beforeEndSeconds=" + beforeEndSeconds +
+                    ", offset=" + offset +
+                    ", schedulePeriod=" + schedulePeriod +
+                    '}';
         }
     }
 
     @Override
     public String toString() {
         return "EasyEventCommonProperties{" +
-            "appId='" + appId + '\'' +
-            ", maxRetryCount=" + maxRetryCount +
-            ", compensate=" + compensate +
-            ", notify=" + notify +
-            '}';
+                "appId='" + appId + '\'' +
+                ", maxRetryCount=" + maxRetryCount +
+                ", compensate=" + compensate +
+                ", notify=" + notify +
+                '}';
     }
 }

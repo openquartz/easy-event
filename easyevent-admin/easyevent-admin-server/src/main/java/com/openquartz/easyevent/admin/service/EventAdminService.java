@@ -1,12 +1,15 @@
 package com.openquartz.easyevent.admin.service;
 
 import com.openquartz.easyevent.admin.dao.BusEventDao;
+import com.openquartz.easyevent.admin.model.BusEventDetail;
 import com.openquartz.easyevent.admin.model.BusEventEntity;
+import com.openquartz.easyevent.admin.model.BusEventHistoryEntity;
 import com.openquartz.easyevent.admin.model.PageResult;
 import com.openquartz.easyevent.admin.model.query.EventQuery;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,5 +33,35 @@ public class EventAdminService {
     public void retryEvents(List<Long> eventIds) {
         busEventDao.updateForRetry(eventIds);
         log.info("Reset events for retry: {}", eventIds);
+    }
+
+    public BusEventDetail getEventDetail(Long eventId) {
+        BusEventEntity event = busEventDao.findById(eventId);
+        if (event == null) {
+            return null;
+        }
+
+        BusEventDetail detail = new BusEventDetail();
+        BeanUtils.copyProperties(event, detail);
+
+        List<BusEventHistoryEntity> history = busEventDao.findHistoryByEventId(eventId);
+        detail.setStatusHistory(history);
+        
+        // Derive fields that are not in BusEventEntity
+        detail.setTitle(event.getEventKey() != null ? event.getEventKey() : event.getClassName());
+        detail.setMaxRetries(5); // Default value as it's not stored
+        
+        // Find started time from history (first time status became IN_PROCESSING or PROCESSING)
+        if (history != null) {
+            history.stream()
+                .filter(h -> h.getStatus() != null && h.getStatus().contains("PROCESSING"))
+                .min((h1, h2) -> h1.getCreateTime().compareTo(h2.getCreateTime()))
+                .ifPresent(h -> detail.setStartedTime(h.getCreateTime()));
+        }
+
+        // Estimated complete time is not currently tracked/predicted
+        detail.setEstimatedCompleteTime(null);
+        
+        return detail;
     }
 }

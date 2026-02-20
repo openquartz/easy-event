@@ -6,6 +6,16 @@ const service = axios.create({
   timeout: 5000
 })
 
+service.interceptors.request.use(
+  config => {
+    config.headers['Authorization'] = 'admin'
+    return config
+  },
+  error => {
+    return Promise.reject(error)
+  }
+)
+
 service.interceptors.response.use(
   response => {
     return response.data

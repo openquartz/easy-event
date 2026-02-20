@@ -5,8 +5,8 @@
         <el-form-item :label="$t('event.eventKey')">
           <el-input v-model="query.eventKey" :placeholder="$t('event.eventKey')" />
         </el-form-item>
-        <el-form-item :label="$t('event.state')">
-          <el-select v-model="query.processingState" :placeholder="$t('event.state')" clearable>
+        <el-form-item :label="$t('event.state')" style="width: 200px">
+          <el-select v-model="query.processingState" :placeholder="$t('event.state')" clearable style="width: 100%">
             <el-option :label="$t('event.states.AVAILABLE')" value="AVAILABLE" />
             <el-option :label="$t('event.states.PROCESS_COMPLETE')" value="PROCESS_COMPLETE" />
             <el-option :label="$t('event.states.PROCESS_FAILED')" value="PROCESS_FAILED" />
@@ -42,8 +42,9 @@
         </el-table-column>
         <el-table-column prop="errorCount" :label="$t('event.errorCount')" width="80" />
         <el-table-column prop="createdTime" :label="$t('event.createdTime')" width="180" />
-        <el-table-column :label="$t('common.operations')" width="150">
+        <el-table-column :label="$t('common.operations')" width="200">
           <template #default="{ row }">
+            <el-button size="small" @click="handleDetail(row)">{{ $t('common.detail') }}</el-button>
             <el-button
               v-if="row.processingState === 'PROCESS_FAILED'"
               size="small"
@@ -68,12 +69,72 @@
         />
       </div>
     </el-card>
+
+    <el-dialog v-model="detailVisible" :title="$t('event.detail')" width="70%">
+      <el-descriptions :column="2" border>
+        <el-descriptions-item :label="$t('event.id')">{{ currentEvent?.id }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.className')">{{ currentEvent?.className }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.title')">{{ currentEvent?.title }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.eventKey')">{{ currentEvent?.eventKey }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.state')">
+          <el-tag :type="getStateType(currentEvent?.processingState || '')">
+            {{ currentEvent?.processingState ? $t(`event.states.${currentEvent.processingState}`) : '' }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item :label="$t('event.errorCount')">{{ currentEvent?.errorCount }} / {{ currentEvent?.maxRetries }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.createdTime')">{{ currentEvent?.createdTime }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.updatedTime')">{{ currentEvent?.updatedTime }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.startedTime')">{{ currentEvent?.startedTime }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.estimatedCompleteTime')">{{ currentEvent?.estimatedCompleteTime }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.appId')">{{ currentEvent?.appId }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.sourceId')">{{ currentEvent?.sourceId }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.traceId')">{{ currentEvent?.traceId }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.creatingOwner')">{{ currentEvent?.creatingOwner }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.processingOwner')">{{ currentEvent?.processingOwner }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.processingAvailableDate')">{{ currentEvent?.processingAvailableDate }}</el-descriptions-item>
+      </el-descriptions>
+      
+      <div style="margin-top: 20px;">
+        <h3>{{ $t('event.statusHistory') }}</h3>
+        <el-table :data="currentEvent?.statusHistory || []" style="width: 100%" border>
+          <el-table-column prop="status" :label="$t('event.status')" width="150" />
+          <el-table-column prop="context" :label="$t('event.context')" show-overflow-tooltip />
+          <el-table-column prop="createTime" :label="$t('event.time')" width="180" />
+        </el-table>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <h3>{{ $t('event.content') }}</h3>
+        <el-input
+          v-model="currentEventData"
+          type="textarea"
+          :rows="10"
+          readonly
+        />
+      </div>
+
+      <div style="margin-top: 20px;">
+        <h3>{{ $t('event.failedReason') }}</h3>
+        <el-input
+          v-model="currentEventFailedReason"
+          type="textarea"
+          :rows="3"
+          readonly
+        />
+      </div>
+
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="detailVisible = false">{{ $t('common.close') }}</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { getEvents, retryEvents, type BusEvent, type EventQuery } from '@/api/event'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { getEvents, retryEvents, getEventDetail, type BusEvent, type EventQuery } from '@/api/event'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
@@ -82,6 +143,21 @@ const loading = ref(false)
 const tableData = ref<BusEvent[]>([])
 const total = ref(0)
 const timeRange = ref<[string, string] | null>(null)
+const detailVisible = ref(false)
+const currentEvent = ref<BusEvent | null>(null)
+
+const currentEventData = computed(() => {
+  if (!currentEvent.value?.eventData) return ''
+  try {
+    return JSON.stringify(JSON.parse(currentEvent.value.eventData), null, 2)
+  } catch (e) {
+    return currentEvent.value.eventData
+  }
+})
+
+const currentEventFailedReason = computed(() => {
+  return currentEvent.value?.processingFailedReason || ''
+})
 
 const query = reactive<EventQuery>({
   page: 1,
@@ -115,6 +191,17 @@ const handleReset = () => {
   query.processingState = ''
   timeRange.value = null
   handleSearch()
+}
+
+const handleDetail = async (row: BusEvent) => {
+  try {
+    const res = await getEventDetail(row.id)
+    currentEvent.value = res
+    detailVisible.value = true
+  } catch (e) {
+    console.error(e)
+    ElMessage.error(t('event.getDetailFailed'))
+  }
 }
 
 const handleRetry = (row: BusEvent) => {
