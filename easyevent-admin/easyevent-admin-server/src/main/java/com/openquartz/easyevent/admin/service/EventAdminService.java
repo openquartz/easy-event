@@ -35,6 +35,18 @@ public class EventAdminService {
         log.info("Reset events for retry: {}", eventIds);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public void updateEvent(BusEventDetail eventDetail) {
+        BusEventEntity entity = new BusEventEntity();
+        BeanUtils.copyProperties(eventDetail, entity);
+        busEventDao.update(entity);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteEvent(Long eventId) {
+        busEventDao.delete(eventId);
+    }
+
     public BusEventDetail getEventDetail(Long eventId) {
         BusEventEntity event = busEventDao.findById(eventId);
         if (event == null) {

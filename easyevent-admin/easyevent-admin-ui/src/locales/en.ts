@@ -22,6 +22,8 @@ export default {
     fail: 'Fail',
     detail: 'Detail',
     close: 'Close',
+    edit: 'Edit',
+    delete: 'Delete',
   },
   event: {
     id: 'ID',
@@ -40,8 +42,8 @@ export default {
     creatingOwner: 'Creating Owner',
     processingOwner: 'Processing Owner',
     processingAvailableDate: 'Processing Available Date',
-    startedTime: 'Started Time',
-    estimatedCompleteTime: 'Estimated Complete Time',
+    startExecutionTime: 'Start Execution Time',
+    executionSuccessTime: 'Execution Success Time',
     statusHistory: 'Status History',
     status: 'Status',
     context: 'Context',
@@ -53,6 +55,13 @@ export default {
     startTime: 'Start Time',
     endTime: 'End Time',
     timeRange: 'Time Range',
+    information: 'Event Information',
+    editTitle: 'Edit Event',
+    validation: {
+      dataRequired: 'Please input event data',
+      stateRequired: 'Please select state',
+    },
+    updateSuccess: 'Edit Success',
     states: {
       AVAILABLE: 'Available',
       PROCESS_COMPLETE: 'Completed',
@@ -61,6 +70,8 @@ export default {
       PROCESSING: 'Processing',
       TRANSFER_SUCCESS: 'Transfer Success',
       TRANSFER_FAILED: 'Transfer Failed',
+      INIT: 'Initialized',
+      DEAD: 'Dead',
     },
   },
 }

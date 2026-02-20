@@ -26,7 +26,7 @@ public class BusEventDaoH2 implements BusEventDao {
 
     private static final String BASE_SELECT = "SELECT id, app_id, source_id, class_name, error_count, processing_state, " +
             "successful_subscriber, trace_id, event_data, event_key, creating_owner, processing_owner, " +
-            "processing_available_date, processing_failed_reason, created_time, updated_time FROM ee_bus_event_entity";
+            "processing_available_date, processing_failed_reason, created_time, updated_time, start_execution_time, execution_success_time FROM ee_bus_event_entity";
 
     private static final RowMapper<BusEventEntity> ROW_MAPPER = new RowMapper<BusEventEntity>() {
         @Override
@@ -48,6 +48,8 @@ public class BusEventDaoH2 implements BusEventDao {
             entity.setProcessingFailedReason(rs.getString("processing_failed_reason"));
             entity.setCreatedTime(rs.getTimestamp("created_time"));
             entity.setUpdatedTime(rs.getTimestamp("updated_time"));
+            entity.setStartExecutionTime(rs.getTimestamp("start_execution_time"));
+            entity.setExecutionSuccessTime(rs.getTimestamp("execution_success_time"));
             return entity;
         }
     };
@@ -151,6 +153,18 @@ public class BusEventDaoH2 implements BusEventDao {
         String sql = BASE_SELECT + " WHERE id = ?";
         List<BusEventEntity> list = jdbcTemplate.query(sql, new Object[]{id}, ROW_MAPPER);
         return list.isEmpty() ? null : list.get(0);
+    }
+
+    @Override
+    public void update(BusEventEntity entity) {
+        String sql = "UPDATE ee_bus_event_entity SET processing_state = ?, event_data = ?, processing_failed_reason = ?, updated_time = CURRENT_TIMESTAMP() WHERE id = ?";
+        jdbcTemplate.update(sql, entity.getProcessingState(), entity.getEventData(), entity.getProcessingFailedReason(), entity.getId());
+    }
+
+    @Override
+    public void delete(Long id) {
+        String sql = "DELETE FROM ee_bus_event_entity WHERE id = ?";
+        jdbcTemplate.update(sql, id);
     }
 
     @Override

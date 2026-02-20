@@ -1,11 +1,16 @@
 package com.openquartz.easyevent.admin.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openquartz.easyevent.admin.model.BusEventDetail;
 import com.openquartz.easyevent.admin.model.BusEventHistoryEntity;
 import com.openquartz.easyevent.admin.service.EventAdminService;
@@ -22,6 +27,9 @@ class EventControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     private EventAdminService eventAdminService;
@@ -77,5 +85,28 @@ class EventControllerTest {
     void getEventDetails_WhenInvalidAuth_ShouldReturn403() throws Exception {
         mockMvc.perform(get("/api/events/1/details").header("Authorization", "wrong_token"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateEvent_ShouldCallService() throws Exception {
+        BusEventDetail detail = new BusEventDetail();
+        detail.setProcessingState("PROCESS_COMPLETE");
+
+        mockMvc.perform(put("/api/events/1")
+                .header("Authorization", "admin")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(detail)))
+                .andExpect(status().isOk());
+
+        verify(eventAdminService).updateEvent(any(BusEventDetail.class));
+    }
+
+    @Test
+    void deleteEvent_ShouldCallService() throws Exception {
+        mockMvc.perform(delete("/api/events/1")
+                .header("Authorization", "admin"))
+                .andExpect(status().isOk());
+
+        verify(eventAdminService).deleteEvent(1L);
     }
 }

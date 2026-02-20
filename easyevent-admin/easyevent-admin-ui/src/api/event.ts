@@ -3,7 +3,7 @@ import request from './request'
 export interface EventQuery {
   page: number
   size: number
-  sourceId?: number
+  sourceId?: string
   eventKey?: string
   processingState?: string
   startTime?: string
@@ -11,9 +11,9 @@ export interface EventQuery {
 }
 
 export interface BusEvent {
-  id: number
+  id: string
   appId: string
-  sourceId: number
+  sourceId: string
   className: string
   errorCount: number
   processingState: string
@@ -29,8 +29,8 @@ export interface BusEvent {
   updatedTime: string
   title?: string
   maxRetries?: number
-  startedTime?: string
-  estimatedCompleteTime?: string
+  startExecutionTime?: string
+  executionSuccessTime?: string
 }
 
 export interface PageResult<T> {
@@ -44,11 +44,19 @@ export const getEvents = (params: EventQuery) => {
   return request.get<any, PageResult<BusEvent>>('/events/list', { params })
 }
 
-export const getEventDetail = (id: number) => {
+export const getEventDetail = (id: string) => {
   return request.get<any, BusEvent>(`/events/${id}/details`)
 }
 
-export const retryEvents = (eventIds: number[]) => {
+export const updateEvent = (id: string, data: Partial<BusEvent>) => {
+  return request.put(`/events/${id}`, data)
+}
+
+export const deleteEvent = (id: string) => {
+  return request.delete(`/events/${id}`)
+}
+
+export const retryEvents = (eventIds: string[]) => {
   return request.post('/events/retry', eventIds)
 }
 

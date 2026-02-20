@@ -84,8 +84,8 @@
         <el-descriptions-item :label="$t('event.errorCount')">{{ currentEvent?.errorCount }} / {{ currentEvent?.maxRetries }}</el-descriptions-item>
         <el-descriptions-item :label="$t('event.createdTime')">{{ currentEvent?.createdTime }}</el-descriptions-item>
         <el-descriptions-item :label="$t('event.updatedTime')">{{ currentEvent?.updatedTime }}</el-descriptions-item>
-        <el-descriptions-item :label="$t('event.startedTime')">{{ currentEvent?.startedTime }}</el-descriptions-item>
-        <el-descriptions-item :label="$t('event.estimatedCompleteTime')">{{ currentEvent?.estimatedCompleteTime }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.startExecutionTime')">{{ currentEvent?.startExecutionTime }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.executionSuccessTime')">{{ currentEvent?.executionSuccessTime }}</el-descriptions-item>
         <el-descriptions-item :label="$t('event.appId')">{{ currentEvent?.appId }}</el-descriptions-item>
         <el-descriptions-item :label="$t('event.sourceId')">{{ currentEvent?.sourceId }}</el-descriptions-item>
         <el-descriptions-item :label="$t('event.traceId')">{{ currentEvent?.traceId }}</el-descriptions-item>
@@ -134,11 +134,13 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
-import { getEvents, retryEvents, getEventDetail, type BusEvent, type EventQuery } from '@/api/event'
+import { useRouter } from 'vue-router'
+import { getEvents, retryEvents, type BusEvent, type EventQuery } from '@/api/event'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const router = useRouter()
 const loading = ref(false)
 const tableData = ref<BusEvent[]>([])
 const total = ref(0)
@@ -193,15 +195,8 @@ const handleReset = () => {
   handleSearch()
 }
 
-const handleDetail = async (row: BusEvent) => {
-  try {
-    const res = await getEventDetail(row.id)
-    currentEvent.value = res
-    detailVisible.value = true
-  } catch (e) {
-    console.error(e)
-    ElMessage.error(t('event.getDetailFailed'))
-  }
+const handleDetail = (row: BusEvent) => {
+  router.push(`/events/${row.id}`)
 }
 
 const handleRetry = (row: BusEvent) => {

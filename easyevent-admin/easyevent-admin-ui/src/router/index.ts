@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import EventList from '@/views/EventList.vue'
+import EventDetail from '@/views/EventDetail.vue'
 import Dashboard from '@/views/Dashboard.vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -16,6 +17,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/events',
     name: 'EventList',
     component: EventList
+  },
+  {
+    path: '/events/:id',
+    name: 'EventDetail',
+    component: EventDetail
   }
 ]
 

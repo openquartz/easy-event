@@ -23,5 +23,9 @@ public interface BusEventDao {
 
     BusEventEntity findById(Long id);
 
+    void update(BusEventEntity entity);
+
+    void delete(Long id);
+
     List<BusEventHistoryEntity> findHistoryByEventId(Long eventId);
 }

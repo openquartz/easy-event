@@ -1,13 +1,15 @@
-package com.openquartz.easyevent.admin.model;
+package com.openquartz.easyevent.admin.model.vo;
 
-import java.util.Date;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.openquartz.easyevent.admin.model.BusEventHistoryEntity;
+import java.util.Date;
+import java.util.List;
 import lombok.Data;
 
 @Data
-public class BusEventEntity {
+public class BusEventVO {
 
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
@@ -35,17 +37,22 @@ public class BusEventEntity {
 
     private String processingOwner;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date processingAvailableDate;
 
     private String processingFailedReason;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createdTime;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date updatedTime;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date startExecutionTime;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date executionSuccessTime;
 
-    private List<BusEventHistoryEntity> statusHistory;
+    private List<BusEventHistoryVO> statusHistory;
 }

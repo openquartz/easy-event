@@ -22,6 +22,8 @@ export default {
     fail: '失败',
     detail: '详情',
     close: '关闭',
+    edit: '编辑',
+    delete: '删除',
   },
   event: {
     id: 'ID',
@@ -40,8 +42,8 @@ export default {
     creatingOwner: '创建者',
     processingOwner: '处理者',
     processingAvailableDate: '处理可用时间',
-    startedTime: '开始执行时间',
-    estimatedCompleteTime: '预计完成时间',
+    startExecutionTime: '开始执行时间',
+    executionSuccessTime: '执行完成时间',
     statusHistory: '状态变更历史',
     status: '状态',
     context: '上下文',
@@ -53,6 +55,13 @@ export default {
     startTime: '开始时间',
     endTime: '结束时间',
     timeRange: '时间范围',
+    information: '事件信息',
+    editTitle: '编辑事件',
+    validation: {
+      dataRequired: '请输入事件数据',
+      stateRequired: '请选择状态',
+    },
+    updateSuccess: '编辑成功',
     states: {
       AVAILABLE: '待处理',
       PROCESS_COMPLETE: '处理完成',
@@ -61,6 +70,8 @@ export default {
       PROCESSING: '处理中',
       TRANSFER_SUCCESS: '触发成功',
       TRANSFER_FAILED: '触发失败',
+      INIT: '初始化',
+      DEAD: '已丢弃',
     },
   },
 }

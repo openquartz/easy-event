@@ -152,6 +152,18 @@ public class BusEventDaoMySQL implements BusEventDao {
     }
 
     @Override
+    public void update(BusEventEntity entity) {
+        String sql = "UPDATE ee_bus_event_entity SET processing_state = ?, event_data = ?, processing_failed_reason = ?, updated_time = NOW() WHERE id = ?";
+        jdbcTemplate.update(sql, entity.getProcessingState(), entity.getEventData(), entity.getProcessingFailedReason(), entity.getId());
+    }
+
+    @Override
+    public void delete(Long id) {
+        String sql = "DELETE FROM ee_bus_event_entity WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
+    @Override
     public List<BusEventHistoryEntity> findHistoryByEventId(Long eventId) {
         String sql = "SELECT id, entity_id, status, context, create_time FROM ee_bus_event_history WHERE entity_id = ? ORDER BY create_time DESC";
         return jdbcTemplate.query(sql, new Object[]{eventId}, HISTORY_ROW_MAPPER);
