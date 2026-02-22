@@ -94,14 +94,7 @@
         <el-descriptions-item :label="$t('event.processingAvailableDate')">{{ currentEvent?.processingAvailableDate }}</el-descriptions-item>
       </el-descriptions>
       
-      <div style="margin-top: 20px;">
-        <h3>{{ $t('event.statusHistory') }}</h3>
-        <el-table :data="currentEvent?.statusHistory || []" style="width: 100%" border>
-          <el-table-column prop="status" :label="$t('event.status')" width="150" />
-          <el-table-column prop="context" :label="$t('event.context')" show-overflow-tooltip />
-          <el-table-column prop="createTime" :label="$t('event.time')" width="180" />
-        </el-table>
-      </div>
+
 
       <div style="margin-top: 20px;">
         <h3>{{ $t('event.content') }}</h3>

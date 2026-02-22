@@ -5,7 +5,7 @@ import com.openquartz.easyevent.admin.model.query.EventQuery;
 import java.util.List;
 import java.util.Map;
 
-import com.openquartz.easyevent.admin.model.BusEventHistoryEntity;
+
 
 public interface BusEventDao {
     
@@ -27,5 +27,5 @@ public interface BusEventDao {
 
     void delete(Long id);
 
-    List<BusEventHistoryEntity> findHistoryByEventId(Long eventId);
+
 }

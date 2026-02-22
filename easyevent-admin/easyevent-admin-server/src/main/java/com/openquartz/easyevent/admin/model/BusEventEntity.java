@@ -1,7 +1,7 @@
 package com.openquartz.easyevent.admin.model;
 
 import java.util.Date;
-import java.util.List;
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
@@ -47,5 +47,5 @@ public class BusEventEntity {
 
     private Date executionSuccessTime;
 
-    private List<BusEventHistoryEntity> statusHistory;
+
 }

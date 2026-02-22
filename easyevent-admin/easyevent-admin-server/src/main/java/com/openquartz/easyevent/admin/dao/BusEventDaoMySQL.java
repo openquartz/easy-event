@@ -1,7 +1,7 @@
 package com.openquartz.easyevent.admin.dao;
 
 import com.openquartz.easyevent.admin.model.BusEventEntity;
-import com.openquartz.easyevent.admin.model.BusEventHistoryEntity;
+
 import com.openquartz.easyevent.admin.model.query.EventQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -54,15 +54,7 @@ public class BusEventDaoMySQL implements BusEventDao {
         }
     };
 
-    private static final RowMapper<BusEventHistoryEntity> HISTORY_ROW_MAPPER = (rs, rowNum) -> {
-        BusEventHistoryEntity entity = new BusEventHistoryEntity();
-        entity.setId(rs.getLong("id"));
-        entity.setEntityId(rs.getLong("entity_id"));
-        entity.setStatus(rs.getString("status"));
-        entity.setContext(rs.getString("context"));
-        entity.setCreateTime(rs.getTimestamp("create_time"));
-        return entity;
-    };
+
 
     @Override
     public long count(EventQuery query) {
@@ -163,9 +155,5 @@ public class BusEventDaoMySQL implements BusEventDao {
         jdbcTemplate.update(sql, id);
     }
 
-    @Override
-    public List<BusEventHistoryEntity> findHistoryByEventId(Long eventId) {
-        String sql = "SELECT id, entity_id, status, context, create_time FROM ee_bus_event_history WHERE entity_id = ? ORDER BY create_time DESC";
-        return jdbcTemplate.query(sql, new Object[]{eventId}, HISTORY_ROW_MAPPER);
-    }
+
 }

@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openquartz.easyevent.admin.model.BusEventDetail;
-import com.openquartz.easyevent.admin.model.BusEventHistoryEntity;
+
 import com.openquartz.easyevent.admin.service.EventAdminService;
 import java.util.Collections;
 import java.util.Date;
@@ -44,13 +44,7 @@ class EventControllerTest {
         event.setMaxRetries(3);
         event.setCreatedTime(new Date());
         
-        BusEventHistoryEntity history = new BusEventHistoryEntity();
-        history.setId(100L);
-        history.setEntityId(1L);
-        history.setStatus("AVAILABLE");
-        history.setContext("Initial creation");
-        history.setCreateTime(new Date());
-        event.setStatusHistory(Collections.singletonList(history));
+
 
         when(eventAdminService.getEventDetail(1L)).thenReturn(event);
 
@@ -60,9 +54,7 @@ class EventControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("Test Event"))
                 .andExpect(jsonPath("$.appId").value("test-app"))
-                .andExpect(jsonPath("$.maxRetries").value(3))
-                .andExpect(jsonPath("$.statusHistory[0].status").value("AVAILABLE"))
-                .andExpect(jsonPath("$.statusHistory[0].context").value("Initial creation"));
+                .andExpect(jsonPath("$.maxRetries").value(3));
     }
 
     @Test

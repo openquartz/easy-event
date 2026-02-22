@@ -26,6 +26,7 @@ export default {
     delete: 'Delete',
   },
   event: {
+    detail: 'Event Detail',
     id: 'ID',
     eventKey: 'Event Key',
     className: 'Class Name',
@@ -44,9 +45,7 @@ export default {
     processingAvailableDate: 'Processing Available Date',
     startExecutionTime: 'Start Execution Time',
     executionSuccessTime: 'Execution Success Time',
-    statusHistory: 'Status History',
-    status: 'Status',
-    context: 'Context',
+
     time: 'Time',
     getDetailFailed: 'Failed to get event details',
     retry: 'Retry',

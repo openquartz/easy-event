@@ -3,7 +3,7 @@ package com.openquartz.easyevent.admin.service;
 import com.openquartz.easyevent.admin.dao.BusEventDao;
 import com.openquartz.easyevent.admin.model.BusEventDetail;
 import com.openquartz.easyevent.admin.model.BusEventEntity;
-import com.openquartz.easyevent.admin.model.BusEventHistoryEntity;
+
 import com.openquartz.easyevent.admin.model.PageResult;
 import com.openquartz.easyevent.admin.model.query.EventQuery;
 import java.util.List;
@@ -56,20 +56,12 @@ public class EventAdminService {
         BusEventDetail detail = new BusEventDetail();
         BeanUtils.copyProperties(event, detail);
 
-        List<BusEventHistoryEntity> history = busEventDao.findHistoryByEventId(eventId);
-        detail.setStatusHistory(history);
-        
         // Derive fields that are not in BusEventEntity
         detail.setTitle(event.getEventKey() != null ? event.getEventKey() : event.getClassName());
         detail.setMaxRetries(5); // Default value as it's not stored
         
         if (event.getStartExecutionTime() != null) {
             detail.setStartedTime(event.getStartExecutionTime());
-        } else if (history != null) {
-            history.stream()
-                .filter(h -> h.getStatus() != null && h.getStatus().contains("PROCESSING"))
-                .min((h1, h2) -> h1.getCreateTime().compareTo(h2.getCreateTime()))
-                .ifPresent(h -> detail.setStartedTime(h.getCreateTime()));
         }
 
         // Estimated complete time is not currently tracked/predicted

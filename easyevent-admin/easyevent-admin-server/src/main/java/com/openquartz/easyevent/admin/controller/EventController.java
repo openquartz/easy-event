@@ -7,7 +7,7 @@ import com.openquartz.easyevent.admin.model.BusEventEntity;
 import com.openquartz.easyevent.admin.model.PageResult;
 import com.openquartz.easyevent.admin.model.query.EventQuery;
 import com.openquartz.easyevent.admin.model.vo.BusEventDetailVO;
-import com.openquartz.easyevent.admin.model.vo.BusEventHistoryVO;
+
 import com.openquartz.easyevent.admin.model.vo.BusEventVO;
 import com.openquartz.easyevent.admin.service.EventAdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -81,28 +81,12 @@ public class EventController {
     private BusEventVO convertToVO(BusEventEntity entity) {
         BusEventVO vo = new BusEventVO();
         BeanUtils.copyProperties(entity, vo);
-        if (entity.getStatusHistory() != null) {
-            List<BusEventHistoryVO> historyVOs = entity.getStatusHistory().stream().map(h -> {
-                BusEventHistoryVO hvo = new BusEventHistoryVO();
-                BeanUtils.copyProperties(h, hvo);
-                return hvo;
-            }).collect(Collectors.toList());
-            vo.setStatusHistory(historyVOs);
-        }
         return vo;
     }
 
     private BusEventDetailVO convertToDetailVO(BusEventDetail detail) {
         BusEventDetailVO vo = new BusEventDetailVO();
         BeanUtils.copyProperties(detail, vo);
-        if (detail.getStatusHistory() != null) {
-            List<BusEventHistoryVO> historyVOs = detail.getStatusHistory().stream().map(h -> {
-                BusEventHistoryVO hvo = new BusEventHistoryVO();
-                BeanUtils.copyProperties(h, hvo);
-                return hvo;
-            }).collect(Collectors.toList());
-            vo.setStatusHistory(historyVOs);
-        }
         return vo;
     }
 }

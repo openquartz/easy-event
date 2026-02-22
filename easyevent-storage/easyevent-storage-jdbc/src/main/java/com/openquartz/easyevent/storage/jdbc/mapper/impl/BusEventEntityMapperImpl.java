@@ -62,13 +62,13 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     private static final String REFRESH_SOURCE_SQL = "update {0} set source_id = :sourceId where id = :entityId";
 
     private static final String REFRESH_PROCESS_STATE_SQL = "update {0} set processing_state=?,processing_failed_reason=? where id = ?";
-    private static final String REFRESH_PROCESSING_COMPLETE_SQL = "update {0} set processing_state=?,processing_failed_reason=?,execution_success_time=CASE WHEN processing_state = ''PROCESS_COMPLETE'' THEN execution_success_time ELSE NOW() END where id = ?";
+    private static final String REFRESH_PROCESSING_COMPLETE_SQL = "update {0} set execution_success_time=CASE WHEN processing_state = ''PROCESS_COMPLETE'' THEN execution_success_time ELSE NOW() END,processing_state=?,processing_failed_reason=? where id = ?";
     private static final String BATCH_REFRESH_PROCESS_STATE_SQL = "update {0} set processing_state= :processingState ,processing_failed_reason= :processingFailedReason where id in (:idList)";
 
-    private static final String REFRESH_START_PROCESSING_SQL = "update {0} set processing_state=?,processing_failed_reason=?,processing_owner=?,start_execution_time=CASE WHEN processing_state = ''IN_PROCESSING'' THEN start_execution_time ELSE NOW() END where id = ?";
+    private static final String REFRESH_START_PROCESSING_SQL = "update {0} set start_execution_time=CASE WHEN processing_state = ''IN_PROCESSING'' THEN start_execution_time ELSE NOW() END,processing_state=?,processing_failed_reason=?,processing_owner=? where id = ?";
     private static final String REFRESH_SEND_FAILED_SQL = "update {0} set processing_state=?,processing_failed_reason=?,processing_owner=?,error_count=error_count+1 where id = ?";
     private static final String REFRESH_PROCESSING_FAILED_SQL = "update {0} set processing_state=?,processing_failed_reason=?,successful_subscriber=?,error_count=error_count+1 where id = ?";
-    private static final String INSERT_HISTORY_SQL = "insert into ee_bus_event_history(entity_id, status, context, create_time) values(?, ?, ?, NOW())";
+
 
     private static final int PROCESS_FAIL_REASON_LENGTH = 128;
 
@@ -202,14 +202,6 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         });
     }
 
-    private void saveHistory(Long entityId, String status, String context) {
-        try {
-            jdbcTemplate.update(INSERT_HISTORY_SQL, entityId, status, context);
-        } catch (Exception e) {
-            // Ignore history save failure to not affect main flow
-            // Log if necessary
-        }
-    }
 
     @Override
     public void refreshSendComplete(EventId eventId, EventLifecycleState transferSuccess) {
@@ -218,7 +210,6 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         checkNotNull(transferSuccess);
 
         refreshProcessState(eventId, transferSuccess, StringUtils.EMPTY);
-        saveHistory(eventId.getId(), transferSuccess.getCode(), "Send Complete");
     }
 
     @Override
@@ -240,9 +231,6 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
             paramMap.put("processingFailedReason", StringUtils.EMPTY);
 
             new NamedParameterJdbcTemplate(jdbcTemplate).update(sql, paramMap);
-            
-            // Batch save history
-            v.forEach(id -> saveHistory(id, transferSuccess.getCode(), "Batch Send Complete"));
         });
     }
 
@@ -260,7 +248,6 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         int actual = jdbcTemplate
                 .update(sql, transferFailed.getCode(), processFailedReason, IpUtil.getIp(), eventId.getId());
         DataUtils.checkUpdateOne(actual);
-        saveHistory(eventId.getId(), transferFailed.getCode(), "Send Failed: " + processFailedReason);
     }
 
     private void refreshProcessState(EventId eventId, EventLifecycleState state, String processFailedReason) {
@@ -271,7 +258,6 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 .update(sql, state.getCode(), StringUtils.splitPrefix(processFailedReason, PROCESS_FAIL_REASON_LENGTH),
                         eventId.getId());
         DataUtils.checkUpdateOne(actual);
-        saveHistory(eventId.getId(), state.getCode(), "Process State Updated: " + processFailedReason);
     }
 
     @Override
@@ -286,7 +272,6 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         int actual = jdbcTemplate
                 .update(sql, startProcessing.getCode(), StringUtils.EMPTY, IpUtil.getIp(), eventId.getId());
         DataUtils.checkUpdateOne(actual);
-        saveHistory(eventId.getId(), startProcessing.getCode(), "Start Processing");
     }
 
     @Override
@@ -300,7 +285,6 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         int actual = jdbcTemplate
                 .update(sql, processComplete.getCode(), StringUtils.EMPTY, eventId.getId());
         DataUtils.checkUpdateOne(actual);
-        saveHistory(eventId.getId(), processComplete.getCode(), "Process State Updated: " + StringUtils.EMPTY);
     }
 
     @Override
@@ -320,7 +304,6 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 successfulSubscriber,
                 eventId.getId());
         DataUtils.checkUpdateOne(affect);
-        saveHistory(eventId.getId(), processFailed.getCode(), "Processing Failed: " + failReason);
     }
 
     @Override

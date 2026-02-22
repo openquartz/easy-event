@@ -36,7 +36,7 @@ public class BusEventEntityMapperImplTest {
     }
 
     @Test
-    public void testRefreshSendComplete_ShouldSaveHistory() {
+    public void testRefreshSendComplete() {
         // Arrange
         long eventIdVal = 123L;
         long sourceIdVal = 1L;
@@ -53,19 +53,10 @@ public class BusEventEntityMapperImplTest {
         // Assert
         // Verify state update
         verify(jdbcTemplate).update(anyString(), eq(state.getCode()), anyString(), eq(eventIdVal));
-        
-        // Verify history insert
-        // INSERT_HISTORY_SQL = "insert into ee_bus_event_history(entity_id, status, context, create_time) values(?, ?, ?, NOW())"
-        verify(jdbcTemplate).update(
-            eq("insert into ee_bus_event_history(entity_id, status, context, create_time) values(?, ?, ?, NOW())"),
-            eq(eventIdVal),
-            eq(state.getCode()),
-            eq("Send Complete")
-        );
     }
 
     @Test
-    public void testRefreshSendFailed_ShouldSaveHistory() {
+    public void testRefreshSendFailed() {
         // Arrange
         long eventIdVal = 456L;
         long sourceIdVal = 1L;
@@ -81,17 +72,17 @@ public class BusEventEntityMapperImplTest {
         mapper.refreshSendFailed(eventId, state, ex);
 
         // Assert
-        // Verify history insert
         verify(jdbcTemplate).update(
-            eq("insert into ee_bus_event_history(entity_id, status, context, create_time) values(?, ?, ?, NOW())"),
-            eq(eventIdVal),
-            eq(state.getCode()),
-            eq("Send Failed: Connection failed")
+            anyString(),
+            eq(state.getCode()), 
+            anyString(), 
+            anyString(), 
+            eq(eventIdVal)
         );
     }
 
     @Test
-    public void testRefreshStartProcessing_ShouldSaveHistory() {
+    public void testRefreshStartProcessing() {
         // Arrange
         long eventIdVal = 789L;
         long sourceIdVal = 1L;
@@ -106,17 +97,17 @@ public class BusEventEntityMapperImplTest {
         mapper.refreshStartProcessing(eventId, state);
 
         // Assert
-        // Verify history insert
         verify(jdbcTemplate).update(
-            eq("insert into ee_bus_event_history(entity_id, status, context, create_time) values(?, ?, ?, NOW())"),
-            eq(eventIdVal),
+            contains("start_execution_time=CASE WHEN processing_state = 'IN_PROCESSING' THEN start_execution_time ELSE NOW() END"),
             eq(state.getCode()),
-            eq("Start Processing")
+            eq(""),
+            anyString(),
+            eq(eventIdVal)
         );
     }
 
     @Test
-    public void testProcessingComplete_ShouldUpdateSuccessTimeAndSaveHistory() {
+    public void testProcessingComplete_ShouldUpdateSuccessTime() {
         // Arrange
         long eventIdVal = 101112L;
         EventId eventId = new EventId(eventIdVal, 1L);
@@ -136,14 +127,6 @@ public class BusEventEntityMapperImplTest {
             eq(state.getCode()), 
             eq(""), 
             eq(eventIdVal)
-        );
-        
-        // Verify history
-        verify(jdbcTemplate).update(
-            contains("insert into ee_bus_event_history"),
-            eq(eventIdVal),
-            eq(state.getCode()),
-            contains("Process State Updated")
         );
     }
 }

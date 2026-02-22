@@ -26,6 +26,7 @@ export default {
     delete: '删除',
   },
   event: {
+    detail: '事件详情',
     id: 'ID',
     eventKey: '事件标识',
     className: '类名',
@@ -44,9 +45,7 @@ export default {
     processingAvailableDate: '处理可用时间',
     startExecutionTime: '开始执行时间',
     executionSuccessTime: '执行完成时间',
-    statusHistory: '状态变更历史',
-    status: '状态',
-    context: '上下文',
+
     time: '时间',
     getDetailFailed: '获取详情失败',
     retry: '重试',
