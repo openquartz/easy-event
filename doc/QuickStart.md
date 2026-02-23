@@ -65,10 +65,8 @@ spring:
 
 ## 4. Define an Event
 
-Create an event class extending `BaseEventEntity`:
-
 ```java
-public class UserRegisteredEvent extends BaseEventEntity {
+public class UserRegisteredEvent {
     private Long userId;
     private String username;
 

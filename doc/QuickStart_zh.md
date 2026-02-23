@@ -65,10 +65,8 @@ spring:
 
 ## 4. 定义事件
 
-创建一个继承自 `BaseEventEntity` 的事件类：
-
 ```java
-public class UserRegisteredEvent extends BaseEventEntity {
+public class UserRegisteredEvent {
     private Long userId;
     private String username;
 
