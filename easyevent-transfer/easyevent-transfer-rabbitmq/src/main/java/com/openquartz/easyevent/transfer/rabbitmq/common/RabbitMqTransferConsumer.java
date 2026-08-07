@@ -83,8 +83,10 @@ public class RabbitMqTransferConsumer extends Thread {
                             queueName, consumerGroup, deliveryTag, ex);
                         
                         try {
-                            // 拒绝消息并重新入队
-                            channel.basicNack(deliveryTag, false, true);
+                            // Do not requeue: poison / handler failures would tight-loop.
+                            // Persist path keeps TRANSFER_SUCCESS/PROCESS_FAILED for compensate redrive.
+                            // Configure a DLX on the queue if you need dead-letter retention.
+                            channel.basicNack(deliveryTag, false, false);
                         } catch (Exception e) {
                             log.error("[RabbitMqTransferConsumer#handleDelivery] nack error, queue:{}, consumerGroup:{}, deliveryTag:{}", 
                                 queueName, consumerGroup, deliveryTag, e);

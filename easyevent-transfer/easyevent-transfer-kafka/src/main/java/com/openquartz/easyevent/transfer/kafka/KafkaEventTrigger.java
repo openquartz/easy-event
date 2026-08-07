@@ -161,7 +161,8 @@ public class KafkaEventTrigger implements EventTrigger {
                 "org.apache.kafka.common.serialization.StringDeserializer");
             props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                 "org.apache.kafka.common.serialization.StringDeserializer");
-            props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+            // earliest: avoid silently skipping TRANSFER_SUCCESS backlog after consumer restart.
+            props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
             props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
             props.put(ConsumerConfig.RETRY_BACKOFF_MS_CONFIG,
                 kafkaConsumerProperty.getConsumeRetryDelayTimeIntervalSeconds() * 1000);

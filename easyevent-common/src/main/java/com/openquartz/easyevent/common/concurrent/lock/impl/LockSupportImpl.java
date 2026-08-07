@@ -1,7 +1,5 @@
 package com.openquartz.easyevent.common.concurrent.lock.impl;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.openquartz.easyevent.common.concurrent.lock.Consumer;
 import com.openquartz.easyevent.common.concurrent.lock.DistributedLockFactory;
 import com.openquartz.easyevent.common.concurrent.lock.LockBizType;
@@ -12,7 +10,7 @@ import com.openquartz.easyevent.common.utils.Asserts;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -27,11 +25,11 @@ import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 public class LockSupportImpl implements LockSupport {
 
     private final DistributedLockFactory distributedLockFactory;
-    private final Cache<String, Lock> localLockMap = Caffeine.newBuilder()
-            .initialCapacity(16)
-            .maximumSize(Integer.MAX_VALUE)
-            .expireAfterAccess(30, TimeUnit.MINUTES)
-            .build();
+    /**
+     * Stable local locks per key. Do not expire/evict while held — an expiring cache
+     * previously allowed a second ReentrantLock for the same key under long-running handlers.
+     */
+    private final ConcurrentHashMap<String, ReentrantLock> localLockMap = new ConcurrentHashMap<>();
 
     public LockSupportImpl(DistributedLockFactory distributedLockFactory) {
         this.distributedLockFactory = distributedLockFactory;
@@ -57,9 +55,8 @@ public class LockSupportImpl implements LockSupport {
 
         String identifyLockKey = String.format(LOCK_KEY_FORMATTER, lockKey.getValue().getCode(), lockKey.getKey());
 
-        Lock lock = localLockMap.get(identifyLockKey, k -> new ReentrantLock());
+        ReentrantLock lock = localLockMap.computeIfAbsent(identifyLockKey, k -> new ReentrantLock());
         Asserts.notNull(lock, CommonErrorCode.CANNOT_GET_LOCK_ERROR);
-        assert lock != null;
         if (lock.tryLock()) {
             try {
                 if (Objects.isNull(distributedLockFactory)) {

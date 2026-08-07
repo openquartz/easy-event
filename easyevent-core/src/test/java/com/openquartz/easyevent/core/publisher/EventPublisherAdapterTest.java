@@ -49,11 +49,10 @@ public class EventPublisherAdapterTest {
         clearInterceptors();
     }
 
-    @SuppressWarnings("unchecked")
     private static void clearInterceptors() throws Exception {
         Field field = PublisherInterceptorChain.class.getDeclaredField("INTERCEPTOR_LIST");
         field.setAccessible(true);
-        ((List<PublisherInterceptor>) field.get(null)).clear();
+        field.set(null, java.util.Collections.emptyList());
     }
 
     @Test

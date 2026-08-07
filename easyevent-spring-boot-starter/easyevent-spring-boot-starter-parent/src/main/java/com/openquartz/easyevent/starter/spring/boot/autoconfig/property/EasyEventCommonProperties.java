@@ -170,7 +170,8 @@ public class EasyEventCommonProperties implements EasyEventProperties {
         @Getter
         private Integer threadPoolCoreSize = 1;
 
-        private String compensateState = "AVAILABLE,TRANSFER_FAILED,PROCESS_FAILED";
+        // Include TRANSFER_SUCCESS so lost MQ/Disruptor deliveries can be re-driven.
+        private String compensateState = "AVAILABLE,TRANSFER_FAILED,TRANSFER_SUCCESS,PROCESS_FAILED";
         @Getter
         private Integer beforeStartSeconds;
         @Getter

@@ -3,6 +3,7 @@ package com.openquartz.easyevent.core.intreceptor;
 import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -21,12 +22,16 @@ public final class TriggerInterceptorChain {
     private TriggerInterceptorChain() {
     }
 
-    private static final List<TriggerInterceptor> INTERCEPTOR_LIST = new ArrayList<>();
+    /**
+     * Immutable snapshot replaced under lock — avoids CME when iterating during concurrent register.
+     */
+    private static volatile List<TriggerInterceptor> INTERCEPTOR_LIST = Collections.emptyList();
 
     public static boolean applyPreTrigger(EventMessage message, TriggerInterceptorContext context) {
         int endIndex = 0;
-        if (CollectionUtils.isNotEmpty(INTERCEPTOR_LIST)) {
-            for (TriggerInterceptor interceptor : INTERCEPTOR_LIST) {
+        List<TriggerInterceptor> interceptors = INTERCEPTOR_LIST;
+        if (CollectionUtils.isNotEmpty(interceptors)) {
+            for (TriggerInterceptor interceptor : interceptors) {
                 endIndex++;
                 if (!interceptor.preTrigger(message, context)) {
                     triggerAfterCompletion(message, context, endIndex, null);
@@ -37,12 +42,14 @@ public final class TriggerInterceptorChain {
         return true;
     }
 
-    public static void addInterceptor(TriggerInterceptor interceptor) {
+    public static synchronized void addInterceptor(TriggerInterceptor interceptor) {
 
         checkNotNull(interceptor);
 
-        INTERCEPTOR_LIST.add(interceptor);
-        INTERCEPTOR_LIST.sort(Comparator.comparingInt(TriggerInterceptor::order));
+        List<TriggerInterceptor> next = new ArrayList<>(INTERCEPTOR_LIST);
+        next.add(interceptor);
+        next.sort(Comparator.comparingInt(TriggerInterceptor::order));
+        INTERCEPTOR_LIST = Collections.unmodifiableList(next);
     }
 
     /**

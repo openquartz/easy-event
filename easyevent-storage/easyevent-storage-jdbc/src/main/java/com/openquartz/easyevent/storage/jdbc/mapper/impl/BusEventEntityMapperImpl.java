@@ -11,6 +11,7 @@ import com.openquartz.easyevent.storage.model.BaseEventEntity;
 import com.openquartz.easyevent.storage.model.BusEventEntity;
 import com.openquartz.easyevent.storage.model.BusEventSelectorCondition;
 import com.openquartz.easyevent.storage.model.EventLifecycleState;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -34,6 +35,7 @@ import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
  *
  * @author svnee
  **/
+@Slf4j
 public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
     private final JdbcTemplate jdbcTemplate;
@@ -67,7 +69,8 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
     private static final String REFRESH_START_PROCESSING_SQL = "update {0} set start_execution_time=NOW(),processing_state=?,processing_failed_reason=?,processing_owner=? where id = ? and processing_state in (''TRANSFER_SUCCESS'',''PROCESS_FAILED'',''TRANSFER_FAILED'')";
     private static final String REFRESH_SEND_FAILED_SQL = "update {0} set processing_state=?,processing_failed_reason=?,processing_owner=?,error_count=error_count+1 where id = ?";
-    private static final String REFRESH_PROCESSING_FAILED_SQL = "update {0} set processing_state=?,processing_failed_reason=?,successful_subscriber=?,error_count=error_count+1 where id = ?";
+    // CAS: only fail while still IN_PROCESSING — avoid overwriting PROCESS_COMPLETE / concurrent owners.
+    private static final String REFRESH_PROCESSING_FAILED_SQL = "update {0} set processing_state=?,processing_failed_reason=?,successful_subscriber=?,error_count=error_count+1 where id = ? and processing_state=''IN_PROCESSING''";
 
 
     private static final int PROCESS_FAIL_REASON_LENGTH = 128;
@@ -303,7 +306,12 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 failReason,
                 successfulSubscriber,
                 eventId.getId());
-        DataUtils.checkUpdateOne(affect);
+        // 0 rows: stale/lost race (already completed or another owner) — do not throw.
+        if (affect == 0) {
+            log.warn(
+                "[BusEventEntityMapper#processingFailed] skipped CAS miss, eventId:{}, state may have changed",
+                eventId);
+        }
     }
 
     @Override
@@ -388,7 +396,8 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 }
             }
             if (Objects.nonNull(condition.getMaxErrorCount())) {
-                joiner.add("error_count <= :maxErrorCount");
+                // Align with isMoreThanMustTrigger (errorCount >= max): exclude exhausted retries.
+                joiner.add("error_count < :maxErrorCount");
                 paramMap.put("maxErrorCount", condition.getMaxErrorCount());
             }
             if (Objects.nonNull(condition.getMinErrorCount())) {

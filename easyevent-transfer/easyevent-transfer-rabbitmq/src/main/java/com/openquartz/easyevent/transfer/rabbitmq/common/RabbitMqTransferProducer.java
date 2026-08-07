@@ -40,6 +40,8 @@ public class RabbitMqTransferProducer implements TransferProducer, LifecycleBean
 
     private Connection connection;
     private Channel channel;
+    /** Channel is not thread-safe; guard all publish/declare calls. */
+    private final Object channelLock = new Object();
     private final Serializer serializer;
     private final EventRouter eventRouter;
     private final RabbitMqCommonProperty rabbitMqCommonProperty;
@@ -77,10 +79,16 @@ public class RabbitMqTransferProducer implements TransferProducer, LifecycleBean
 
     @Override
     public void destroy() {
-        try {
-            if (channel != null && channel.isOpen()) {
-                channel.close();
+        synchronized (channelLock) {
+            try {
+                if (channel != null && channel.isOpen()) {
+                    channel.close();
+                }
+            } catch (Exception ex) {
+                log.error("[RabbitMqProducer#destroy] close channel error", ex);
             }
+        }
+        try {
             if (connection != null && connection.isOpen()) {
                 connection.close();
             }
@@ -99,11 +107,6 @@ public class RabbitMqTransferProducer implements TransferProducer, LifecycleBean
             // 处理默认exchange的情况（空字符串或"/"）
             boolean isDefaultExchange = exchangeName == null || exchangeName.isEmpty() || "/".equals(exchangeName);
             
-            if (!isDefaultExchange) {
-                // 声明topic交换机
-                channel.exchangeDeclare(exchangeName, "topic", true);
-            }
-            
             // 构建消息
             EventMessage eventMessage = EventMessageBuilder.builder()
                 .eventId(eventId)
@@ -117,10 +120,15 @@ public class RabbitMqTransferProducer implements TransferProducer, LifecycleBean
             // 如果使用默认exchange，exchangeName应该为空字符串，routingKey应该是队列名
             String finalExchangeName = isDefaultExchange ? "" : exchangeName;
             String finalRoutingKey = isDefaultExchange ? routingKey : routingKey;
-            
-            channel.basicPublish(finalExchangeName, finalRoutingKey, 
-                MessageProperties.PERSISTENT_TEXT_PLAIN,
+
+            synchronized (channelLock) {
+                if (!isDefaultExchange) {
+                    channel.exchangeDeclare(exchangeName, "topic", true);
+                }
+                channel.basicPublish(finalExchangeName, finalRoutingKey,
+                    MessageProperties.PERSISTENT_TEXT_PLAIN,
                     messageBody.getBytes(StandardCharsets.UTF_8));
+            }
                 
             log.info("[RabbitMQ#sendMessage] send message, exchange:{}, routingKey:{}, queue:{}", 
                 finalExchangeName.isEmpty() ? "(default)" : finalExchangeName, finalRoutingKey, 
@@ -142,11 +150,6 @@ public class RabbitMqTransferProducer implements TransferProducer, LifecycleBean
             // 处理默认exchange的情况（空字符串或"/"）
             boolean isDefaultExchange = exchangeName == null || exchangeName.isEmpty() || "/".equals(exchangeName);
             
-            if (!isDefaultExchange) {
-                // 声明topic交换机
-                channel.exchangeDeclare(exchangeName, "topic", true);
-            }
-            
             // 构建消息
             EventMessage eventMessage = EventMessageBuilder.builder()
                 .eventId(eventId)
@@ -160,10 +163,15 @@ public class RabbitMqTransferProducer implements TransferProducer, LifecycleBean
             // 如果使用默认exchange，exchangeName应该为空字符串，routingKey应该是队列名
             String finalExchangeName = isDefaultExchange ? "" : exchangeName;
             String finalRoutingKey = isDefaultExchange ? routingKey : routingKey;
-            
-            channel.basicPublish(finalExchangeName, finalRoutingKey, 
-                MessageProperties.PERSISTENT_TEXT_PLAIN,
+
+            synchronized (channelLock) {
+                if (!isDefaultExchange) {
+                    channel.exchangeDeclare(exchangeName, "topic", true);
+                }
+                channel.basicPublish(finalExchangeName, finalRoutingKey,
+                    MessageProperties.PERSISTENT_TEXT_PLAIN,
                     messageBody.getBytes(StandardCharsets.UTF_8));
+            }
                 
             log.info("[RabbitMQ#asyncSendMessage] send message, exchange:{}, routingKey:{}, queue:{}", 
                 finalExchangeName.isEmpty() ? "(default)" : finalExchangeName, finalRoutingKey,
@@ -215,43 +223,41 @@ public class RabbitMqTransferProducer implements TransferProducer, LifecycleBean
             try {
                 // 处理默认exchange的情况（空字符串或"/"）
                 boolean isDefaultExchange = exchangeName == null || exchangeName.isEmpty() || "/".equals(exchangeName);
-                
-                if (!isDefaultExchange) {
-                    // 声明topic交换机
-                    channel.exchangeDeclare(exchangeName, "topic", true);
-                }
-                
                 String finalExchangeName = isDefaultExchange ? "" : exchangeName;
                 
                 List<Pair<Integer, EventBody<?>>> eventPairs = routeInfo2Event.getValue();
                 List<Integer> completedIndices = new ArrayList<>();
                 List<Integer> failedIndices = new ArrayList<>();
-                
-                for (Pair<Integer, EventBody<?>> eventPair : eventPairs) {
-                    Integer index = eventPair.getKey();
-                    EventBody<?> eventBody = eventPair.getValue();
-                    
-                    try {
-                        // 构建消息
-                        EventMessage eventMessage = EventMessageBuilder.builder()
-                            .eventId(eventIdList.get(index))
-                            .event(eventBody)
-                            .serializer(serializer)
-                            .build();
-                        
-                        String messageBody = JSONUtil.toJson(eventMessage);
-                        
-                        // 发送消息
-                        channel.basicPublish(finalExchangeName, routingKey, 
-                            MessageProperties.PERSISTENT_TEXT_PLAIN,
+
+                synchronized (channelLock) {
+                    if (!isDefaultExchange) {
+                        channel.exchangeDeclare(exchangeName, "topic", true);
+                    }
+
+                    for (Pair<Integer, EventBody<?>> eventPair : eventPairs) {
+                        Integer index = eventPair.getKey();
+                        EventBody<?> eventBody = eventPair.getValue();
+
+                        try {
+                            EventMessage eventMessage = EventMessageBuilder.builder()
+                                .eventId(eventIdList.get(index))
+                                .event(eventBody)
+                                .serializer(serializer)
+                                .build();
+
+                            String messageBody = JSONUtil.toJson(eventMessage);
+
+                            channel.basicPublish(finalExchangeName, routingKey,
+                                MessageProperties.PERSISTENT_TEXT_PLAIN,
                                 messageBody.getBytes(StandardCharsets.UTF_8));
-                        
-                        completedIndices.add(index);
-                    } catch (Exception ex) {
-                        log.error("[RabbitMQ#sendMessageList] send error!eventId:{},event:{}", 
-                            eventIdList.get(index), eventBody, ex);
-                        failedIndices.add(index);
-                        batchSendResult.setFailedException(ex);
+
+                            completedIndices.add(index);
+                        } catch (Exception ex) {
+                            log.error("[RabbitMQ#sendMessageList] send error!eventId:{},event:{}",
+                                eventIdList.get(index), eventBody, ex);
+                            failedIndices.add(index);
+                            batchSendResult.setFailedException(ex);
+                        }
                     }
                 }
                 

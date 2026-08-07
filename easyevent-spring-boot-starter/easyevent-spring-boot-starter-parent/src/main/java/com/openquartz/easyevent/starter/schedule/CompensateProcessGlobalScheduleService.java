@@ -1,9 +1,9 @@
 package com.openquartz.easyevent.starter.schedule;
 
 import java.util.Date;
-import java.util.Random;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.InitializingBean;
 import com.openquartz.easyevent.common.concurrent.ThreadFactoryBuilder;
@@ -46,13 +46,15 @@ public class CompensateProcessGlobalScheduleService implements InitializingBean 
 
     private void doGlobalProcess() {
         Date now = new Date();
+        // Window: [now - beforeEndSeconds, now - beforeStartSeconds)
+        // e.g. defaults (beforeStart=60, beforeEnd=3600) => events aged 60s~1h.
+        Integer beforeStartSeconds = easyEventCommonProperties.getCompensate().getGlobal().getBeforeStartSeconds();
+        Integer beforeEndSeconds = easyEventCommonProperties.getCompensate().getGlobal().getBeforeEndSeconds();
         EventCompensateParam param = EventCompensateParam.builder(easyEventCommonProperties.getAppId())
             .compensateState(easyEventCommonProperties.getCompensate().getGlobal().getCompensateState())
             .offset(easyEventCommonProperties.getCompensate().getGlobal().getOffset())
-            .startTime(DateUtils.addSeconds(new Date(),
-                (long) -easyEventCommonProperties.getCompensate().getGlobal().getBeforeStartSeconds()))
-            .endTime(DateUtils
-                .addSeconds(now, (long) -easyEventCommonProperties.getCompensate().getGlobal().getBeforeEndSeconds()))
+            .startTime(DateUtils.addSeconds(now, (long) -beforeEndSeconds))
+            .endTime(DateUtils.addSeconds(now, (long) -beforeStartSeconds))
             .maxErrorCount(easyEventCommonProperties.getMaxRetryCount());
         eventCompensateService.compensate(param);
     }
@@ -60,8 +62,9 @@ public class CompensateProcessGlobalScheduleService implements InitializingBean 
     @Override
     public void afterPropertiesSet() {
         Integer schedulePeriod = easyEventCommonProperties.getCompensate().getGlobal().getSchedulePeriod();
-        double initDelaySeconds = new Random().nextDouble() * schedulePeriod;
+        long initDelayMillis = (long) (ThreadLocalRandom.current().nextDouble() * schedulePeriod * 1000L);
         selfScheduledThreadPool
-            .scheduleAtFixedRate(this::doGlobalProcess, (int) initDelaySeconds, schedulePeriod, TimeUnit.SECONDS);
+            .scheduleWithFixedDelay(this::doGlobalProcess, initDelayMillis, schedulePeriod * 1000L,
+                TimeUnit.MILLISECONDS);
     }
 }

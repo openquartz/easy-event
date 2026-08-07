@@ -3,6 +3,7 @@ package com.openquartz.easyevent.core.intreceptor;
 import static com.openquartz.easyevent.common.utils.ParamUtils.checkNotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -20,12 +21,16 @@ public final class PublisherInterceptorChain {
     private PublisherInterceptorChain() {
     }
 
-    private static final List<PublisherInterceptor> INTERCEPTOR_LIST = new ArrayList<>();
+    /**
+     * Immutable snapshot replaced under lock — avoids CME when iterating during concurrent register.
+     */
+    private static volatile List<PublisherInterceptor> INTERCEPTOR_LIST = Collections.emptyList();
 
     public static boolean applyPrePublish(Object event, PublisherInterceptorContext context) {
         int endIndex = 0;
-        if (CollectionUtils.isNotEmpty(INTERCEPTOR_LIST)) {
-            for (PublisherInterceptor interceptor : INTERCEPTOR_LIST) {
+        List<PublisherInterceptor> interceptors = INTERCEPTOR_LIST;
+        if (CollectionUtils.isNotEmpty(interceptors)) {
+            for (PublisherInterceptor interceptor : interceptors) {
                 endIndex++;
                 if (!interceptor.prePublish(event, context)) {
                     triggerAfterCompletion(event, context, endIndex, null);
@@ -36,12 +41,14 @@ public final class PublisherInterceptorChain {
         return true;
     }
 
-    public static void addInterceptor(PublisherInterceptor interceptor){
+    public static synchronized void addInterceptor(PublisherInterceptor interceptor) {
 
         checkNotNull(interceptor);
 
-        INTERCEPTOR_LIST.add(interceptor);
-        INTERCEPTOR_LIST.sort(Comparator.comparingInt(PublisherInterceptor::order));
+        List<PublisherInterceptor> next = new ArrayList<>(INTERCEPTOR_LIST);
+        next.add(interceptor);
+        next.sort(Comparator.comparingInt(PublisherInterceptor::order));
+        INTERCEPTOR_LIST = Collections.unmodifiableList(next);
     }
 
     /**

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import com.openquartz.easyevent.common.utils.GenericUtils;
 
 /**
@@ -27,15 +28,15 @@ public final class HandlerInterceptorCenter {
      * @param interceptor interceptor
      * @param realClass interceptor real-class
      */
-    public static synchronized void addInterceptor(HandlerInterceptor<?> interceptor, Class<?> realClass) {
+    public static void addInterceptor(HandlerInterceptor<?> interceptor, Class<?> realClass) {
 
         Class<?>[] parameterType = GenericUtils
             .getGenericInterfaceParameter(realClass, HandlerInterceptor.class);
         Class<?> eventType = parameterType[0];
 
-        List<HandlerInterceptor<?>> interceptorList = INTERCEPTOR_MAP.getOrDefault(eventType, new ArrayList<>());
-        interceptorList.add(interceptor);
-        INTERCEPTOR_MAP.put(eventType, interceptorList);
+        INTERCEPTOR_MAP
+            .computeIfAbsent(eventType, k -> new CopyOnWriteArrayList<>())
+            .add(interceptor);
     }
 
     /**

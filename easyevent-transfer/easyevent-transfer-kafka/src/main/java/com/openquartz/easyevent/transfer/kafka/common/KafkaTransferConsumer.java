@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 
 import java.util.concurrent.CountDownLatch;
@@ -15,6 +16,8 @@ import java.util.function.Consumer;
  **/
 @Slf4j
 public class KafkaTransferConsumer extends Thread {
+
+    private static final long POLL_TIMEOUT_MS = 1000L;
 
     private final KafkaConsumer<String, String> consumer;
     private final CountDownLatch latch;
@@ -52,23 +55,48 @@ public class KafkaTransferConsumer extends Thread {
     private void doWork() {
         try {
             while (running.get() && !Thread.currentThread().isInterrupted()) {
-                ConsumerRecords<String, String> consumerRecords = consumer.poll(Long.MAX_VALUE);
+                ConsumerRecords<String, String> consumerRecords = consumer.poll(POLL_TIMEOUT_MS);
+                if (consumerRecords.isEmpty()) {
+                    continue;
+                }
+
+                boolean batchSuccess = true;
+                TopicPartition failedPartition = null;
+                long failedOffset = -1L;
+
                 for (ConsumerRecord<String, String> consumerRecord : consumerRecords) {
                     try {
                         handler.accept(consumerRecord);
                     } catch (Exception ex) {
-                        // Keep the consumer alive on poison / transient handler failures.
+                        batchSuccess = false;
+                        failedPartition = new TopicPartition(consumerRecord.topic(), consumerRecord.partition());
+                        failedOffset = consumerRecord.offset();
                         log.error(
                             "[KafkaTransferConsumer#doWork] handle record error, topic:{}, group:{}, partition:{}, offset:{}",
                             topic, consumerGroup, consumerRecord.partition(), consumerRecord.offset(), ex);
+                        // Stop processing later records in this poll; seek back and retry.
+                        break;
                     }
                 }
-                try {
-                    consumer.commitSync();
-                } catch (WakeupException e) {
-                    throw e;
-                } catch (Exception ex) {
-                    log.error("[KafkaTransferConsumer#doWork] commit error,topic:{},group:{}", topic, consumerGroup, ex);
+
+                if (batchSuccess) {
+                    try {
+                        consumer.commitSync();
+                    } catch (WakeupException e) {
+                        throw e;
+                    } catch (Exception ex) {
+                        log.error("[KafkaTransferConsumer#doWork] commit error,topic:{},group:{}", topic, consumerGroup,
+                            ex);
+                    }
+                } else if (failedPartition != null) {
+                    try {
+                        // Do not advance offsets past a failed record.
+                        consumer.seek(failedPartition, failedOffset);
+                    } catch (Exception ex) {
+                        log.error(
+                            "[KafkaTransferConsumer#doWork] seek error,topic:{},group:{},partition:{},offset:{}",
+                            topic, consumerGroup, failedPartition.partition(), failedOffset, ex);
+                    }
                 }
             }
         } catch (WakeupException e) {

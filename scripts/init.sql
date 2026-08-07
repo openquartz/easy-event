@@ -20,7 +20,8 @@ CREATE TABLE ee_bus_event_entity
     execution_success_time    TIMESTAMP             DEFAULT NULL COMMENT '执行成功时间',
     PRIMARY KEY (id),
     INDEX                     idx_event_key (event_key),
-    INDEX                     idx_app_state_owner_time(app_id, processing_state, processing_owner, created_time)
+    INDEX                     idx_app_state_owner_time(app_id, processing_state, processing_owner, created_time),
+    INDEX                     idx_app_state_creating_owner_time(app_id, processing_state, creating_owner, created_time)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT 'ee_bus_event_entity';
 
 

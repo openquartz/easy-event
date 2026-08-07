@@ -14,8 +14,11 @@ import com.openquartz.easyevent.storage.jdbc.table.EasyEventTableGeneratorSuppli
 import com.openquartz.easyevent.storage.model.BusEventEntity;
 import com.openquartz.easyevent.storage.model.BusEventSelectorCondition;
 import com.openquartz.easyevent.storage.model.EventLifecycleState;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +26,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -156,6 +160,80 @@ public class BusEventEntityMapperImplTest {
         String source = new String(java.nio.file.Files.readAllBytes(path), java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(source.contains("order by id asc limit :offset"));
         assertTrue(source.contains("resultList.subList(0, condition.getOffset())"));
+        assertTrue(source.contains("error_count < :maxErrorCount"));
+        assertTrue(source.contains("processing_state=''IN_PROCESSING''"));
+    }
+
+    @Test
+    public void processingFailed_casHit_shouldUpdateWithoutThrow() {
+        long eventIdVal = 889L;
+        EventId eventId = new EventId(eventIdVal, 1L);
+        when(supplier.genBusEventEntityTable(eventIdVal)).thenReturn("ee_bus_event_entity");
+        when(jdbcTemplate.update(anyString(), any(), any(), any(), any())).thenReturn(1);
+
+        mapper.processingFailed(eventId, EventLifecycleState.PROCESS_FAILED, Collections.emptyList(),
+            new RuntimeException("boom"));
+
+        verify(jdbcTemplate).update(anyString(), eq(EventLifecycleState.PROCESS_FAILED.getCode()),
+            anyString(), anyString(), eq(eventIdVal));
+    }
+
+    @Test
+    public void getBySelectiveCondition_whenMaxErrorCountSet_shouldBindErrorCountLessThan() throws Exception {
+        when(supplier.genAllBusEventEntityTableList())
+            .thenReturn(Collections.singletonList("ee_bus_event_entity"));
+
+        AtomicReference<String> capturedSql = new AtomicReference<>();
+        stubQuerySqlCapture(capturedSql);
+
+        BusEventSelectorCondition condition =
+            BusEventSelectorCondition.builder("app", 10).maxErrorCount(10);
+        mapper.getBySelectiveCondition(condition);
+
+        assertTrue(capturedSql.get().contains("error_count <"));
+    }
+
+    @Test
+    public void getBySelectiveCondition_whenMaxErrorCountNull_shouldOmitErrorCountPredicate() throws Exception {
+        when(supplier.genAllBusEventEntityTableList())
+            .thenReturn(Collections.singletonList("ee_bus_event_entity"));
+
+        AtomicReference<String> capturedSql = new AtomicReference<>();
+        stubQuerySqlCapture(capturedSql);
+
+        mapper.getBySelectiveCondition(BusEventSelectorCondition.builder("app", 10));
+        assertFalse(capturedSql.get().contains("error_count <"));
+    }
+
+    private void stubQuerySqlCapture(AtomicReference<String> capturedSql) throws Exception {
+        when(jdbcTemplate.query(any(PreparedStatementCreator.class), any(RowMapper.class)))
+            .thenAnswer(invocation -> {
+                PreparedStatementCreator psc = invocation.getArgument(0);
+                Connection conn = org.mockito.Mockito.mock(Connection.class);
+                PreparedStatement ps = org.mockito.Mockito.mock(PreparedStatement.class);
+                when(conn.prepareStatement(anyString())).thenAnswer(i -> {
+                    capturedSql.set(i.getArgument(0));
+                    return ps;
+                });
+                psc.createPreparedStatement(conn);
+                return Collections.emptyList();
+            });
+    }
+
+    @Test
+    public void testProcessingFailed_casMiss_shouldNotThrow() {
+        long eventIdVal = 888L;
+        EventId eventId = new EventId(eventIdVal, 1L);
+        when(supplier.genBusEventEntityTable(eventIdVal)).thenReturn("ee_bus_event_entity");
+        when(jdbcTemplate.update(anyString(), any(), any(), any(), any())).thenReturn(0);
+
+        mapper.processingFailed(eventId, EventLifecycleState.PROCESS_FAILED, Collections.emptyList(),
+            new RuntimeException("boom"));
+
+        ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
+        verify(jdbcTemplate).update(sqlCaptor.capture(), eq(EventLifecycleState.PROCESS_FAILED.getCode()),
+            anyString(), anyString(), eq(eventIdVal));
+        assertTrue(sqlCaptor.getValue().contains("processing_state='IN_PROCESSING'"));
     }
 
     @Test
