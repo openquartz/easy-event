@@ -5,6 +5,7 @@ import com.openquartz.easyevent.core.Subscriber;
 import com.openquartz.easyevent.core.dispatcher.DispatchInvokeResult;
 
 import com.openquartz.easyevent.common.utils.StringUtils;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,10 @@ public abstract class AsyncEventHandlerAdapter implements AsyncEventHandler {
     public void handle(EventMessage eventMessage) {
 
         BaseEventEntity entity = getEventStorageService().getBaseEntity(eventMessage.getEventId());
+        if (entity == null) {
+            log.warn("[EventTriggerAdapter#trigger]event entity not found, skip!eventMessage:{}", eventMessage);
+            return;
+        }
         if (entity.isProcessComplete() || entity.getErrorCount() >= getEasyEventProperties().getMaxRetryCount()) {
             return;
         }
@@ -113,35 +118,57 @@ public abstract class AsyncEventHandlerAdapter implements AsyncEventHandler {
                     return;
                 }
                 EventBody<?> finalEventBody = eventBody;
-                finalEventBody.getContext().setSourceEventId(eventMessage.getEventId().getId());
-                EventContext.set(finalEventBody.getContext());
+                EventContext eventContext = finalEventBody.getContext();
+                if (eventContext == null) {
+                    eventContext = new EventContext();
+                    finalEventBody.setContext(eventContext);
+                }
+                eventContext.setSourceEventId(eventMessage.getEventId().getId());
+                EventContext.set(eventContext);
 
                 // execute the no join transaction subscribers
                 DispatchInvokeResult noJoinTransactionInvokeResult = getHandleEventBus()
                         .postAll(finalEventBody.getEvent(), entity.getSuccessfulSubscriberList(), false);
 
-                executeSuccess = getTransactionSupport().execute(() -> {
-                    // execute the join transaction subscribers
-                    DispatchInvokeResult joinTransactionInvokeResult = getHandleEventBus()
-                            .postAll(finalEventBody.getEvent(), entity.getSuccessfulSubscriberList(), true);
+                List<String> successfulSubIdentifyList = new ArrayList<>();
+                try {
+                    executeSuccess = Boolean.TRUE.equals(getTransactionSupport().execute(() -> {
+                        // execute the join transaction subscribers
+                        DispatchInvokeResult joinTransactionInvokeResult = getHandleEventBus()
+                                .postAll(finalEventBody.getEvent(), entity.getSuccessfulSubscriberList(), true);
 
-                    DispatchInvokeResult invokeResult = noJoinTransactionInvokeResult.merge(joinTransactionInvokeResult);
-                    List<String> successfulSubIdentifyList = invokeResult.getSuccessSubscriberList()
-                            .stream()
-                            .map(Subscriber::getTargetIdentify)
-                            .collect(Collectors.toList());
+                        DispatchInvokeResult invokeResult = noJoinTransactionInvokeResult
+                                .merge(joinTransactionInvokeResult);
+                        successfulSubIdentifyList.clear();
+                        successfulSubIdentifyList.addAll(invokeResult.getSuccessSubscriberList()
+                                .stream()
+                                .map(Subscriber::getTargetIdentify)
+                                .collect(Collectors.toList()));
 
-                    // 未执行成功
-                    if (!invokeResult.isSuccess()) {
-                        getEventStorageService()
-                                .processingFailed(eventMessage.getEventId(), successfulSubIdentifyList,
-                                        invokeResult.getInvokeError());
-                    } else {
+                        // 未执行成功：抛出异常回滚 joinTransaction 订阅者的副作用
+                        if (!invokeResult.isSuccess()) {
+                            Exception error = invokeResult.getInvokeError();
+                            if (error instanceof RuntimeException) {
+                                throw (RuntimeException) error;
+                            }
+                            if (error != null) {
+                                throw new EasyEventException(EventBusErrorCode.EVENT_HANDLE_ERROR, error.getMessage());
+                            }
+                            throw new EasyEventException(EventBusErrorCode.EVENT_HANDLE_ERROR);
+                        }
                         getEventStorageService()
                                 .processingCompleted(eventMessage.getEventId());
-                    }
-                    return invokeResult.isSuccess();
-                });
+                        return true;
+                    }));
+                } catch (Exception ex) {
+                    executeSuccess = false;
+                    // 在独立事务中记录失败，避免与已回滚的业务事务写在同一事务里
+                    getTransactionSupport().execute(() -> {
+                        getEventStorageService()
+                                .processingFailed(eventMessage.getEventId(), successfulSubIdentifyList, ex);
+                        return true;
+                    });
+                }
             } catch (Exception ex) {
                 log.error("[EventTriggerAdapter#trigger]exe-error!eventMessage:{}", eventMessage, ex);
                 getEventStorageService().processingFailed(eventMessage.getEventId(), ex);
@@ -162,7 +189,7 @@ public abstract class AsyncEventHandlerAdapter implements AsyncEventHandler {
                 ExceptionUtils.rethrow(ex);
             }
         } finally {
-            TraceContext.clearSourceEventId();
+            TraceContext.clear();
             EventContext.remove();
         }
     }

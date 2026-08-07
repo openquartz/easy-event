@@ -70,12 +70,13 @@ public interface BusEventEntityMapper {
     void refreshSendFailed(EventId eventId, EventLifecycleState transferFailed, Throwable ex);
 
     /**
-     * 开始处理
+     * 开始处理（CAS：仅当事件处于可处理状态时更新成功）
      *
      * @param eventId         eventId
      * @param startProcessing 处理状态
+     * @return true if updated successfully
      */
-    void refreshStartProcessing(EventId eventId, EventLifecycleState startProcessing);
+    boolean refreshStartProcessing(EventId eventId, EventLifecycleState startProcessing);
 
     /**
      * 处理完成

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.Future;
 
@@ -32,7 +33,11 @@ import com.openquartz.easyevent.common.utils.CollectionUtils;
 @Slf4j
 public abstract class Dispatcher {
 
-    private static ExpressionParser expressionParser;
+    private final ExpressionParser expressionParser;
+
+    protected Dispatcher(ExpressionParser expressionParser) {
+        this.expressionParser = expressionParser;
+    }
 
     /**
      * Returns a dispatcher that queues events that are posted reentrantly on a thread that is already
@@ -45,8 +50,7 @@ public abstract class Dispatcher {
      * any events B and C that are posted to the event bus by the subscribers to A.
      */
     public static Dispatcher perThreadDispatchQueue(ExpressionParser expressionParser) {
-        Dispatcher.expressionParser = expressionParser;
-        return new PerThreadQueuedDispatcher();
+        return new PerThreadQueuedDispatcher(expressionParser);
     }
 
     /**
@@ -55,8 +59,7 @@ public abstract class Dispatcher {
      * depth-first dispatch order, vs. breadth-first when using a queue.
      */
     public static Dispatcher immediate(ExpressionParser expressionParser) {
-        Dispatcher.expressionParser = expressionParser;
-        return ImmediateDispatcher.INSTANCE;
+        return new ImmediateDispatcher(expressionParser);
     }
 
     /**
@@ -64,8 +67,7 @@ public abstract class Dispatcher {
      * without waiting for the concurrent execution result.
      */
     public static Dispatcher asyncImmediate(ExpressionParser expressionParser) {
-        Dispatcher.expressionParser = expressionParser;
-        return AsyncImmediateDispatcher.INSTANCE;
+        return new AsyncImmediateDispatcher(expressionParser);
     }
 
     /**
@@ -96,8 +98,10 @@ public abstract class Dispatcher {
         }
         for (Pair<Future<Boolean>, Subscriber> pair : dispatchFutureList) {
             try {
-                pair.getLeft().get();
-                invokeResult.addSubscriber(pair.getRight());
+                Boolean success = pair.getLeft().get();
+                if (Boolean.TRUE.equals(success)) {
+                    invokeResult.addSubscriber(pair.getRight());
+                }
             } catch (InterruptedException ex) {
                 invokeResult.setInvokeError(ex);
                 log.error("[Dispatcher#dispatchConcurrentEvent] event:{},subscriber:{} invoke-error!", event,
@@ -128,17 +132,41 @@ public abstract class Dispatcher {
                     continue;
                 }
 
-                subscriber.singleDispatchEvent(event, context);
-                invokeResult.addSubscriber(subscriber);
+                boolean success = subscriber.singleDispatchEvent(event, context);
+                if (success) {
+                    invokeResult.addSubscriber(subscriber);
+                }
             } catch (Exception ex) {
                 invokeResult.setInvokeError(ex);
                 log.error("[Dispatcher#dispatchSyncEvent] event:{},subscriber:{} invoke-error!", event,
                         subscriber.getTargetIdentify(), ex);
-                invokeResult.clear();
+                // Keep already-successful subscribers so retries can skip them.
                 return invokeResult;
             }
         }
         return invokeResult;
+    }
+
+    /**
+     * Partition subscribers for dispatch. Join-transaction subscribers always run on the calling
+     * thread so they can participate in the surrounding Spring transaction.
+     */
+    protected void partitionSubscribers(Iterator<Subscriber> subscribers,
+                                        boolean joinTransaction,
+                                        List<Subscriber> syncSubscriberList,
+                                        List<Subscriber> concurrentSubscriberList) {
+        while (subscribers.hasNext()) {
+            Subscriber subscriber = subscribers.next();
+            if (subscriber.isJoinTransaction() != joinTransaction) {
+                continue;
+            }
+            // joinTransaction must stay on the TX thread; concurrent execution cannot join TX.
+            if (joinTransaction || subscriber instanceof SynchronizedSubscriber) {
+                syncSubscriberList.add(subscriber);
+            } else {
+                concurrentSubscriberList.add(subscriber);
+            }
+        }
     }
 
     /**
@@ -158,6 +186,10 @@ public abstract class Dispatcher {
          * Per-thread dispatch state, used to avoid reentrant event dispatching.
          */
         private final ThreadLocal<Boolean> dispatching = ThreadLocal.withInitial(() -> false);
+
+        private PerThreadQueuedDispatcher(ExpressionParser expressionParser) {
+            super(expressionParser);
+        }
 
         @Override
         public DispatchInvokeResult dispatch(Object event, Iterator<Subscriber> subscribers, boolean joinTransaction) {
@@ -180,27 +212,21 @@ public abstract class Dispatcher {
 
                         List<Subscriber> syncSubscriberList = new ArrayList<>();
                         List<Subscriber> concurrentSubscriberList = new ArrayList<>();
+                        partitionSubscribers(nextEvent.getSubscribers(), joinTransaction,
+                                syncSubscriberList, concurrentSubscriberList);
 
-                        while (nextEvent.getSubscribers().hasNext()) {
-
-                            Subscriber subscriber = nextEvent.getSubscribers().next();
-                            // is join the transaction
-                            if (subscriber.isJoinTransaction() != joinTransaction) {
-                                continue;
-                            }
-                            if (subscriber instanceof SynchronizedSubscriber) {
-                                syncSubscriberList.add(subscriber);
-                            } else {
-                                concurrentSubscriberList.add(subscriber);
-                            }
-                        }
-
-                        invokeResult = invokeResult
+                        DispatchInvokeResult currentResult = new DispatchInvokeResult(nextEvent.getEvent());
+                        currentResult = currentResult
                                 .merge(dispatchConcurrentEvent(concurrentSubscriberList, nextEvent.getEvent(), context));
                         // sort sync subscriber
                         syncSubscriberList.sort((Comparator.comparingInt(Subscriber::getOrder)));
-                        invokeResult = invokeResult
+                        currentResult = currentResult
                                 .merge(dispatchSyncEvent(syncSubscriberList, nextEvent.getEvent(), context));
+
+                        // Nested posts of a different event must not be merged into the outer result.
+                        if (Objects.equals(nextEvent.getEvent(), event)) {
+                            invokeResult = invokeResult.merge(currentResult);
+                        }
                     }
                 } finally {
                     dispatching.remove();
@@ -229,7 +255,9 @@ public abstract class Dispatcher {
      */
     private static final class ImmediateDispatcher extends Dispatcher {
 
-        private static final ImmediateDispatcher INSTANCE = new ImmediateDispatcher();
+        private ImmediateDispatcher(ExpressionParser expressionParser) {
+            super(expressionParser);
+        }
 
         @Override
         public DispatchInvokeResult dispatch(Object event, Iterator<Subscriber> subscribers, boolean joinTransaction) {
@@ -238,20 +266,7 @@ public abstract class Dispatcher {
 
             List<Subscriber> syncSubscriberList = new ArrayList<>();
             List<Subscriber> concurrentSubscriberList = new ArrayList<>();
-
-            while (subscribers.hasNext()) {
-
-                Subscriber subscriber = subscribers.next();
-                if (subscriber.isJoinTransaction() != joinTransaction) {
-                    continue;
-                }
-
-                if (subscriber instanceof SynchronizedSubscriber) {
-                    syncSubscriberList.add(subscriber);
-                } else {
-                    concurrentSubscriberList.add(subscriber);
-                }
-            }
+            partitionSubscribers(subscribers, joinTransaction, syncSubscriberList, concurrentSubscriberList);
 
             // sort sync subscriber
             syncSubscriberList.sort((Comparator.comparingInt(Subscriber::getOrder)));
@@ -266,7 +281,9 @@ public abstract class Dispatcher {
      */
     private static final class AsyncImmediateDispatcher extends Dispatcher {
 
-        private static final AsyncImmediateDispatcher INSTANCE = new AsyncImmediateDispatcher();
+        private AsyncImmediateDispatcher(ExpressionParser expressionParser) {
+            super(expressionParser);
+        }
 
         @Override
         public DispatchInvokeResult dispatch(Object event, Iterator<Subscriber> subscribers, boolean joinTransaction) {
@@ -275,20 +292,7 @@ public abstract class Dispatcher {
 
             List<Subscriber> syncSubscriberList = new ArrayList<>();
             List<Subscriber> concurrentSubscriberList = new ArrayList<>();
-
-            while (subscribers.hasNext()) {
-
-                Subscriber subscriber = subscribers.next();
-                if (subscriber.isJoinTransaction() != joinTransaction) {
-                    continue;
-                }
-
-                if (subscriber instanceof SynchronizedSubscriber) {
-                    syncSubscriberList.add(subscriber);
-                } else {
-                    concurrentSubscriberList.add(subscriber);
-                }
-            }
+            partitionSubscribers(subscribers, joinTransaction, syncSubscriberList, concurrentSubscriberList);
 
             // sort sync subscriber
             syncSubscriberList.sort((Comparator.comparingInt(Subscriber::getOrder)));
@@ -297,7 +301,7 @@ public abstract class Dispatcher {
             DispatchInvokeResult concurrentResult = new DispatchInvokeResult(event);
             if (!CollectionUtils.isEmpty(concurrentSubscriberList)) {
                 for (Subscriber subscriber : concurrentSubscriberList) {
-                    if (!subscriber.shouldSubscribe(Dispatcher.expressionParser, event)) {
+                    if (!subscriber.shouldSubscribe(getExpressionParser(), event)) {
                         continue;
                     }
                     // Fire and forget
@@ -307,5 +311,9 @@ public abstract class Dispatcher {
 
             return concurrentResult.merge(dispatchSyncEvent(syncSubscriberList, event, context));
         }
+    }
+
+    protected ExpressionParser getExpressionParser() {
+        return expressionParser;
     }
 }

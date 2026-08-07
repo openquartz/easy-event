@@ -65,7 +65,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     private static final String REFRESH_PROCESSING_COMPLETE_SQL = "update {0} set execution_success_time=CASE WHEN processing_state = ''PROCESS_COMPLETE'' THEN execution_success_time ELSE NOW() END,processing_state=?,processing_failed_reason=? where id = ?";
     private static final String BATCH_REFRESH_PROCESS_STATE_SQL = "update {0} set processing_state= :processingState ,processing_failed_reason= :processingFailedReason where id in (:idList)";
 
-    private static final String REFRESH_START_PROCESSING_SQL = "update {0} set start_execution_time=CASE WHEN processing_state = ''IN_PROCESSING'' THEN start_execution_time ELSE NOW() END,processing_state=?,processing_failed_reason=?,processing_owner=? where id = ?";
+    private static final String REFRESH_START_PROCESSING_SQL = "update {0} set start_execution_time=NOW(),processing_state=?,processing_failed_reason=?,processing_owner=? where id = ? and processing_state in (''TRANSFER_SUCCESS'',''PROCESS_FAILED'',''TRANSFER_FAILED'')";
     private static final String REFRESH_SEND_FAILED_SQL = "update {0} set processing_state=?,processing_failed_reason=?,processing_owner=?,error_count=error_count+1 where id = ?";
     private static final String REFRESH_PROCESSING_FAILED_SQL = "update {0} set processing_state=?,processing_failed_reason=?,successful_subscriber=?,error_count=error_count+1 where id = ?";
 
@@ -261,7 +261,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
     }
 
     @Override
-    public void refreshStartProcessing(EventId eventId, EventLifecycleState startProcessing) {
+    public boolean refreshStartProcessing(EventId eventId, EventLifecycleState startProcessing) {
 
         checkNotNull(eventId);
         checkNotNull(startProcessing);
@@ -271,7 +271,7 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
 
         int actual = jdbcTemplate
                 .update(sql, startProcessing.getCode(), StringUtils.EMPTY, IpUtil.getIp(), eventId.getId());
-        DataUtils.checkUpdateOne(actual);
+        return actual == 1;
     }
 
     @Override
@@ -347,8 +347,8 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
         checkNotNull(eventId);
 
         String sql = MessageFormat.format(GET_ID_SQL, supplier.genBusEventEntityTable(eventId));
-        Long id = jdbcTemplate.queryForObject(sql, Long.class, eventId);
-        return Objects.nonNull(id);
+        List<Long> idList = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong(1), eventId);
+        return CollectionUtils.isNotEmpty(idList);
     }
 
     @Override
@@ -403,13 +403,19 @@ public class BusEventEntityMapperImpl implements BusEventEntityMapper {
                 sql = sql + " where " + joiner;
             }
             if (Objects.nonNull(condition.getOffset())) {
-                sql = sql + " limit :offset";
+                sql = sql + " order by id asc limit :offset";
                 paramMap.put("offset", condition.getOffset());
             }
 
             List<BusEventEntity> entityList = new NamedParameterJdbcTemplate(jdbcTemplate)
                     .query(sql, paramMap, new BusEventEntityRowMapper());
             resultList.addAll(entityList);
+        }
+        // Global top-N across shards (per-shard LIMIT alone can over-fetch).
+        if (Objects.nonNull(condition.getOffset()) && resultList.size() > condition.getOffset()) {
+            resultList.sort(Comparator.comparing(BusEventEntity::getEntityId,
+                    Comparator.nullsLast(Long::compareTo)));
+            return new ArrayList<>(resultList.subList(0, condition.getOffset()));
         }
         return resultList;
     }

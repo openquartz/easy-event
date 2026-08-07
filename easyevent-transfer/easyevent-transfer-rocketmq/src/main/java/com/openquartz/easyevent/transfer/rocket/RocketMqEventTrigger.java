@@ -97,7 +97,8 @@ public class RocketMqEventTrigger implements EventTrigger {
         log.info("[RocketMqEventTrigger#create],properties:{},consumer-property:{}", commonProperty, consumerProperty);
         try {
             consumer = new DefaultMQPushConsumer(consumerProperty.getConsumerGroup());
-            consumer.setMaxReconsumeTimes(1);
+            consumer.setMaxReconsumeTimes(consumerProperty.getConsumeMaxRetry());
+            consumer.setConsumeMessageBatchMaxSize(1);
             consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
             consumer.setConsumeThreadMin(consumerProperty.getConsumerMinThread());
             consumer.setConsumeThreadMax(consumerProperty.getConsumerMaxThread() + 1);
@@ -122,54 +123,53 @@ public class RocketMqEventTrigger implements EventTrigger {
                         commonProperty, consumerProperty);
                     return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 }
-                MessageExt message = messageExtList.get(0);
-                try {
-                    // json parse
-                    EventMessage eventMessage = JSONUtil.parseObject(message.getBody(), EventMessage.class);
-                    checkNotNull(eventMessage);
-                    // consume if lock
-                    eventTransferTriggerLimitingControl.control(eventMessage,
-                        msg -> lockSupport.consumeIfLock(
-                            Pair.of(String.valueOf(msg.getEventId().getId()), LockBizType.EVENT_HANDLE),
-                            () -> eventHandler.accept(msg)));
-                } catch (LimitingBlockedException ex) {
-                    if (message.getReconsumeTimes() < consumerProperty.getConsumeMaxRetry()) {
-                        // 消费时间间隔
-                        context
-                            .setDelayLevelWhenNextConsume(
-                                consumerProperty.getConsumeLimingRetryDelayTimeBaseSeconds() * message
-                                    .getReconsumeTimes());
-                        log.error(
-                            "[RocketMQTriggerConsumer#create]Consumption failure!message is blocked!,message:{},properties:{},consumer-property:{}",
-                            message.getMsgId(),
-                            commonProperty, consumerProperty, ex);
-                        return ConsumeConcurrentlyStatus.RECONSUME_LATER;
-                    } else {
-                        log.error(
-                            "[RocketMQTriggerConsumer#create]Consumption failure,max consume retry!message:{},properties:{},consumer-property:{}",
-                            message.getMsgId(),
-                            commonProperty, consumerProperty, ex);
-                        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                // Must handle every message in the batch; otherwise remaining messages are acked unprocessed.
+                for (MessageExt message : messageExtList) {
+                    try {
+                        // json parse
+                        EventMessage eventMessage = JSONUtil.parseObject(message.getBody(), EventMessage.class);
+                        checkNotNull(eventMessage);
+                        // consume if lock
+                        eventTransferTriggerLimitingControl.control(eventMessage,
+                            msg -> lockSupport.consumeIfLock(
+                                Pair.of(String.valueOf(msg.getEventId().getId()), LockBizType.EVENT_HANDLE),
+                                () -> eventHandler.accept(msg)));
+                    } catch (LimitingBlockedException ex) {
+                        if (message.getReconsumeTimes() < consumerProperty.getConsumeMaxRetry()) {
+                            context.setDelayLevelWhenNextConsume(toDelayLevel(
+                                consumerProperty.getConsumeLimingRetryDelayTimeBaseSeconds()
+                                    * Math.max(message.getReconsumeTimes(), 1)));
+                            log.error(
+                                "[RocketMQTriggerConsumer#create]Consumption failure!message is blocked!,message:{},properties:{},consumer-property:{}",
+                                message.getMsgId(),
+                                commonProperty, consumerProperty, ex);
+                            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                        } else {
+                            log.error(
+                                "[RocketMQTriggerConsumer#create]Consumption failure,max consume retry!message:{},properties:{},consumer-property:{}",
+                                message.getMsgId(),
+                                commonProperty, consumerProperty, ex);
+                            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                        }
+                    } catch (Throwable ex) {
+                        if (message.getReconsumeTimes() < consumerProperty.getConsumeMaxRetry()) {
+                            context.setDelayLevelWhenNextConsume(
+                                toDelayLevel(consumerProperty.getConsumeRetryDelayTimeIntervalSeconds()));
+                            log.error(
+                                "[RocketMQTriggerConsumer#create]Consumption failure,message:{},properties:{},consumer-property:{}",
+                                message.getMsgId(),
+                                commonProperty, consumerProperty, ex);
+                            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                        } else {
+                            log.error(
+                                "[RocketMQTriggerConsumer#create]Consumption failure,max consume retry!message:{},properties:{},consumer-property:{}",
+                                message.getMsgId(),
+                                commonProperty, consumerProperty, ex);
+                            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                        }
                     }
-                } catch (Throwable ex) {
-                    if (message.getReconsumeTimes() < consumerProperty.getConsumeMaxRetry()) {
-                        // 消费时间间隔
-                        context
-                            .setDelayLevelWhenNextConsume(consumerProperty.getConsumeRetryDelayTimeIntervalSeconds());
-                        log.error(
-                            "[RocketMQTriggerConsumer#create]Consumption failure,message:{},properties:{},consumer-property:{}",
-                            message.getMsgId(),
-                            commonProperty, consumerProperty, ex);
-                        return ConsumeConcurrentlyStatus.RECONSUME_LATER;
-                    } else {
-                        log.error(
-                            "[RocketMQTriggerConsumer#create]Consumption failure,max consume retry!message:{},properties:{},consumer-property:{}",
-                            message.getMsgId(),
-                            commonProperty, consumerProperty, ex);
-                        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-                    }
+                    log.info("[RocketMQTriggerConsumer#create]Consumption Complete,rocketMsgId:{}", message.getMsgId());
                 }
-                log.info("[RocketMQTriggerConsumer#create]Consumption Complete,rocketMsgId:{}", message.getMsgId());
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             });
         } catch (MQClientException ex) {
@@ -180,5 +180,22 @@ public class RocketMqEventTrigger implements EventTrigger {
         log.info("[RocketMQTriggerConsumer#create] create and start end,properties:{},consumer-property:{}",
             commonProperty, consumerProperty);
         return consumer;
+    }
+
+    /**
+     * Map seconds to RocketMQ delay level (1~18).
+     * Default levels: 1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h
+     */
+    static int toDelayLevel(Integer seconds) {
+        if (seconds == null || seconds <= 0) {
+            return 1;
+        }
+        int[] levelSeconds = {1, 5, 10, 30, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 1200, 1800, 3600, 7200};
+        for (int i = 0; i < levelSeconds.length; i++) {
+            if (seconds <= levelSeconds[i]) {
+                return i + 1;
+            }
+        }
+        return levelSeconds.length;
     }
 }

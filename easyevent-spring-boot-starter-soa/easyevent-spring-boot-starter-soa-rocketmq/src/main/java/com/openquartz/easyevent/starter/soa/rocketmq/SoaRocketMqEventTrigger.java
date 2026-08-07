@@ -78,7 +78,8 @@ public class SoaRocketMqEventTrigger implements EventTrigger {
         log.info("[SoaRocketMqEventTrigger#create],properties:{}", commonProperty);
         try {
             consumer = new DefaultMQPushConsumer(commonProperty.getConsumeGroup());
-            consumer.setMaxReconsumeTimes(1);
+            consumer.setMaxReconsumeTimes(commonProperty.getConsumeMaxRetry());
+            consumer.setConsumeMessageBatchMaxSize(1);
             consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
             consumer.setConsumeThreadMin(commonProperty.getConsumeMinThreadNums());
             consumer.setConsumeThreadMax(commonProperty.getConsumeMaxThreadNums() + 1);
@@ -103,33 +104,33 @@ public class SoaRocketMqEventTrigger implements EventTrigger {
                             commonProperty, commonProperty);
                     return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 }
-                MessageExt message = messageExtList.get(0);
-                try {
-                    // json parse
-                    @SuppressWarnings("unchecked")
-                    EventBody<? extends SoaEvent> eventBody = JSONUtil.parseObject(message.getBody(), EventBody.class);
-                    checkNotNull(eventBody);
-                    assert eventBody != null;
-                    eventHandler.accept(eventBody.getEvent());
-                } catch (Throwable ex) {
-                    if (message.getReconsumeTimes() < commonProperty.getConsumeMaxRetry()) {
-                        // 消费时间间隔
-                        context
-                                .setDelayLevelWhenNextConsume(commonProperty.getConsumeRetryDelayTimeIntervalSeconds());
-                        log.error(
-                                "[SoaRocketMqEventTrigger#create]Consumption failure,message:{},properties:{},consumer-property:{}",
-                                message.getMsgId(),
-                                commonProperty, commonProperty, ex);
-                        return ConsumeConcurrentlyStatus.RECONSUME_LATER;
-                    } else {
-                        log.error(
-                                "[SoaRocketMqEventTrigger#create]Consumption failure,max consume retry!message:{},properties:{},consumer-property:{}",
-                                message.getMsgId(),
-                                commonProperty, commonProperty, ex);
-                        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                for (MessageExt message : messageExtList) {
+                    try {
+                        // json parse
+                        @SuppressWarnings("unchecked")
+                        EventBody<? extends SoaEvent> eventBody = JSONUtil.parseObject(message.getBody(), EventBody.class);
+                        checkNotNull(eventBody);
+                        assert eventBody != null;
+                        eventHandler.accept(eventBody.getEvent());
+                    } catch (Throwable ex) {
+                        if (message.getReconsumeTimes() < commonProperty.getConsumeMaxRetry()) {
+                            context.setDelayLevelWhenNextConsume(
+                                    toDelayLevel(commonProperty.getConsumeRetryDelayTimeIntervalSeconds()));
+                            log.error(
+                                    "[SoaRocketMqEventTrigger#create]Consumption failure,message:{},properties:{},consumer-property:{}",
+                                    message.getMsgId(),
+                                    commonProperty, commonProperty, ex);
+                            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                        } else {
+                            log.error(
+                                    "[SoaRocketMqEventTrigger#create]Consumption failure,max consume retry!message:{},properties:{},consumer-property:{}",
+                                    message.getMsgId(),
+                                    commonProperty, commonProperty, ex);
+                            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                        }
                     }
+                    log.info("[SoaRocketMqEventTrigger#create]Consumption Complete,rocketMsgId:{}", message.getMsgId());
                 }
-                log.info("[SoaRocketMqEventTrigger#create]Consumption Complete,rocketMsgId:{}", message.getMsgId());
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             });
         } catch (MQClientException ex) {
@@ -140,5 +141,21 @@ public class SoaRocketMqEventTrigger implements EventTrigger {
         log.info("[SoaRocketMqEventTrigger#create] create and start end,properties:{},consumer-property:{}",
                 commonProperty, commonProperty);
         return consumer;
+    }
+
+    /**
+     * Map seconds to RocketMQ delay level (1~18).
+     */
+    static int toDelayLevel(Integer seconds) {
+        if (seconds == null || seconds <= 0) {
+            return 1;
+        }
+        int[] levelSeconds = {1, 5, 10, 30, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 1200, 1800, 3600, 7200};
+        for (int i = 0; i < levelSeconds.length; i++) {
+            if (seconds <= levelSeconds[i]) {
+                return i + 1;
+            }
+        }
+        return levelSeconds.length;
     }
 }

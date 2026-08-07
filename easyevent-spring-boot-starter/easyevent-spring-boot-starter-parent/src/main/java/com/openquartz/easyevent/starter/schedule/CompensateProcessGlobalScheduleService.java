@@ -60,7 +60,7 @@ public class CompensateProcessGlobalScheduleService implements InitializingBean 
     @Override
     public void afterPropertiesSet() {
         Integer schedulePeriod = easyEventCommonProperties.getCompensate().getGlobal().getSchedulePeriod();
-        double initDelaySeconds = new Random(1).nextDouble() * schedulePeriod;
+        double initDelaySeconds = new Random().nextDouble() * schedulePeriod;
         selfScheduledThreadPool
             .scheduleAtFixedRate(this::doGlobalProcess, (int) initDelaySeconds, schedulePeriod, TimeUnit.SECONDS);
     }

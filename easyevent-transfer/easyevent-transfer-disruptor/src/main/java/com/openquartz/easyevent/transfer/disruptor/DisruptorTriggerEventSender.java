@@ -44,6 +44,7 @@ public class DisruptorTriggerEventSender implements EventSender {
     private static final AtomicLong INDEX = new AtomicLong(1);
 
     private final Disruptor<DisruptorTriggerEvent> disruptor;
+    private final ExecutorService executor;
     private final Serializer serializer;
     private final TransactionSupport transactionSupport;
     private final EventStorageService eventStorageService;
@@ -65,7 +66,7 @@ public class DisruptorTriggerEventSender implements EventSender {
                     property.getDisruptorThreadPrefix() + INDEX.getAndIncrement());
         }, ProducerType.MULTI, new BlockingWaitStrategy());
 
-        final ExecutorService executor = new TraceThreadPoolExecutor(property.getConsumerProperty().getCorePoolSize(),
+        this.executor = new TraceThreadPoolExecutor(property.getConsumerProperty().getCorePoolSize(),
                 property.getConsumerProperty().getMaximumPoolSize(),
                 property.getConsumerProperty().getKeepAliveTime(),
                 TimeUnit.MILLISECONDS,
@@ -118,10 +119,14 @@ public class DisruptorTriggerEventSender implements EventSender {
                 });
             } catch (Exception ex) {
                 log.error("[DisruptorTriggerEventSender#send] publish-error!eventId:{},event:{}", eventId, event, ex);
+                transactionSupport.execute(() -> {
+                    eventStorageService.sendFailed(eventId, ex);
+                    return true;
+                });
             }
         });
 
-        return false;
+        return true;
     }
 
     @Override
@@ -149,11 +154,15 @@ public class DisruptorTriggerEventSender implements EventSender {
                     });
                 } catch (Exception ex) {
                     log.error("[DisruptorTriggerEventSender#sendList] publish-error!eventId:{},event:{}", eventId, event, ex);
+                    transactionSupport.execute(() -> {
+                        eventStorageService.sendFailed(eventId, ex);
+                        return true;
+                    });
                 }
             }
         });
 
-        return false;
+        return true;
     }
 
     @Override
@@ -176,11 +185,20 @@ public class DisruptorTriggerEventSender implements EventSender {
             eventStorageService.sendComplete(eventId);
             return true;
         });
-        return false;
+        return true;
     }
 
     @Override
     public void destroy() {
         disruptor.shutdown();
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

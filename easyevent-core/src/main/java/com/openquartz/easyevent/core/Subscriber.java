@@ -93,8 +93,8 @@ public class Subscriber {
         executor.execute(() -> doDispatchEvent(event, context));
     }
 
-    public final void singleDispatchEvent(Object event, HandlerInterceptorContext context) {
-        doDispatchEvent(event, context);
+    public final boolean singleDispatchEvent(Object event, HandlerInterceptorContext context) {
+        return doDispatchEvent(event, context);
     }
 
     public final Future<Boolean> concurrentDispatchEvent(Object event, HandlerInterceptorContext context) {

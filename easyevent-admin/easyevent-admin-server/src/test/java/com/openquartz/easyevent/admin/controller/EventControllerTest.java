@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -100,5 +101,24 @@ class EventControllerTest {
                 .andExpect(status().isOk());
 
         verify(eventAdminService).deleteEvent(1L);
+    }
+
+    @Test
+    void retryEvents_WhenNoAuth_ShouldReturn403() throws Exception {
+        mockMvc.perform(post("/api/events/retry")
+                .contentType("application/json")
+                .content("[1,2]"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void retryEvents_WhenAuthorized_ShouldCallService() throws Exception {
+        mockMvc.perform(post("/api/events/retry")
+                .header("Authorization", "admin")
+                .contentType("application/json")
+                .content("[1,2]"))
+                .andExpect(status().isOk());
+
+        verify(eventAdminService).retryEvents(java.util.Arrays.asList(1L, 2L));
     }
 }

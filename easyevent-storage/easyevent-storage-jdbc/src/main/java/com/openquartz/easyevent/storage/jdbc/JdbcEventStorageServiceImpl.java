@@ -160,13 +160,12 @@ public class JdbcEventStorageServiceImpl implements EventStorageService {
 
     @Override
     public boolean isMoreThanMustTrigger(BaseEventEntity eventEntity) {
-        return eventEntity.getErrorCount() > easyEventProperties.getMaxRetryCount();
+        return eventEntity.getErrorCount() >= easyEventProperties.getMaxRetryCount();
     }
 
     @Override
     public boolean startProcessing(EventId eventId) {
-        busEventEntityMapper.refreshStartProcessing(eventId, EventLifecycleState.IN_PROCESSING);
-        return true;
+        return busEventEntityMapper.refreshStartProcessing(eventId, EventLifecycleState.IN_PROCESSING);
     }
 
     @Override

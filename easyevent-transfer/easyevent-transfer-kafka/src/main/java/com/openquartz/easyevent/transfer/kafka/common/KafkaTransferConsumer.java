@@ -7,6 +7,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
@@ -20,6 +21,8 @@ public class KafkaTransferConsumer extends Thread {
     private final String topic;
     private final String consumerGroup;
     private final Consumer<ConsumerRecord<String, String>> handler;
+    private final AtomicBoolean running = new AtomicBoolean(true);
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public KafkaTransferConsumer(final String topic,
         final String consumerGroup,
@@ -42,32 +45,57 @@ public class KafkaTransferConsumer extends Thread {
         } catch (Exception e) {
             log.error("[KafkaTransferConsumer#run]Unexpected termination, exception thrown:", e);
         } finally {
-            shutdown();
+            closeQuietly();
         }
     }
 
     private void doWork() {
         try {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (running.get() && !Thread.currentThread().isInterrupted()) {
                 ConsumerRecords<String, String> consumerRecords = consumer.poll(Long.MAX_VALUE);
                 for (ConsumerRecord<String, String> consumerRecord : consumerRecords) {
-                    handler.accept(consumerRecord);
+                    try {
+                        handler.accept(consumerRecord);
+                    } catch (Exception ex) {
+                        // Keep the consumer alive on poison / transient handler failures.
+                        log.error(
+                            "[KafkaTransferConsumer#doWork] handle record error, topic:{}, group:{}, partition:{}, offset:{}",
+                            topic, consumerGroup, consumerRecord.partition(), consumerRecord.offset(), ex);
+                    }
                 }
-                consumer.commitSync();
+                try {
+                    consumer.commitSync();
+                } catch (WakeupException e) {
+                    throw e;
+                } catch (Exception ex) {
+                    log.error("[KafkaTransferConsumer#doWork] commit error,topic:{},group:{}", topic, consumerGroup, ex);
+                }
             }
         } catch (WakeupException e) {
-            log.error("[KafkaTransferConsumer#doWork] error,topic:{},group:{}", topic, consumerGroup, e);
-        } finally {
-            consumer.close();
+            if (running.get()) {
+                log.error("[KafkaTransferConsumer#doWork] unexpected wakeup,topic:{},group:{}", topic, consumerGroup, e);
+            }
         }
     }
 
     public void shutdown() {
+        running.set(false);
+        try {
+            consumer.wakeup();
+        } catch (Exception ex) {
+            log.error("[KafkaTransferConsumer#shutdown] wakeup error!topic:{},group:{}", topic, consumerGroup, ex);
+        }
+    }
+
+    private void closeQuietly() {
+        if (!closed.compareAndSet(false, true)) {
+            return;
+        }
         try {
             consumer.close();
         } catch (Exception ex) {
-            log.error("[KafkaTransferConsumer#shutdown] close consumer error!topic:{},group:{}", topic, consumerGroup,
-                ex);
+            log.error("[KafkaTransferConsumer#closeQuietly] close consumer error!topic:{},group:{}", topic,
+                consumerGroup, ex);
         } finally {
             latch.countDown();
         }

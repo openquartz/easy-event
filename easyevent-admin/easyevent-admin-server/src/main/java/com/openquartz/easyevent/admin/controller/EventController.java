@@ -74,6 +74,7 @@ public class EventController {
 
     @PostMapping("/retry")
     @Operation(summary = "Retry Events", description = "Manually retry specific events")
+    @Permission
     public void retryEvents(@RequestBody List<Long> eventIds) {
         eventAdminService.retryEvents(eventIds);
     }

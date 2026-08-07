@@ -105,7 +105,10 @@ public class BusEventDaoMySQL implements BusEventDao {
         if (ids == null || ids.isEmpty()) {
             return;
         }
-        String sql = "UPDATE ee_bus_event_entity SET error_count = 0, processing_failed_reason = '' WHERE id IN (" +
+        // Reset retry budget and bump created_time into the compensate pickup window.
+        String sql = "UPDATE ee_bus_event_entity SET error_count = 0, processing_failed_reason = '', "
+                + "processing_state = 'PROCESS_FAILED', created_time = DATE_SUB(NOW(), INTERVAL 2 MINUTE), "
+                + "updated_time = NOW() WHERE id IN (" +
                 String.join(",", Collections.nCopies(ids.size(), "?")) + ")";
         jdbcTemplate.update(sql, ids.toArray());
     }

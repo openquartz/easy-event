@@ -62,7 +62,7 @@ public class CompensateProcessSelfScheduleService implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         Integer schedulePeriod = easyEventCommonProperties.getCompensate().getSelf().getSchedulePeriod();
-        double initDelaySeconds = new Random(1).nextDouble() * schedulePeriod;
+        double initDelaySeconds = new Random().nextDouble() * schedulePeriod;
         selfScheduledThreadPool
             .scheduleAtFixedRate(this::doSelfProcess, (int) initDelaySeconds, schedulePeriod, TimeUnit.SECONDS);
     }

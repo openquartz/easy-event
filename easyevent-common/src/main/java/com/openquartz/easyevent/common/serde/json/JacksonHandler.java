@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.databind.type.CollectionType;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.openquartz.easyevent.common.model.Pair;
@@ -13,8 +14,6 @@ import com.openquartz.easyevent.common.utils.ExceptionUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,13 +36,13 @@ public final class JacksonHandler implements JsonFacade {
      */
     public ObjectMapper newMapper() {
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-
         final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setDateFormat(dateFormat);
+        // StdDateFormat is thread-safe; SimpleDateFormat is not safe on a shared ObjectMapper.
+        objectMapper.setDateFormat(new StdDateFormat().withColonInTimeZone(true));
         objectMapper.setTimeZone(TimeZone.getTimeZone("UTC"));
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.registerModule(new Jdk8Module());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
         objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
         objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT);

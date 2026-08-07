@@ -64,15 +64,19 @@ public class RabbitMqTransferConsumer extends Thread {
                     try {
                         String messageBody = new String(body, StandardCharsets.UTF_8);
                         EventMessage eventMessage = JSONUtil.parseObject(messageBody, EventMessage.class);
-                        
-                        if (eventMessage != null && eventHandler != null) {
+
+                        if (eventMessage == null) {
+                            // Do not ack unreadable payloads — requeue/DLQ path via nack.
+                            throw new IllegalArgumentException("Failed to parse EventMessage, body blank or invalid");
+                        }
+                        if (eventHandler != null) {
                             eventHandler.accept(eventMessage);
                         }
-                        
+
                         // 手动确认消息
                         channel.basicAck(deliveryTag, false);
-                        
-                        log.debug("[RabbitMqTransferConsumer#handleDelivery] consume complete, queue:{}, consumerGroup:{}, deliveryTag:{}", 
+
+                        log.debug("[RabbitMqTransferConsumer#handleDelivery] consume complete, queue:{}, consumerGroup:{}, deliveryTag:{}",
                             queueName, consumerGroup, deliveryTag);
                     } catch (Exception ex) {
                         log.error("[RabbitMqTransferConsumer#handleDelivery] consume error, queue:{}, consumerGroup:{}, deliveryTag:{}", 

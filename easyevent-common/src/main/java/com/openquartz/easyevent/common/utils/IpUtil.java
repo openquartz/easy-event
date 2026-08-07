@@ -34,7 +34,7 @@ public final class IpUtil {
             }
         } catch (Exception ignored) {
         }
-        return ipAddress;
+        return ipAddress == null ? "unknown" : ipAddress;
     }
 
 }

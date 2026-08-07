@@ -45,15 +45,15 @@ public class JdbcStorageAutoConfiguration {
         log.info("JdbcStorageAutoConfiguration init >>>>>>>>>--------------------");
     }
 
-    @Bean
-    @ConditionalOnMissingBean(type = "jdbcStorageJdbcTemplate", value = JdbcTemplate.class)
+    @Bean(name = "jdbcStorageJdbcTemplate")
+    @ConditionalOnMissingBean(name = "jdbcStorageJdbcTemplate")
     public JdbcTemplate jdbcStorageJdbcTemplate(JdbcStorageProperties jdbcStorageProperties,
                                                 Environment environment) {
         return new JdbcTemplate(DataSourceFactory.newInstance().create(jdbcStorageProperties, environment));
     }
 
     @Bean
-    @ConditionalOnMissingBean(type = "busEventEntityMapperImpl", value = BusEventEntityMapper.class)
+    @ConditionalOnMissingBean(BusEventEntityMapper.class)
     public BusEventEntityMapper busEventEntityMapperImpl(
             @Qualifier("jdbcStorageJdbcTemplate") JdbcTemplate jdbcStorageJdbcTemplate,
             EasyEventTableGeneratorSupplier easyEventTableGeneratorSupplier) {

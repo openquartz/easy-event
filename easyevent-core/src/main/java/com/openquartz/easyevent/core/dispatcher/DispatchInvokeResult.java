@@ -99,7 +99,7 @@ public class DispatchInvokeResult {
         return "DispatchInvokeResult{" +
             "event=" + event +
             ", invokeResult=" + isSuccess() +
-            ", invokeError=" + invokeError.getMessage() +
+            ", invokeError=" + (invokeError != null ? invokeError.getMessage() : null) +
             ", successSubscriber=[" + joiner +
             ']';
     }

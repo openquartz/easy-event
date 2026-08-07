@@ -53,7 +53,16 @@ public class KafkaEventTrigger implements EventTrigger {
         EventTransferTriggerLimitingControl eventTransferTriggerLimitingControl) {
 
         this.kafkaTriggerProperty = kafkaTriggerProperty;
-        this.countDownLatch = new CountDownLatch(kafkaTriggerProperty.getConsumerPropertyMap().size());
+        int totalConsumers = kafkaTriggerProperty.getConsumerPropertyMap().values().stream()
+            .mapToInt(property -> {
+                // Fixed partition assignment cannot safely share one partition across currency>1.
+                if (!Objects.equals(CommonConstants.ALL_MATCH_EXPRESSION, property.getPartition())) {
+                    return 1;
+                }
+                return property.getCurrency() == null ? 1 : property.getCurrency();
+            })
+            .sum();
+        this.countDownLatch = new CountDownLatch(Math.max(totalConsumers, 1));
         this.kafkaCommonProperty = kafkaCommonProperty;
         this.eventHandler = eventHandler;
         this.lockSupport = lockSupport;
@@ -139,7 +148,12 @@ public class KafkaEventTrigger implements EventTrigger {
         CountDownLatch latch) {
 
         List<KafkaTransferConsumer> consumerList = new ArrayList<>();
-        for (int i = 0; i < kafkaConsumerProperty.getCurrency(); i++) {
+        int currency = kafkaConsumerProperty.getCurrency() == null ? 1 : kafkaConsumerProperty.getCurrency();
+        // assign() bypasses group rebalance; multiple threads on the same partition cause duplicates.
+        if (!Objects.equals(CommonConstants.ALL_MATCH_EXPRESSION, kafkaConsumerProperty.getPartition())) {
+            currency = 1;
+        }
+        for (int i = 0; i < currency; i++) {
             Properties props = new Properties();
             props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, host);
             props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConsumerProperty.getConsumerGroup());

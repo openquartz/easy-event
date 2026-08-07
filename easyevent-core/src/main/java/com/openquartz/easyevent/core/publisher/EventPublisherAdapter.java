@@ -38,7 +38,7 @@ public abstract class EventPublisherAdapter implements EventPublisher {
         PublisherInterceptorContext context = new PublisherInterceptorContext();
         boolean publish = PublisherInterceptorChain.applyPrePublish(event, context);
         if (!publish) {
-            return true;
+            return false;
         }
 
         // 触发EventBus
@@ -65,7 +65,7 @@ public abstract class EventPublisherAdapter implements EventPublisher {
             PublisherInterceptorContext publishContext = new PublisherInterceptorContext();
             boolean publish = PublisherInterceptorChain.applyPrePublish(event, publishContext);
             if (!publish) {
-                return true;
+                return false;
             }
             boolean sendResult;
             try {
